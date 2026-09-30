@@ -14,14 +14,51 @@ Dernière mise à jour : 30 septembre 2026.
 ## Jalons
 
 - [x] J1 — Moteur jouable : territoire, réseau, constructions, économie, unités et IA.
-- [x] J2 — Interface : menu, commandes, lisibilité, tutoriel et sons.
+- [x] J2 — Interface initiale : menu, commandes, aide textuelle et sons (tutoriel interactif non livré).
 - [x] J3 — Vérifications du moteur et du parcours navigateur ; livraison initiale sur main.
-- [ ] J4 — Retour de Martin : rythme, plaisir de conquête, difficulté, lisibilité des coupures.
-- [ ] J5 — Équilibrage sur plusieurs cartes ; personnalités IA, raccourcis et accessibilité approfondie.
-- [ ] J6 — Progression et spécialisations, cartes supplémentaires et sauvegarde de partie.
+- [x] J4 — Premier retour de Martin : potentiel apprécié ; lisibilité insuffisante, demande de tutoriel, zoom et enrichissement du gameplay.
+- [ ] J5 / V0.2 — Priorité demandée : lisibilité, caméra tactile et tutoriel interactif.
+- [ ] J6 / V0.3 — Proposition : ordres d’escouades, progression de base et spécialisations.
+- [ ] J7 / V0.4 — Proposition : objectifs secondaires, terrains et cartes variées.
+- [ ] J8 / V0.5 — Proposition : perception limitée de l’IA, équilibre, sauvegarde et rejouabilité.
+
+## Prochaine livraison proposée : V0.2 — comprendre et commander
+
+Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
+- Zoom pincé centré entre les doigts ; boutons +/− ; glisser pour déplacer la caméra ; limites empêchant de perdre la carte.
+- Un toucher sélectionne, un glisser déplace la caméra ; bouton d’ordre explicite pour limiter les déplacements accidentels. Tester le passage un/deux doigts sans ordre parasite.
+- Boutons retour au Cœur et vue globale ; minimap rétractable lorsque la carte est zoomée.
+- Silhouettes d’unités et bâtiments plus distinctes, sélection contrastée, trajet et destination visibles ; taille des cibles tactiles indépendante du zoom.
+- Frontières claires, états connecté/isolé explicites, alerte de coupure et revenus de pigment affichés.
+- Fiche contextuelle de l’objet sélectionné : rôle, vie, état du réseau et commandes.
+- Tutoriel court sur scénario dédié : sélectionner/déplacer, relais, source/extracteur, recrutement, combat, coupure/reconnexion et victoire.
+- Chaque étape validée par une action réussie ; caméra guidée ; possibilité de passer/rejouer ; adversaire scripté et non agressif au départ.
+- Critères : une partie jouable au toucher sans consulter les raccourcis, aucun ordre involontaire après zoom/glisser, étapes du tutoriel réalisables après erreur et redémarrage.
+
+## Enrichissement proposé après V0.2 (à valider)
+
+### V0.3 — décisions et progression
+- Escouades et ordres tenir, attaquer, revenir se soigner ; points de ralliement et files de recrutement.
+- Cœur à trois niveaux, deux améliorations maximum par bâtiment ; coûts obligeant à choisir armée/économie/technologie.
+- Choix exclusif de spécialisation par partie : expansion, fortification ou mobilité.
+- Ingénieur réparateur et saboteur spécialisé dans les relais ; éviter l’accumulation de classes redondantes.
+- Priorité critique : armée facile à commander avant d’augmenter son nombre de rôles.
+
+### V0.4 — carte et opportunités
+- Points d’observation, réserves ponctuelles de pigment et source centrale riche à défendre.
+- Passages étroits, terrain absorbant qui ralentit la propagation, terrain lisse qui accélère les déplacements.
+- Événements rares, annoncés à l’avance et symétriques ; pas de perte aléatoire arbitraire de la base.
+- Trois cartes conçues à la main avant un générateur procédural.
+
+### V0.5 — rejouabilité et confort
+- IA limitée par sa vision, personnalités distinctes et vraie courbe de difficulté.
+- Sauvegarde/reprise sur téléphone, statistiques de fin et historique visuel du territoire.
+- Défis optionnels et déblocages de nouvelles options ; éviter les bonus permanents qui rendent les anciennes parties triviales.
+- Musique d’ambiance et retour sonore des événements majeurs.
 
 ## Modifications réalisées
 
+- 30/09, retour utilisateur : feuille de route réordonnée. Aucun changement de gameplay effectué lors de cette phase de planification.
 - Initialisation du projet et des règles de session dans AGENTS.md.
 - Architecture séparant simulation, présentation et documentation.
 - Carte verticale 32 × 48, joueur en bas et IA en haut, obstacles et huit sources.
@@ -34,6 +71,7 @@ Dernière mise à jour : 30 septembre 2026.
 ## Bugs trouvés non corrigés
 
 - Aucun défaut bloquant détecté dans les scénarios moteur exécutés ; parcours navigateur validé.
+- Retour utilisateur : lisibilité insuffisante en jeu. Détailler les cas lors de V0.2 et vérifier sur téléphone réel.
 
 ## Limites et risques à suivre
 
