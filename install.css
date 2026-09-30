@@ -1,0 +1,43 @@
+.install-card{width:397px;max-width:100%;margin-top:13px}
+.install-button{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:9px 13px;border:1px solid #cadbd4;border-radius:11px;background:#fafcf7e8;text-align:left}
+.install-button>span:nth-child(2){flex:1;min-width:0}
+.install-button strong{display:block;font-size:11px;line-height:1.4}
+.install-button small{display:block;margin-top:2px;font-size:9px;color:#6c827f;line-height:1.4}
+.install-icon{font-size:25px;color:#159fa6;line-height:1}
+.install-button[hidden],.update-button[hidden]{display:none}
+.offline-status{font-size:9px;line-height:1.4;color:#6c827f;margin:6px 3px 0}
+.offline-status.is-ready:before{content:'● ';color:#298c73}
+.update-button{display:block;font-size:11px;min-height:44px;font-weight:700;margin-top:5px;width:100%;border:1px solid #dfc485;background:#fff6de;border-radius:9px}
+.install-dialog{position:fixed;inset:0;width:calc(100% - 32px);max-width:480px;max-height:calc(100dvh - 40px);border:1px solid #fff;border-radius:20px;padding:48px 25px 25px;margin:auto;background:#fafbf5;color:#223c49;box-shadow:0 25px 90px #13313e33;overscroll-behavior:contain}
+.install-dialog::backdrop{background:#183a4659;backdrop-filter:blur(7px)}
+.install-dialog h2{font-size:27px;line-height:1.1;letter-spacing:-.7px;margin:13px 0 17px}
+.install-dialog .eyebrow{font-size:9px;letter-spacing:1.2px;line-height:1.5}
+.install-dialog p,.install-dialog li{font-size:13px;line-height:1.6;color:#536e73}
+.install-dialog ol{padding-left:22px;margin:17px 0}
+.install-dialog li{padding-left:3px;margin:12px 0}
+.install-dialog a{color:#087d83;text-underline-offset:3px}
+.install-dialog .install-offline-note{font-size:12px;font-weight:700;color:#237c6e;padding:10px 12px;border:1px solid #cee4d8;border-radius:8px;background:#eff8f0}
+.install-dialog .install-progress-note{font-size:11px;line-height:1.55}
+.install-close{position:absolute;top:8px;right:10px;min-width:44px;min-height:44px;font-size:26px;border-radius:9px;color:#647d7c}
+.install-secondary{display:block;min-height:44px;width:100%;margin-top:7px;font-size:12px}
+.install-dialog .primary{min-height:48px;margin-top:12px}
+.install-dialog button:disabled{opacity:.6;cursor:wait}
+.has-install .hero{margin-top:3.5vh}
+.has-install .hero-note{margin-top:16px}
+@media(max-width:760px){
+  .menu.has-install{height:auto;min-height:100dvh;overflow:visible;padding-bottom:max(28px,env(safe-area-inset-bottom))}
+  .has-install .hero{margin-top:12px;margin-bottom:12px}
+  .has-install .menu-bottom{position:relative;inset:auto;margin:18px 24px 0;align-items:center}
+  .install-card{width:355px}
+  .install-button strong{font-size:11px}
+  .install-button small,.offline-status{font-size:9px}
+  .install-dialog{padding:44px 20px 20px}
+  .install-dialog h2{font-size:25px}
+  .install-dialog .eyebrow{font-size:8px}
+}
+@media(min-width:761px) and (max-height:820px){
+  .menu.has-install{height:auto;min-height:820px}
+}
+@media(display-mode:standalone){
+  .menu-nav{padding-top:max(24px,env(safe-area-inset-top))}
+}

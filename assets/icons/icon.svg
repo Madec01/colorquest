@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Colorquest — un cœur cyan et son réseau</title>
+  <rect width="512" height="512" fill="#f5f4ef"/>
+  <path d="M112 136H176V104H272V136H336V200H368V296H336V360H272V392H176V360H112V296H80V200H112Z" fill="#c6e8de"/>
+  <path d="M336 264H400V296H432V360H400V392H336V360H304V296H336Z" fill="#f1bdac"/>
+  <path d="M152 176H216V144H280V176H312V240H280V304H216V336H152V304H120V240H152Z" fill="#97dace"/>
+  <path d="M236 223L166 308M236 223L329 314" fill="none" stroke="#fffdf5" stroke-width="17" stroke-linecap="round"/>
+  <path d="M236 142L305 182V262L236 302L167 262V182Z" fill="#fffdf5" stroke="#159fa6" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M236 180L272 201V243L236 264L200 243V201Z" fill="#16b6ba"/>
+  <circle cx="166" cy="308" r="22" fill="#fffdf5" stroke="#159fa6" stroke-width="10"/>
+  <circle cx="329" cy="314" r="20" fill="#fffdf5" stroke="#ec7763" stroke-width="10"/>
+</svg>

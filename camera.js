@@ -19,7 +19,7 @@
   document.getElementById('cameraMiniToggle').setAttribute('aria-expanded',String(state.mini));
   document.getElementById('cameraMiniToggle').textContent='MINICARTE '+(state.mini?'▾':'▸');
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  const active = () => playing && game && !ended && document.getElementById('modal').classList.contains('hidden');
+  const active = () => playing && game && !ended && !window.CQStrategy?.isOpen && document.getElementById('modal').classList.contains('hidden');
   function layout() {
     const cell = state.base * state.zoom;
     const halfW = state.w / (2 * cell), halfH = state.h / (2 * cell);
@@ -146,6 +146,16 @@
       const type=mode.type,r=game.power(1,type,Math.floor(p.x),Math.floor(p.y));
       toast(r?.message||(r?.ok===false?'Pouvoir indisponible.':'Pouvoir activé'));audio(r?.ok===false?'error_001':'glass_001');
       if(r?.ok!==false){setMode(null);window.CQTutorial?.action('power',{type,x:p.x,y:p.y});} return;
+    }
+    if (mode?.kind==='rally') {
+      const result=game.setRally(1,p.x,p.y);
+      toast(result.message);audio(result.ok?'confirmation_001':'error_001');
+      if(result.ok){moveMarker={x:p.x,y:p.y,life:1};setMode(null)}return;
+    }
+    if (mode?.kind==='attack') {
+      const result=game.command(1,selection,'attack',p.x,p.y);
+      toast(result.message);audio(result.ok?'confirmation_001':'error_001');
+      if(result.ok){moveMarker={x:p.x,y:p.y,life:1};setMode(null)}return;
     }
     if (mode?.kind==='move') {
       if(!selection.length){toast('Sélectionnez une unité avant de donner un ordre.');setMode(null);return;}

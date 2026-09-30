@@ -19,7 +19,7 @@ const path=require('node:path');const {pathToFileURL}=require('node:url');const 
   await move('scout',13,37);await pump();await step(1);
   await p.locator('[data-build="relay"]').tap();await tapTile(12,38);await pump();await step(2);
   await p.locator('[data-build="extractor"]').tap();await tapTile(9,36);await pump();await step(3);
-  await p.locator('[data-recruit="fighter"]').tap();await pump(30);await step(4);
+  await p.locator('#unitButtons [data-recruit="fighter"]').tap();await pump(160);await step(4);
   await move('fighter',13,28);await pump(250);await step(5);
   await move('fighter',20,28);await pump(180);await step(6);
   await move('fighter',16,34);await pump(180);await step(7);

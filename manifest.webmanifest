@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Colorquest — La couleur est votre territoire",
+  "short_name": "Colorquest",
+  "description": "Un jeu de stratégie en couleurs, pensé pour le téléphone en portrait. Étendez votre réseau et protégez vos connexions.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f4ef",
+  "theme_color": "#f5f4ef",
+  "categories": ["games", "strategy"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "prefer_related_applications": false
+}

@@ -11,3 +11,5 @@
 - Tester les règles du moteur et le parcours navigateur après une modification importante.
 - L'utilisateur autorise le recours à des agents pour les tâches indépendantes.
 - Informer l'utilisateur des jalons terminés pendant le travail et donner le commit livré à la fin. Ne pas promettre de notifications externes sans mécanisme configuré.
+
+- PWA : chaque livraison modifiant un fichier précaché doit changer RELEASE dans sw.js. Ajouter tout nouvel asset/module au précache. Ne pas imposer de rechargement pendant une partie.

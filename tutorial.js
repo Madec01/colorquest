@@ -8,7 +8,7 @@
     { title: 'Explorez la toile', text: 'Touchez la goutte cyan → « Donner un ordre » → cercle doré. Glissez pour déplacer la vue ; pincez pour zoomer.', target: [13, 37], tab: 'units' },
     { title: 'Étendez votre réseau', text: 'Touchez « Relais », puis le cercle doré. Le relais propage votre couleur et doit rester connecté.', target: [12, 38], tab: 'build', button: '[data-build="relay"]' },
     { title: 'Exploitez le pigment', text: 'La source dorée devient cyan : attendez sa connexion, puis touchez « Extracteur » et la source.', target: [9, 36], tab: 'build', button: '[data-build="extractor"]' },
-    { title: 'Recrutez un combattant', text: 'Votre extracteur augmente le revenu. Dans « Mobiliser », touchez « Combattant » : il apparaît près du Cœur.', target: [16, 41], tab: 'units', button: '[data-recruit="fighter"]' },
+    { title: 'Recrutez un combattant', text: 'Votre extracteur augmente le revenu. Dans « Mobiliser », touchez « Combattant », puis attendez 6 secondes : il sort de la file près du Cœur.', target: [16, 41], tab: 'units', button: '[data-recruit="fighter"]' },
     { title: 'Gagnez une escarmouche', text: 'Touchez le carré cyan → « Donner un ordre » → cible corail. Votre combattant attaque automatiquement à portée.', target: [13, 28], tab: 'units' },
     { title: 'Coupez le réseau adverse', text: 'Nouvelle scène : carré cyan → « Donner un ordre » → cercle doré. Coupez le couloir corail pour isoler le relais à gauche.', target: [20, 28], tab: 'units' },
     { title: 'Reconnectez votre réseau', text: 'Carré cyan → « Donner un ordre » → brèche dorée. Le passage redevient cyan : votre relais est reconnecté !', target: [16, 34], tab: 'units' }
@@ -88,6 +88,7 @@
       return coreBuild(team, type, x, y);
     };
     game.recruit = (team, type) => {
+      if(team===1&&lesson===3&&recruitId!==null)return {ok:false,message:'Un combattant est déjà en formation. Attendez sa sortie du Cœur.'};
       if (team === 1 && (lesson !== 3 || type !== 'fighter'))
         return { ok: false, message: 'Le tutoriel propose un combattant à l’étape 4.' };
       const result = coreRecruit(team, type);
@@ -120,7 +121,7 @@
     refresh();
   }
   function resetNetworkScene() {
-    game.units = []; game.buildings = []; selection = [];
+    game.units = []; game.buildings = []; selection = [];if(game.queues)game.queues=[[],[],[]];
     for (const t of game.tiles) Object.assign(t, { owner: 0, connected: false, blocked: false, source: false, isolation: 0, explored: true, visible: true });
     // Network lessons freeze passive spread and fading so the player can inspect them.
     // Capture and flood-fill connectivity still use the real game engine.

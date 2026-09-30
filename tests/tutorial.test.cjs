@@ -55,7 +55,7 @@ e.move('scout', 13.5, 37.5); e.tick(5); assert.equal(e.CQTutorial.step, 1);
 assert.equal(e.game.build(1, 'relay', 12, 38).ok, true); e.tick(5); assert.equal(e.CQTutorial.step, 2);
 assert.equal(e.game.build(1, 'extractor', 9, 36).ok, true); e.tick(5); assert.equal(e.CQTutorial.step, 3);
 assert(e.game.income[1] > 2.6, 'extractor really produces additional income');
-assert.equal(e.game.recruit(1, 'fighter').ok, true); e.tick(5); assert.equal(e.CQTutorial.step, 4);
+assert.equal(e.game.recruit(1, 'fighter').ok, true);e.tick(2);assert.equal(e.CQTutorial.step,3,'training waits for recruitment');e.tick(6);assert.equal(e.CQTutorial.step,4);
 e.tick(15); assert.equal(e.CQTutorial.step, 4, 'combat waits for player movement');
 e.move('fighter', 13.5, 28.5); e.tick(15); assert.equal(e.CQTutorial.step, 5);
 assert(e.game.buildings.find(b => b.type === 'relay').connected, 'enemy branch begins connected');

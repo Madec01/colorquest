@@ -18,7 +18,7 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J3 — Vérifications du moteur et du parcours navigateur ; livraison initiale sur main.
 - [x] J4 — Premier retour de Martin : potentiel apprécié ; lisibilité insuffisante, demande de tutoriel, zoom et enrichissement du gameplay.
 - [x] J5 / V0.2 — Lisibilité, caméra tactile et tutoriel interactif livrés.
-- [ ] J6 / V0.3 — Proposition : ordres d’escouades, progression de base et spécialisations.
+- [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [ ] J7 / V0.4 — Proposition : objectifs secondaires, terrains et cartes variées.
 - [ ] J8 / V0.5 — Proposition : perception limitée de l’IA, équilibre, sauvegarde et rejouabilité.
 
@@ -35,14 +35,15 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Chaque étape validée par une action réussie ; caméra guidée ; possibilité de passer/rejouer ; adversaire scripté et non agressif au départ.
 - Critères : une partie jouable au toucher sans consulter les raccourcis, aucun ordre involontaire après zoom/glisser, étapes du tutoriel réalisables après erreur et redémarrage.
 
-## Enrichissement proposé après V0.2 (à valider)
+## Enrichissement après V0.2
 
-### V0.3 — décisions et progression
+### V0.3 — décisions et progression (réalisé)
 - Escouades et ordres tenir, attaquer, revenir se soigner ; points de ralliement et files de recrutement.
 - Cœur à trois niveaux, deux améliorations maximum par bâtiment ; coûts obligeant à choisir armée/économie/technologie.
 - Choix exclusif de spécialisation par partie : expansion, fortification ou mobilité.
 - Ingénieur réparateur et saboteur spécialisé dans les relais ; éviter l’accumulation de classes redondantes.
 - Priorité critique : armée facile à commander avant d’augmenter son nombre de rôles.
+- Demande ajoutée le 30/09 : installation sur téléphone (PWA), icône, lancement autonome et cache hors ligne après première ouverture ; guide iPhone et installation proposée quand le navigateur le permet.
 
 ### V0.4 — carte et opportunités
 - Points d’observation, réserves ponctuelles de pigment et source centrale riche à défendre.
@@ -57,6 +58,22 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Musique d’ambiance et retour sonore des événements majeurs.
 
 ## Modifications réalisées
+
+### V0.3 — 30 septembre 2026
+
+- File séquentielle de 6 recrutements, pigment débité une seule fois, progression visible, annulation à 100 % en attente / 50 % en formation (arrondi inférieur), plafond 36 unités formations incluses.
+- Ralliement appliqué aux nouvelles unités et affichage du drapeau ; trois escouades mémorisées avec nettoyage des pertes.
+- Ordres tenir (sans poursuite), attaquer (arrêt pour combattre en chemin), déplacer et repli vers le Cœur pour récupération.
+- Tous les bâtiments progressent jusqu’au niveau 3. Le Cœur niveau 2 débloque ingénieur, saboteur et spécialisation. Les améliorations augmentent les stats effectives et ne suppriment pas les dégâts déjà subis.
+- Spécialisation exclusive, coût 100 : expansion (relais −25 %, portée +1), fortification (+30 % PV bâtiments, isolement 25 s), mobilité (+20 % vitesse, durée formation −15 %).
+- Ingénieur : réparation alliée à proximité, 12 PV/s, aucun tir ; saboteur : fragile, priorité aux relais, dégâts renforcés sur bâtiments.
+- IA utilisant la même économie et les mêmes règles de production, progression retardée en détente et deux rôles de soutien intégrés.
+- Panneau Camp & armée : recrutement, améliorations, escouades et guide ; partie en cours explicitement indiquée, pause disponible, progression de production toujours visible dans le panneau.
+- Tutoriel adapté à la formation différée ; retour à une partie normale vérifié.
+- Installation PWA : manifeste, icônes originales, invite lorsque le navigateur la permet et guide iPhone, mode autonome, précache complet et confirmation du mode hors ligne.
+- Mise à jour proposée sans rechargement imposé pendant une partie ; cache isolé par chemin, échec du précache signalé sans fausse disponibilité hors ligne.
+- Correctifs d’intégration : conserver la pause lors de l’ouverture/fermeture du Camp, ne pas annoncer une mise à jour lors de la première installation et éviter de compter deux fois les marges de sécurité du téléphone.
+
 
 ### V0.2 — 30 septembre 2026
 
@@ -88,7 +105,8 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 - L’IA connaît actuellement toute la carte et les positions adverses : ajouter une perception limitée avant une version compétitive.
 - Carte à disposition fixe avec petits écarts aléatoires ; symétrie imparfaite.
-- Production immédiate, sans file d’attente ; bâtiments traversables ; séparation souple des unités.
+- Bâtiments traversables ; séparation souple des unités. Files de recrutement ajoutées en V0.3.
+- Les bonus de formation sont fixés quand l’unité entre en file : les améliorations suivantes bénéficient aux nouveaux recrutements.
 - Pas de sauvegarde/reprise après fermeture.
 - Le tutoriel utilise des scènes pédagogiques contrôlées et des ressources garanties. Les scènes réseau figent la propagation passive pour rendre la coupure lisible.
 - Zoom limité à 1–4× ; minimap repliée par défaut sur téléphone. Confort à confirmer sur appareils réels.
@@ -103,7 +121,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Idées à évaluer (non promises)
 
-- Spécialisations exclusives : expansion, fortification, mobilité.
+- Variantes supplémentaires de spécialisations après validation des trois branches V0.3.
 - Cartes avec fissures, passages et différentes propriétés du papier.
 - IA expansionniste, défensive ou orientée raids.
 - Statistiques de fin de partie et replay de la progression des couleurs.
@@ -111,6 +129,19 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.3
+
+- 15 scénarios moteur V0.3 passants : files/débit/durée/remboursement/caps/ralliement, upgrades, trois spécialisations, réparation, sabotage, ordres, escouades et développement IA.
+- 8 scénarios historiques moteur et 2 parcours de tutoriel en simulation toujours passants.
+- Navigateur tactile 390 × 844 et 360 × 640 : progression, spécialisation exclusive, spécialiste, production/remboursement, pause, ralliement, escouades, ordres et remise à zéro lors d’une nouvelle partie ; aucun débordement horizontal ni erreur JavaScript.
+- Tutoriel complet de 7 étapes rejoué au toucher sur les deux tailles ; attente de production réelle, reprise/sortie et retour à l’IA vérifiés.
+- Régression des gestes V0.2 : pan/pincement/annulation sans ordre parasite, zoom/recentrage/redimensionnement et commandes PC.
+- PWA via serveur HTTP local sous /colorquest/ : manifeste et icônes, cache complet, chargement hors ligne incluant sons, demande d’installation au geste, guide iOS simulé, mode autonome simulé, mise à jour acceptée/refusée en partie, cache tiers préservé, précache incomplet et fichier local traités correctement.
+- Captures mobiles du Camp, du recrutement, des escouades et de l’installation inspectées.
+- Simulation sans action, graine 42 : défaite en détente à 260,6 s et en stratégie à 191 s. La durée 10–15 min reste un objectif à valider en partie humaine.
+- Pas encore d’installation testée sur Android/iPhone physique. La disponibilité de l’invite dépend du navigateur ; un guide manuel est fourni.
+
 
 ### V0.2
 

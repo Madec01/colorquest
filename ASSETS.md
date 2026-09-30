@@ -50,3 +50,7 @@ L'attribution n'est pas obligatoire sous CC0 ; crédit volontaire recommandé da
 Les jingles ne remplacent pas une musique d'ambiance. Une piste longue externe n'est pas incluse dans cette sélection. Pour le prototype, une ambiance originale générée par Web Audio permettrait une variation avec la tension de la partie, sans chargement ni dépendance. Une vraie composition musicale reste un jalon de finition à évaluer après les premiers essais.
 
 Les unités, bâtiments et territoires peuvent être dessinés directement en Canvas : leurs silhouettes simples font partie de l'identité du jeu. Éviter d'importer un pack RTS figuratif uniquement pour ajouter des assets : cela nuirait à la lisibilité de la couleur et à la cohérence visuelle.
+
+## Icône d’installation V0.3
+
+`assets/icons/icon.svg` est un dessin vectoriel original réalisé pour Colorquest à partir des formes et couleurs du jeu. Les PNG 192 × 192, 512 × 512 et Apple 180 × 180 sont ses rendus. Aucun asset externe supplémentaire n’est utilisé pour cette icône.

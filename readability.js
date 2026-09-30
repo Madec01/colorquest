@@ -2,8 +2,8 @@
 (function () {
   'use strict';
   let selectedId = null, watchedGame = null, previous = new Map(), disconnected = [], tick = 0;
-  const names = {core:'Cœur',relay:'Relais',extractor:'Extracteur',bastion:'Bastion',scout:'Éclaireur',fighter:'Combattant',breaker:'Briseur'};
-  const roles = {core:'Centre du réseau · produit du pigment',relay:'Diffuse votre couleur sur le terrain neutre',extractor:'Produit +3,1 pigment/s si connecté',bastion:'Défend les unités et bâtiments proches',scout:'Explore vite · fragile au combat',fighter:'Conquiert les frontières et défend le réseau',breaker:'Tir à distance · efficace contre les bâtiments'};
+  const names = {core:'Cœur',relay:'Relais',extractor:'Extracteur',bastion:'Bastion',scout:'Éclaireur',fighter:'Combattant',breaker:'Briseur',engineer:'Ingénieur',saboteur:'Saboteur'};
+  const roles = {core:'Centre du réseau · produit du pigment',relay:'Diffuse votre couleur sur le terrain neutre',extractor:'Produit +3,1 pigment/s si connecté',bastion:'Défend les unités et bâtiments proches',scout:'Explore vite · fragile au combat',fighter:'Conquiert les frontières et défend le réseau',breaker:'Tir à distance · efficace contre les bâtiments',engineer:'Répare les bâtiments alliés à proximité',saboteur:'Rapide et fragile · spécialiste des relais'};
   const wrap = document.getElementById('canvasWrap');
   const card = document.createElement('div'); card.className='object-card hidden';card.id='objectCard';card.setAttribute('role','status');
   card.innerHTML='<div><strong id="objectName"></strong><span id="objectState"></span></div><p id="objectRole"></p><div class="object-health"><i id="objectHealth"></i></div><button id="dismissObject" aria-label="Fermer la sélection">×</button>';
@@ -33,8 +33,8 @@
     if(!visible)return;
     if(entity){
       const isBuilding=game.buildings.includes(entity),tile=game.tile(entity.x,entity.y);
-      document.getElementById('objectName').textContent=names[entity.type];
-      document.getElementById('objectRole').textContent=roles[entity.type];
+      document.getElementById('objectName').textContent=names[entity.type]+(isBuilding?' · niv. '+(entity.level||1):'');
+      const bs=isBuilding&&game.getBuildingStats?.(entity);document.getElementById('objectRole').textContent=bs&&entity.type==='extractor'?'Produit +'+(bs.income||3.1).toFixed(1).replace('.',',')+' pigment/s si connecté':roles[entity.type];
       document.getElementById('objectState').textContent=Math.ceil(entity.hp)+'/'+entity.maxHp+' PV · '+(isBuilding?(entity.connected?'Connecté':'ISOLÉ'):tile?.owner===1&&tile.connected?'Terrain allié':'En exploration');
       document.getElementById('objectHealth').style.width=Math.max(0,entity.hp/entity.maxHp*100)+'%';
       card.classList.toggle('isolated',isBuilding&&!entity.connected);
@@ -72,7 +72,7 @@
       if(x<-60||y<-30||x>v.w+60||y>v.h+30)continue;
       if(b.id===selectedId){c.strokeStyle='#174f67';c.lineWidth=2.5;c.beginPath();c.arc(x,y,s*1.35,0,Math.PI*2);c.stroke()}
       if(s>=13||b.id===selectedId){
-        const label=names[b.type]+(!b.connected?' · ISOLÉ':'');c.font='600 11px system-ui';const tw=c.measureText(label).width;
+        const label=names[b.type]+((b.level||1)>1?' '+b.level:'')+(!b.connected?' · ISOLÉ':'');c.font='600 11px system-ui';const tw=c.measureText(label).width;
         c.fillStyle=b.connected?'#fffef8eb':'#fff0dceb';c.beginPath();c.roundRect(x-tw/2-5,y+s+4,tw+10,17,4);c.fill();c.fillStyle=b.connected?'#204b58':'#885715';c.textAlign='center';c.fillText(label,x,y+s+16);
       }
       if(!b.connected){c.fillStyle='#ad701b';c.beginPath();c.arc(x+s*.7,y-s*.7,5,0,Math.PI*2);c.fill()}
