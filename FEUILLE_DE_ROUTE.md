@@ -21,7 +21,14 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
-- [ ] J9 / V0.6 — Proposition : missions courtes, personnalités d’IA, statistiques et ambiance musicale.
+- [ ] J9 / V0.6 — Proposition réorientée après le retour de Martin : actions de peinture, objectif temporaire disputé et évolutions qui changent les comportements. Périmètre à préciser ; aucun de ces ajouts n’est encore implémenté.
+
+## Retour après V0.5 — plaisir de jeu à renforcer
+
+- 30/09 : Martin apprécie la base mais trouve qu’il manque quelque chose pour rendre le jeu amusant ; il envisage un manque d’éléments de gameplay.
+- Diagnostic de conception, à vérifier avec lui : la boucle construire → étendre → recruter → envoyer l’armée manque de décisions immédiates et de moments marquants. Les cinq rôles d’unités, trois spécialisations et améliorations existent, mais beaucoup d’évolutions modifient surtout des valeurs. Les objectifs neutres actuels apportent principalement du pigment.
+- Réorientation proposée : travailler les coups tactiques et les occasions de prendre un risque avant de produire des missions supplémentaires. Préserver les commandes portrait et la lisibilité ; ne pas ajouter simultanément de nombreuses unités, monnaies et commandes.
+- Question utile pour prioriser : l’ennui apparaît-il pendant l’attente de l’expansion, pendant les combats automatiques ou dans la répétition des mêmes débuts de partie ? Réponse encore attendue ; ne pas traiter cette hypothèse comme une préférence validée.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -62,13 +69,22 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Choix de carte avec aperçu, légende au toucher et reprise des anciennes sauvegardes sur leur toile originelle.
 - Hors périmètre de cette livraison : points d’observation, événements aléatoires et génération procédurale.
 
-### V0.6 — rejouabilité et confort
-- Personnalités d’IA distinctes, missions courtes et ajustement de la difficulté sur retours humains ; perception limitée avancée en V0.5.
-- Statistiques de fin et historique visuel du territoire ; sauvegarde/reprise livrée en V0.4.
-- Défis optionnels et déblocages de nouvelles options ; éviter les bonus permanents qui rendent les anciennes parties triviales.
-- Musique d’ambiance et retour sonore des événements majeurs.
+### V0.6 — des coups tactiques et des parties différentes (proposition)
+
+1. **Peindre pour agir.** Pouvoir signature « Trait d’encre » : tracer un passage temporaire depuis son réseau pour reconnecter une branche ou préparer une avancée. Longueur bornée, terrain visible et franchissable, expiration clairement annoncée ; l’adversaire peut couper le passage. Mode de pouvoir explicite avec aperçu pour ne pas confondre dessin et déplacement de caméra. Faire évoluer les deux pouvoirs existants progressivement : une vague qui disperse un groupe, une gomme ciblée qui fragilise une liaison. Effets visibles et possibilité de contre-jeu ; pas de destruction instantanée du Cœur.
+2. **Une occasion à saisir sur la carte.** Fontaine d’encre temporaire, annoncée avant activation, capturée en tenant la zone sans adversaire. Une seule active ; apparition prévue et équitable entre les camps. Récompense tactique consommable, plafonnée, plutôt qu’une rente permanente qui accélère encore le camp dominant. Déplacer son armée vers la fontaine laisse une autre partie de son réseau exposée. L’IA doit pouvoir la contester avec les mêmes règles.
+3. **Des évolutions de comportement.** Enrichir les spécialisations existantes avec des choix qui changent la manière de jouer : éclaireur laissant une piste rapide pour les renforts ; briseur avec éclaboussure de zone mais cadence réduite ; relais pouvant maintenir brièvement une liaison à sa destruction pour permettre un repli. Choix limités et incompatibles entre eux, présentés à des moments comparables pour les deux camps. Exemples de conception à équilibrer, pas capacités promises.
+
+- Premier prototype conseillé : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. Introduire les évolutions ensuite selon les essais ; garder les couleurs de camp purement cosmétiques.
+- Validation recherchée : un ordre ou pouvoir produit un effet compréhensible immédiatement ; une partie offre plusieurs décisions entre protéger son réseau et tenter une prise ; une perte locale reste récupérable ; le joueur peut raconter un coup réussi ou raté. Tester le confort au doigt et la réaction de l’IA, pas seulement la durée des simulations.
+- Les missions courtes, personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. Les gains permanents entre parties ne doivent pas rendre les anciennes oppositions triviales.
 
 ## Modifications réalisées
+
+### Discussion après V0.5 — 30 septembre 2026
+
+- Retour sur le manque de plaisir consigné ; priorité V0.6 proposée autour d’actions tactiques, d’un objectif temporaire et de choix de comportement.
+- Lecture du moteur et de la feuille de route pour distinguer les fonctionnalités présentes des idées nouvelles. Cette session modifie uniquement le document de suivi ; la V0.5 jouable reste la version livrée.
 
 ### V0.5 — 30 septembre 2026
 
@@ -139,6 +155,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Limites et risques à suivre
 
+- Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; les pistes V0.6 restent à éprouver en partie humaine.
 - L’IA connaît la géométrie des cartes pour naviguer ; elle ne connaît plus les positions adverses cachées. Vision radiale sans occlusion par les obstacles, identique pour les deux camps.
 - Trois dispositions fixes et symétriques ; aucune génération procédurale. Les reprises V0.4 et le tutoriel conservent l’ancienne géométrie.
 - Le calcul de trajet cherche un chemin géométrique, sans optimiser son temps selon les terrains lisses. Le bonus de vitesse s’applique bien sur les cases traversées.
