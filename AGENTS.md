@@ -4,7 +4,9 @@
 - Préserver le lancement autonome par index.html et éviter les dépendances réseau à l'exécution.
 - Direction : toile blanche, cyan contre corail par défaut, palettes contrastées au choix, minimalisme coloré, animations lisibles.
 - Plateforme principale : téléphone en portrait. Concevoir commandes tactiles et interface pour cette cible avant le PC. Aucun geste essentiel ne doit dépendre du survol, du clic droit ou du clavier.
-- Préférence validée : démarrage progressif, parties de 10 à 15 minutes.
+- Préférence validée : démarrage progressif, parties complètes visées de 10 à 15 minutes ; les premières missions de découverte peuvent être plus courtes.
+- Direction demandée le 30/09 après V0.5 : campagne par niveaux avec déblocage progressif des mécaniques, bâtiments et unités. Le retour utilisateur confirme que le jeu reste difficile à lire et comprendre après le tutoriel : traiter l’interface et l’apprentissage ensemble, avant d’accumuler les fonctions.
+- Niveaux avancés demandés : plusieurs IA et possibilité d’alliance ; le territoire de l’alliance prend une teinte issue du mélange des deux couleurs. Conserver une identification claire des objets que le joueur contrôle. Ces fonctions sont planifiées, pas encore livrées ; consulter la feuille de route pour les règles proposées.
 - À chaque session, lire et mettre à jour FEUILLE_DE_ROUTE.md : jalons, modifications, bugs non corrigés, idées et validations réellement effectuées.
 - Garder un regard critique : signaler les compromis et ne pas présenter une fonction prévue comme réalisée.
 - Toute ressource externe intégrée doit avoir sa source et sa licence documentées dans ASSETS.md ; conserver la licence distribuée.

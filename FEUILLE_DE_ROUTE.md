@@ -8,7 +8,9 @@ Dernière mise à jour : 30 septembre 2026.
 - Une ressource : le pigment. Réseau de territoire relié à un Cœur.
 - Exploration distincte de la possession ; couper les connexions est une tactique centrale.
 - Plateforme principale : téléphone en portrait. Carte verticale et commandes tactiles prioritaires ; PC secondaire.
-- Début progressif, parties visées de 10–15 minutes, interface française.
+- Début progressif, parties complètes visées de 10–15 minutes, interface française ; premières missions de découverte plus courtes.
+- Direction demandée le 30/09 après V0.5 : progression par niveaux, déblocage graduel des possibilités et apprentissage des bases dans les premières missions.
+- Niveaux avancés : plusieurs IA, possibilité d’alliance et territoire affiché dans un mélange des couleurs des deux camps. Direction demandée ; fonctionnement détaillé encore proposé ci-dessous.
 - Première version autonome en HTML/CSS/JS, puis enrichissement à partir des retours de jeu.
 
 ## Jalons
@@ -21,15 +23,20 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
-- [ ] J9 / V0.6 — Proposition réorientée après les retours de Martin : nouveaux bâtiments stratégiques, actions de peinture, objectif temporaire disputé et évolutions de comportement. Premier lot conseillé : caserne avancée, réservoir d’encre et mortier de peinture. Périmètre à préciser ; aucun de ces ajouts n’est encore implémenté.
+- [ ] J9 / V0.6 — Priorité proposée : campagne, cinq premières missions et interface qui se dévoile progressivement ; caserne avancée introduite dans la cinquième mission. Apprentissage et lisibilité à valider avant la suite.
+- [ ] J10 / V0.7 — Proposition : poursuivre la campagne avec défenses, réservoir, siège et autres déblocages, un apport principal par niveau ; scénarios variés qui réutilisent les acquis.
+- [ ] J11 / V0.8 — Proposition : trois puis quatre camps, alliances et mélange de couleurs, missions de coopération et affrontements à deux contre deux.
+
+Ces versions désignent un ordre de livraison proposé, sans calendrier annoncé. La campagne, les nouveaux bâtiments et les alliances ne sont pas encore implémentés.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
 - 30/09 : Martin apprécie la base mais trouve qu’il manque quelque chose pour rendre le jeu amusant ; il envisage un manque d’éléments de gameplay.
 - Diagnostic de conception, à vérifier avec lui : la boucle construire → étendre → recruter → envoyer l’armée manque de décisions immédiates et de moments marquants. Les cinq rôles d’unités, trois spécialisations et améliorations existent, mais beaucoup d’évolutions modifient surtout des valeurs. Les objectifs neutres actuels apportent principalement du pigment.
-- Réorientation proposée : travailler les coups tactiques et les occasions de prendre un risque avant de produire des missions supplémentaires. Préserver les commandes portrait et la lisibilité ; ne pas ajouter simultanément de nombreuses unités, monnaies et commandes.
+- Première piste proposée : coups tactiques et occasions de prendre un risque. Le retour suivant sur l’apprentissage place désormais la campagne et l’allègement de l’interface en premier ; intégrer les nouveautés dans cette progression.
 - Précision de Martin le 30/09 : il envisage aussi de nouveaux bâtiments. Développer les choix de construction et l’organisation de la base fait donc partie des pistes demandées ; les bâtiments précis ci-dessous restent des propositions.
-- Question utile pour les essais : l’ennui apparaît-il pendant l’attente de l’expansion, pendant les combats automatiques ou dans la répétition des mêmes débuts de partie ? Cette hypothèse reste à vérifier ; la discussion n’est pas bloquée par l’absence de réponse à ce diagnostic.
+- Précision suivante le 30/09 : Martin souhaite des niveaux débloquant progressivement les possibilités, les premières missions servant à apprendre les bases. Il signale explicitement que le jeu reste difficile à lire et à comprendre même après le tutoriel.
+- Autre direction demandée : plusieurs IA dans les niveaux élevés, alliances possibles et mélange des couleurs pour les zones de l’alliance. Conserver cette identité visuelle tout en distinguant les armées commandables des armées alliées.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -70,7 +77,53 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Choix de carte avec aperçu, légende au toucher et reprise des anciennes sauvegardes sur leur toile originelle.
 - Hors périmètre de cette livraison : points d’observation, événements aléatoires et génération procédurale.
 
-### V0.6 — développer sa base et tenter des coups tactiques (proposition)
+### V0.6 — apprendre en jouant, avec une interface progressive (proposition)
+
+- La campagne devient le parcours conseillé pour découvrir le jeu. Chaque mission a une situation concrète, un objectif principal et un apport nouveau ; les acquis sont réutilisés pour éviter une succession d’exercices sans intérêt.
+- Première séquence proposée, à ajuster après essai :
+
+| Niveau | Nouveauté principale | Objectif concret |
+| --- | --- | --- |
+| 1 — Première tache | Cœur, territoire et relais ; pas d’adversaire. | Atteindre une zone repérée sur une petite toile. |
+| 2 — La source | Extracteur et revenu de pigment. | Relier puis exploiter une source clairement indiquée. |
+| 3 — Premier contact | Recrutement d’un seul type de combattant, sélection et ordre de déplacement/attaque. | Reprendre un petit poste tenu par un adversaire limité. |
+| 4 — Le lien | Connexion au Cœur, coupure et reconnexion. | Rétablir l’alimentation d’un secteur isolé puis le sécuriser. |
+| 5 — L’avant-poste | Caserne avancée. | Installer une production près du front et tenir une source disputée. |
+
+- Premières missions proposées de 2–4 minutes, sans minuterie punitive ; viser ensuite la durée habituelle des parties complètes. Petites cartes pensées pour être comprises en portrait sans zoom obligatoire, puis agrandissement progressif.
+- Réussir une mission ouvre la suivante et présente clairement la nouveauté obtenue. Pas de monnaie supplémentaire ni de répétition obligatoire pour débloquer la suite. Les objectifs bonus et distinctions restent facultatifs.
+- Le contenu de chaque mission détermine les commandes, unités, bâtiments, pouvoirs et niveaux technologiques disponibles, y compris lors d’une nouvelle tentative. Sauvegarder séparément la progression de campagne et l’état de la mission en cours ; reprise en pause, sans écoulement du temps d’absence.
+- Conserver le mode libre existant comme accès distinct, avec reprise des sauvegardes précédentes. Ne pas imposer de refaire un apprentissage pour retrouver une partie déjà commencée.
+
+#### Lisibilité à traiter dans la même livraison
+
+- Afficher seulement les commandes utiles au niveau en cours. Présenter les prochains déblocages dans l’écran de campagne, sans remplir le jeu d’icônes verrouillées. Ajouter une commande nouvelle au moment où elle devient utile, avec une explication courte au bon endroit.
+- Un objectif principal visible, formulé en action concrète ; indiquer la prochaine action possible lorsqu’un débutant se retrouve bloqué. Privilégier des tâches réussies dans le jeu plutôt qu’un long texte à lire.
+- Distinguer le terrain inconnu, le terrain exploré neutre et le terrain possédé. Garder des silhouettes contrastées pour les bâtiments et les unités, une sélection visible et un signal d’isolement qui ne dépend pas uniquement de la couleur.
+- Au placement d’un bâtiment, montrer sa portée et sa liaison possible avant confirmation. Une action impossible doit expliquer simplement pourquoi : manque de pigment, absence de connexion ou mauvais emplacement.
+- Lors de la sélection d’un relais, rendre lisible sa connexion au réseau ; ne pas superposer en permanence toutes les liaisons sur toute la carte. Limiter les alertes simultanées et garder le front visible sur petit écran.
+- Critère de validation humaine : après une mission, le joueur peut expliquer son objectif, reconnaître ses unités, donner un ordre et comprendre pourquoi un bâtiment fonctionne ou s’arrête, sans devoir rouvrir une longue aide. Les tests techniques restent nécessaires mais ne suffisent pas à valider cette compréhension.
+
+### V0.7 — enrichir la campagne et les stratégies (proposition)
+
+- Niveaux suivants, plage indicative 6–12 : introduire successivement les défenses, le réservoir, le siège, les pouvoirs et les spécialisations. L’ordre précis doit éviter deux mécaniques complexes apprises en même temps.
+- Varier les situations : défendre une source, rétablir une liaison, installer un avant-poste, percer une position ou contester un objectif temporaire. Réutiliser les mêmes règles pour donner des choix nouveaux.
+- Les bâtiments du catalogue ci-dessous restent des candidats de déblocage. Caserne conseillée au niveau 5, réservoir et mortier dans des missions dédiées ensuite ; atelier, observatoire et portails après validation de ces bases.
+
+### V0.8 — plusieurs camps et des alliances de couleurs (proposition)
+
+- Progression envisagée dans les niveaux avancés : découvrir une carte à trois camps, jouer une mission avec allié clairement annoncé, puis choisir une alliance et évoluer vers quatre camps/deux contre deux. Limiter d’abord une alliance à deux camps pour garder la lecture des couleurs et des relations simple.
+- L’alliance doit se traduire dans le jeu : pas d’attaque entre partenaires, vision partagée et réseaux capables de se prolonger lorsque leurs territoires se rejoignent. Chacun conserve ses unités, ses bâtiments, sa production et son pigment ; le joueur ne commande que ses propres forces.
+- Proposition de réseau commun : une liaison passant par le territoire allié peut rejoindre un Cœur allié vivant. La domination additionne l’union des cases connectées de l’alliance, comptées une seule fois. Possibilité de construire sur le territoire allié connecté, avec propriété du bâtiment clairement indiquée.
+- Victoire commune. Dans les missions de coopération, proposer une défaite quand le dernier Cœur de l’alliance est perdu ; expliciter les objectifs et exceptions avant la mission. La perte d’un seul Cœur ne doit pas afficher prématurément deux résultats contradictoires.
+- **Couleur du sol :** l’ensemble des territoires des deux partenaires prend une même teinte issue de leur mélange. Exemple de direction artistique : bleu + rose donnent une teinte violette. Choisir un mélange lisible, harmonisé avec les couleurs ennemies ; ne pas compter uniquement sur une moyenne numérique qui pourrait donner une teinte peu distincte.
+- **Identité des armées :** unités et bâtiments conservent leur couleur de camp ; ajouter un signe d’alliance et une sélection claire pour reconnaître ce que le joueur peut commander. Le score d’alliance et la minimap utilisent la teinte commune ; la légende montre les deux couleurs d’origine et leur mélange. La couleur choisie demeure cosmétique.
+- Première diplomatie proposée : alliance stable pour la mission, règles d’acceptation explicites, demandes/propositions simples. Enseigner la coopération avec une mission scénarisée avant de proposer le choix d’un partenaire ; éviter une rupture inattendue pendant les niveaux d’apprentissage.
+- Prévoir des cartes adaptées aux positions des trois/quatre camps et une IA qui poursuit ses objectifs, évalue ses adversaires visibles et soutient son partenaire. Ne pas simplement placer trois IA de duel qui attaquent toutes le joueur.
+- Chantier moteur identifié : les règles actuelles supposent deux camps (`validTeam`, boucles par équipe, adversaire `3 - team`, visibilité IA unique et propriétaires 0/1/2 dans la sauvegarde). Généraliser les camps et leurs relations, calculer perception/mémoire par IA, puis versionner/migrer les sauvegardes en conservant les anciens duels.
+- Validations indispensables à cette étape : absence de tirs/pouvoirs hostiles entre alliés, comptage unique du territoire, connexion via les deux Cœurs, victoire/défaite de coalition, IA avec vision limitée, lisibilité des paires de couleurs et reprise exacte des sauvegardes à plusieurs camps.
+
+### Catalogue de nouveautés à débloquer progressivement
 
 #### Nouveaux bâtiments proposés
 
@@ -83,7 +136,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 | Portails jumelés | Transfèrent un groupe entre deux points de son réseau, avec une capacité limitée et un temps de recharge. | Investissement dans deux bâtiments ; les deux doivent rester connectés et la coupure d’un seul désactive le transfert. À évaluer sur les petites cartes pour ne pas rendre les déplacements sans intérêt. |
 | Observatoire | Révèle brièvement les mouvements dans une zone choisie grâce à une impulsion de reconnaissance. | Dépenser pour l’information et anticiper un raid ; bâtiment fragile, intervalle entre impulsions et mêmes règles pour l’IA. Pas de suivi permanent hors vision. |
 
-- Premier lot conseillé après cette précision : caserne avancée + réservoir + mortier. Ces bâtiments apportent production, résistance aux coupures et siège, avec des synergies immédiates. L’atelier, les portails et l’observatoire restent des candidats suivants.
+- Bâtiments prioritaires : caserne avancée, réservoir et mortier, introduits séparément dans la campagne. Ils apportent production, résistance aux coupures et siège, avec des synergies progressives. L’atelier, les portails et l’observatoire restent des candidats suivants.
 - Exemple de combinaison : établir une caserne près du front, la soutenir avec un réservoir puis protéger un mortier ; l’investissement détourne du pigment des recrutements et expose une base coûteuse. Une attaque rapide ou une coupure prolongée doit permettre de la contrer.
 - Préserver le démarrage progressif : recrutement initial au Cœur, déblocages graduels, coûts à tester et aucun nouveau type de monnaie. Menu de construction lisible au pouce, catégories simples et aperçu de portée/effet avant placement. Les nouvelles fonctions doivent être utilisables par l’IA et incluses dans la sauvegarde.
 
@@ -93,9 +146,9 @@ Demandes implémentées ; vérifications décrites en bas du document :
 2. **Une occasion à saisir sur la carte.** Fontaine d’encre temporaire, annoncée avant activation, capturée en tenant la zone sans adversaire. Une seule active ; apparition prévue et équitable entre les camps. Récompense tactique consommable, plafonnée, plutôt qu’une rente permanente qui accélère encore le camp dominant. Déplacer son armée vers la fontaine laisse une autre partie de son réseau exposée. L’IA doit pouvoir la contester avec les mêmes règles.
 3. **Des évolutions de comportement.** Enrichir les spécialisations existantes avec des choix qui changent la manière de jouer : éclaireur laissant une piste rapide pour les renforts ; briseur avec éclaboussure de zone mais cadence réduite ; relais pouvant maintenir brièvement une liaison à sa destruction pour permettre un repli. Choix limités et incompatibles entre eux, présentés à des moments comparables pour les deux camps. Exemples de conception à équilibrer, pas capacités promises.
 
-- Prototype complémentaire proposé avant la précision sur les bâtiments : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. Priorité désormais proposée aux trois bâtiments ci-dessus, puis à ces actions/objectifs selon les essais ; ne pas interpréter cette recommandation comme un périmètre déjà validé par Martin. Garder les couleurs de camp purement cosmétiques.
+- Prototype complémentaire proposé avant les précisions sur la campagne : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. À insérer dans des missions après les bases et les premiers bâtiments, selon les essais ; ne pas interpréter ce catalogue comme un ensemble à livrer en une fois. Garder les couleurs de camp purement cosmétiques.
 - Validation recherchée : un ordre ou pouvoir produit un effet compréhensible immédiatement ; une partie offre plusieurs décisions entre protéger son réseau et tenter une prise ; une perte locale reste récupérable ; le joueur peut raconter un coup réussi ou raté. Tester le confort au doigt et la réaction de l’IA, pas seulement la durée des simulations.
-- Les missions courtes, personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. Les gains permanents entre parties ne doivent pas rendre les anciennes oppositions triviales.
+- La campagne et les premières missions passent en priorité. Personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. La progression ouvre des possibilités de jeu ; éviter l’accumulation de bonus permanents qui rend les anciennes oppositions triviales.
 
 ## Modifications réalisées
 
@@ -103,6 +156,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 - Retour sur le manque de plaisir consigné ; priorité V0.6 proposée autour d’actions tactiques, d’un objectif temporaire et de choix de comportement.
 - Ajout de la demande de nouveaux bâtiments : six concepts comparés, trois recommandés pour un premier lot, synergies et limites définies. Les pistes d’actions de peinture et d’objectif temporaire sont conservées pour la suite de la discussion.
+- Nouveau retour intégré : difficulté de lecture et de compréhension malgré le tutoriel. Priorité déplacée vers une campagne et une interface progressive ; cinq premières missions décrites, suite des déblocages et alliances à trois/quatre camps proposées. Mélange du territoire distingué de l’identité des unités, et besoins moteur/sauvegarde identifiés.
 - Lecture du moteur et de la feuille de route pour distinguer les fonctionnalités présentes des idées nouvelles. Cette session modifie uniquement le document de suivi ; la V0.5 jouable reste la version livrée.
 
 ### V0.5 — 30 septembre 2026
@@ -170,11 +224,13 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ## Bugs trouvés non corrigés
 
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.5 exécutés.
-- Validation humaine de la lisibilité et des gestes sur téléphone réel encore attendue ; les parcours automatisés ne remplacent pas ces retours.
+- Problème d’ergonomie confirmé par Martin le 30/09 : jeu encore difficile à lire et comprendre même après le tutoriel. Correction prioritaire à concevoir et valider avec une progression par missions, moins de commandes simultanées et des états de carte plus explicites ; ce problème n’est pas corrigé dans la V0.5.
 
 ## Limites et risques à suivre
 
 - Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; les pistes V0.6 restent à éprouver en partie humaine.
+- Les missions et les déblocages seuls ne résoudront pas une carte ou des commandes ambiguës : traiter la lisibilité en parallèle. Le mélange des couleurs d’alliance devra préserver l’identification du propriétaire des unités et bâtiments.
+- Le moteur et le format de sauvegarde V0.5 sont limités à deux camps. Campagne, plusieurs IA et alliances sont documentés comme prochains développements, pas fonctionnalités disponibles.
 - L’IA connaît la géométrie des cartes pour naviguer ; elle ne connaît plus les positions adverses cachées. Vision radiale sans occlusion par les obstacles, identique pour les deux camps.
 - Trois dispositions fixes et symétriques ; aucune génération procédurale. Les reprises V0.4 et le tutoriel conservent l’ancienne géométrie.
 - Le calcul de trajet cherche un chemin géométrique, sans optimiser son temps selon les terrains lisses. Le bonus de vitesse s’applique bien sur les cases traversées.
