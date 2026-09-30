@@ -21,14 +21,15 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
-- [ ] J9 / V0.6 — Proposition réorientée après le retour de Martin : actions de peinture, objectif temporaire disputé et évolutions qui changent les comportements. Périmètre à préciser ; aucun de ces ajouts n’est encore implémenté.
+- [ ] J9 / V0.6 — Proposition réorientée après les retours de Martin : nouveaux bâtiments stratégiques, actions de peinture, objectif temporaire disputé et évolutions de comportement. Premier lot conseillé : caserne avancée, réservoir d’encre et mortier de peinture. Périmètre à préciser ; aucun de ces ajouts n’est encore implémenté.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
 - 30/09 : Martin apprécie la base mais trouve qu’il manque quelque chose pour rendre le jeu amusant ; il envisage un manque d’éléments de gameplay.
 - Diagnostic de conception, à vérifier avec lui : la boucle construire → étendre → recruter → envoyer l’armée manque de décisions immédiates et de moments marquants. Les cinq rôles d’unités, trois spécialisations et améliorations existent, mais beaucoup d’évolutions modifient surtout des valeurs. Les objectifs neutres actuels apportent principalement du pigment.
 - Réorientation proposée : travailler les coups tactiques et les occasions de prendre un risque avant de produire des missions supplémentaires. Préserver les commandes portrait et la lisibilité ; ne pas ajouter simultanément de nombreuses unités, monnaies et commandes.
-- Question utile pour prioriser : l’ennui apparaît-il pendant l’attente de l’expansion, pendant les combats automatiques ou dans la répétition des mêmes débuts de partie ? Réponse encore attendue ; ne pas traiter cette hypothèse comme une préférence validée.
+- Précision de Martin le 30/09 : il envisage aussi de nouveaux bâtiments. Développer les choix de construction et l’organisation de la base fait donc partie des pistes demandées ; les bâtiments précis ci-dessous restent des propositions.
+- Question utile pour les essais : l’ennui apparaît-il pendant l’attente de l’expansion, pendant les combats automatiques ou dans la répétition des mêmes débuts de partie ? Cette hypothèse reste à vérifier ; la discussion n’est pas bloquée par l’absence de réponse à ce diagnostic.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -69,13 +70,30 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Choix de carte avec aperçu, légende au toucher et reprise des anciennes sauvegardes sur leur toile originelle.
 - Hors périmètre de cette livraison : points d’observation, événements aléatoires et génération procédurale.
 
-### V0.6 — des coups tactiques et des parties différentes (proposition)
+### V0.6 — développer sa base et tenter des coups tactiques (proposition)
+
+#### Nouveaux bâtiments proposés
+
+| Bâtiment | Rôle distinct | Choix et contre-jeu |
+| --- | --- | --- |
+| Caserne avancée | Ouvre une file de recrutement supplémentaire près du front ; le Cœur conserve le recrutement de départ. | Investir dans une base avancée ou dans l’armée existante. Prix des unités et plafond total conservés ; coupure du réseau suspend la production. |
+| Réservoir d’encre | Accumule une autonomie limitée quand il est connecté ; maintient brièvement les bâtiments proches en fonctionnement après une coupure. | Protéger un secteur clé, avec une portée et une réserve bornées. Recharge seulement après reconnexion ; aucun revenu créé par le réservoir lui-même. Le territoire isolé ne compte toujours pas pour la domination. |
+| Mortier de peinture | Bombarde lentement une zone désignée à longue portée, avec une éclaboussure visible et un délai permettant l’esquive. | Préparer un siège et protéger l’installation ; portée minimale et vulnérabilité au contact. Le bastion reste la défense automatique de proximité. |
+| Atelier de pigments | Héberge des recherches qui changent les comportements des unités, en lien avec la spécialisation déjà choisie. | Investir dans une évolution ou dans des renforts immédiats. Choix exclusifs ; éviter un deuxième arbre parallèle aux spécialisations existantes. |
+| Portails jumelés | Transfèrent un groupe entre deux points de son réseau, avec une capacité limitée et un temps de recharge. | Investissement dans deux bâtiments ; les deux doivent rester connectés et la coupure d’un seul désactive le transfert. À évaluer sur les petites cartes pour ne pas rendre les déplacements sans intérêt. |
+| Observatoire | Révèle brièvement les mouvements dans une zone choisie grâce à une impulsion de reconnaissance. | Dépenser pour l’information et anticiper un raid ; bâtiment fragile, intervalle entre impulsions et mêmes règles pour l’IA. Pas de suivi permanent hors vision. |
+
+- Premier lot conseillé après cette précision : caserne avancée + réservoir + mortier. Ces bâtiments apportent production, résistance aux coupures et siège, avec des synergies immédiates. L’atelier, les portails et l’observatoire restent des candidats suivants.
+- Exemple de combinaison : établir une caserne près du front, la soutenir avec un réservoir puis protéger un mortier ; l’investissement détourne du pigment des recrutements et expose une base coûteuse. Une attaque rapide ou une coupure prolongée doit permettre de la contrer.
+- Préserver le démarrage progressif : recrutement initial au Cœur, déblocages graduels, coûts à tester et aucun nouveau type de monnaie. Menu de construction lisible au pouce, catégories simples et aperçu de portée/effet avant placement. Les nouvelles fonctions doivent être utilisables par l’IA et incluses dans la sauvegarde.
+
+#### Actions et objectifs complémentaires
 
 1. **Peindre pour agir.** Pouvoir signature « Trait d’encre » : tracer un passage temporaire depuis son réseau pour reconnecter une branche ou préparer une avancée. Longueur bornée, terrain visible et franchissable, expiration clairement annoncée ; l’adversaire peut couper le passage. Mode de pouvoir explicite avec aperçu pour ne pas confondre dessin et déplacement de caméra. Faire évoluer les deux pouvoirs existants progressivement : une vague qui disperse un groupe, une gomme ciblée qui fragilise une liaison. Effets visibles et possibilité de contre-jeu ; pas de destruction instantanée du Cœur.
 2. **Une occasion à saisir sur la carte.** Fontaine d’encre temporaire, annoncée avant activation, capturée en tenant la zone sans adversaire. Une seule active ; apparition prévue et équitable entre les camps. Récompense tactique consommable, plafonnée, plutôt qu’une rente permanente qui accélère encore le camp dominant. Déplacer son armée vers la fontaine laisse une autre partie de son réseau exposée. L’IA doit pouvoir la contester avec les mêmes règles.
 3. **Des évolutions de comportement.** Enrichir les spécialisations existantes avec des choix qui changent la manière de jouer : éclaireur laissant une piste rapide pour les renforts ; briseur avec éclaboussure de zone mais cadence réduite ; relais pouvant maintenir brièvement une liaison à sa destruction pour permettre un repli. Choix limités et incompatibles entre eux, présentés à des moments comparables pour les deux camps. Exemples de conception à équilibrer, pas capacités promises.
 
-- Premier prototype conseillé : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. Introduire les évolutions ensuite selon les essais ; garder les couleurs de camp purement cosmétiques.
+- Prototype complémentaire proposé avant la précision sur les bâtiments : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. Priorité désormais proposée aux trois bâtiments ci-dessus, puis à ces actions/objectifs selon les essais ; ne pas interpréter cette recommandation comme un périmètre déjà validé par Martin. Garder les couleurs de camp purement cosmétiques.
 - Validation recherchée : un ordre ou pouvoir produit un effet compréhensible immédiatement ; une partie offre plusieurs décisions entre protéger son réseau et tenter une prise ; une perte locale reste récupérable ; le joueur peut raconter un coup réussi ou raté. Tester le confort au doigt et la réaction de l’IA, pas seulement la durée des simulations.
 - Les missions courtes, personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. Les gains permanents entre parties ne doivent pas rendre les anciennes oppositions triviales.
 
@@ -84,6 +102,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ### Discussion après V0.5 — 30 septembre 2026
 
 - Retour sur le manque de plaisir consigné ; priorité V0.6 proposée autour d’actions tactiques, d’un objectif temporaire et de choix de comportement.
+- Ajout de la demande de nouveaux bâtiments : six concepts comparés, trois recommandés pour un premier lot, synergies et limites définies. Les pistes d’actions de peinture et d’objectif temporaire sont conservées pour la suite de la discussion.
 - Lecture du moteur et de la feuille de route pour distinguer les fonctionnalités présentes des idées nouvelles. Cette session modifie uniquement le document de suivi ; la V0.5 jouable reste la version livrée.
 
 ### V0.5 — 30 septembre 2026
