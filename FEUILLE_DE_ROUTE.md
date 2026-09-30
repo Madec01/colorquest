@@ -17,14 +17,14 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J2 — Interface initiale : menu, commandes, aide textuelle et sons (tutoriel interactif non livré).
 - [x] J3 — Vérifications du moteur et du parcours navigateur ; livraison initiale sur main.
 - [x] J4 — Premier retour de Martin : potentiel apprécié ; lisibilité insuffisante, demande de tutoriel, zoom et enrichissement du gameplay.
-- [ ] J5 / V0.2 — Priorité demandée : lisibilité, caméra tactile et tutoriel interactif.
+- [x] J5 / V0.2 — Lisibilité, caméra tactile et tutoriel interactif livrés.
 - [ ] J6 / V0.3 — Proposition : ordres d’escouades, progression de base et spécialisations.
 - [ ] J7 / V0.4 — Proposition : objectifs secondaires, terrains et cartes variées.
 - [ ] J8 / V0.5 — Proposition : perception limitée de l’IA, équilibre, sauvegarde et rejouabilité.
 
-## Prochaine livraison proposée : V0.2 — comprendre et commander
+## V0.2 — comprendre et commander (réalisé)
 
-Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
+Demandes implémentées ; vérifications décrites en bas du document :
 - Zoom pincé centré entre les doigts ; boutons +/− ; glisser pour déplacer la caméra ; limites empêchant de perdre la carte.
 - Un toucher sélectionne, un glisser déplace la caméra ; bouton d’ordre explicite pour limiter les déplacements accidentels. Tester le passage un/deux doigts sans ordre parasite.
 - Boutons retour au Cœur et vue globale ; minimap rétractable lorsque la carte est zoomée.
@@ -58,6 +58,17 @@ Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
 
 ## Modifications réalisées
 
+### V0.2 — 30 septembre 2026
+
+- Caméra centrée sur le Cœur au départ, pincement, glissement, molette, boutons de zoom, Cœur et vue globale, minimap repliable et recentrable.
+- Protection des gestes : aucun ordre/construction à la fin d’un pan, pincement ou geste annulé ; déplacement explicite via le bouton d’ordre, clic droit sur PC.
+- Revenus par seconde, contours de territoires, unités agrandies, sélection contrastée, trajets, noms des bâtiments en zoom et fiches de vie/rôle/connexion.
+- Alerte de réseau isolé qui recentre la caméra et ouvre la fiche du bâtiment.
+- Sept leçons validées par le moteur, cibles dorées et commandes surlignées ; recommencer, quitter et passer à une partie normale.
+- Séparation des modules caméra, lisibilité et tutoriel ; conservation du fonctionnement hors ligne par index.html.
+
+### V0.1 et planification
+
 - 30/09, retour utilisateur : feuille de route réordonnée. Aucun changement de gameplay effectué lors de cette phase de planification.
 - Initialisation du projet et des règles de session dans AGENTS.md.
 - Architecture séparant simulation, présentation et documentation.
@@ -71,7 +82,7 @@ Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
 ## Bugs trouvés non corrigés
 
 - Aucun défaut bloquant détecté dans les scénarios moteur exécutés ; parcours navigateur validé.
-- Retour utilisateur : lisibilité insuffisante en jeu. Détailler les cas lors de V0.2 et vérifier sur téléphone réel.
+- Retour utilisateur sur la lisibilité traité par la V0.2 ; validation humaine sur téléphone réel encore attendue. Aucun blocage détecté dans les parcours automatisés V0.2.
 
 ## Limites et risques à suivre
 
@@ -79,8 +90,8 @@ Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
 - Carte à disposition fixe avec petits écarts aléatoires ; symétrie imparfaite.
 - Production immédiate, sans file d’attente ; bâtiments traversables ; séparation souple des unités.
 - Pas de sauvegarde/reprise après fermeture.
-- Tutoriel guidé mobile encore absent : aide accessible et message de départ seulement.
-- Carte entière affichée, sans zoom : vérifier le confort sur petits téléphones réels.
+- Le tutoriel utilise des scènes pédagogiques contrôlées et des ressources garanties. Les scènes réseau figent la propagation passive pour rendre la coupure lisible.
+- Zoom limité à 1–4× ; minimap repliée par défaut sur téléphone. Confort à confirmer sur appareils réels.
 - Essais effectués en émulation Chromium, pas encore sur appareils Android/iPhone physiques.
 - Audio : effets et jingles, pas encore de musique d’ambiance longue.
 - La cible 10–15 min reste à valider en jeu actif : sans aucune action, défaite observée vers 4 min 20 en détente et 3 min 13 en stratégie (graine 42).
@@ -100,6 +111,17 @@ Demandes utilisateur confirmées, fonctionnalités pas encore implémentées :
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.2
+
+- Huit tests du moteur V0.1 toujours passants.
+- Tutoriel en simulation : sept étapes réelles, attente sans progression automatique, revenus, capture/connexion, restrictions pédagogiques et retour à une IA active ; stockage indisponible toléré.
+- Chromium tactile 390 × 844 et 360 × 640 : tutoriel entier joué par boutons et toucher, redémarrage, sortie, fiches et alerte réseau ; aucune erreur JavaScript.
+- Gestes multi-touch via CDP : pan pendant construction, pincement puis retrait d’un doigt, annulation, toucher sans ordre, ordre explicite ; limites de zoom, recentrage, redimensionnement, molette et clic droit bureau.
+- Captures du menu, de la carte et du tutoriel inspectées ; pas de débordement horizontal constaté.
+- Ces contrôles sont en émulation Chromium ; Safari/iOS et téléphones physiques restent à valider.
+
+### V0.1
 
 - Huit scénarios moteur automatisés réussis : économie, coupure/reconnexion, obstacles, recrutement/pouvoirs, IA et fin de partie, domination, limite de temps, retraite.
 - Chromium, tailles 390 × 844, 360 × 640 et 1440 × 900 : aucune erreur JavaScript ni débordement, captures inspectées.
