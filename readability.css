@@ -1,4 +1,31 @@
-.income{font-size:11px;color:#167865;font-weight:700;white-space:nowrap}.resource{flex-wrap:wrap}.object-card{position:absolute;bottom:8px;left:8px;right:8px;margin:auto;max-width:390px;border:1px solid #b6d5c8;border-radius:12px;background:#fffef8f2;padding:10px 44px 10px 12px;box-shadow:0 4px 20px #153c4914;pointer-events:auto}.object-card>div:first-child{display:flex;align-items:center;gap:10px;justify-content:space-between}.object-card strong{font-size:12px}.object-card span{font-size:10px;color:#247b67}.object-card p{margin:5px 0 7px;font-size:11px;color:#536d74;line-height:1.4}.object-health{height:3px;background:#e2e9df;border-radius:2px;overflow:hidden}.object-health i{display:block;height:100%;background:#169d85}.object-card button{position:absolute;right:0;top:0;width:44px;height:44px;font-size:23px}.object-card.isolated{border-color:#d2ac6d}.object-card.isolated span{color:#98621e}.network-alert{position:absolute;top:8px;left:8px;min-height:44px;padding:8px 12px;border-radius:9px;background:#fff0d7;color:#82551c;border:1px solid #d8b879;font-size:11px;font-weight:700;max-width:calc(100% - 112px);z-index:3}.command.active{box-shadow:inset 0 0 0 2px #15999d}.orders button:last-child{font-weight:700}.orders .active{background:#174f67!important;color:white!important}#toast{z-index:5;top:62px}.placement-hint{z-index:4;cursor:pointer}.tutorial{display:none}.menu{overflow:auto;min-height:690px}.menu-bottom{position:relative;margin:32px 0 0;padding-bottom:20px;bottom:auto;left:auto;right:auto;padding-left:4.2%;padding-right:4.2%}.modal-close{min-width:44px;min-height:44px}
-@media(max-width:760px){.menu{min-height:100dvh;height:auto;padding-bottom:10px}.topbar{gap:5px;padding:0 8px}.topbar .brand{padding:0;min-width:32px;min-height:44px}.resource{position:relative;padding:0 5px 12px 0;gap:3px;min-width:64px}.resource strong{font-size:16px}.income{position:absolute;bottom:0;left:16px;font-size:10px}.scoreboard{gap:6px}.scoreboard strong{font-size:10px}.top-actions>span{display:inline;font-size:9px}.hero .start-card{width:100%}.hero-note{margin-top:14px}.menu-bottom{margin-top:24px}.object-card{padding-top:8px;padding-bottom:8px}.object-card>div:first-child{flex-wrap:wrap;gap:3px}.map-heading>span:last-child{font-size:8px}.command strong,.command .cost{font-size:11px}.mobile-tabs button,.orders button{font-size:11px}}
+.income{font-size:11px;color:#167865;font-weight:700;white-space:nowrap}.resource{flex-wrap:wrap}.object-card,.build-preview-card{position:absolute;bottom:8px;left:8px;right:8px;margin:auto;max-width:390px;border:1px solid #b6d5c8;border-radius:12px;background:#fffef8fa;padding:10px 44px 10px 12px;box-shadow:0 4px 20px #153c491a;pointer-events:auto;z-index:3}
+.object-heading{display:flex;align-items:baseline;gap:4px 10px;justify-content:space-between;flex-wrap:wrap}
+.object-card strong{font-size:13px;line-height:1.4;font-weight:750}
+.object-card #objectState{font-size:11px;color:#247b67;line-height:1.35;font-weight:650}
+.object-card p{margin:5px 0 0;font-size:12px;color:#3c5c65;line-height:1.4}
+.object-health{height:3px;background:#e2e9df;border-radius:2px;overflow:hidden;margin-top:7px}
+.object-health[hidden]{display:none}
+.object-health i{display:block;height:100%;background:#169d85}
+.object-card button{position:absolute;right:0;top:0;width:44px;height:44px;font-size:23px;color:#49666a}
+.object-card.isolated{border-color:#c39e5e;background:#fff9edfa}
+.object-card.isolated #objectState{color:#875317}
+.object-card.object-enemy{border-color:var(--enemy-strong,#b64937)}
+.build-preview-card{padding:10px 12px}
+.build-preview-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:32px}
+.build-preview-heading strong{font-size:13px;color:#254f59}
+.build-preview-heading span{font-size:12px;font-weight:700;color:var(--player-strong,#167865)}
+.build-preview-card p{font-size:12px;line-height:1.4;margin:5px 0 0;color:#365f57;padding-right:24px}
+.build-preview-card #cancelBuildPreview{position:absolute;right:0;top:0;width:44px;height:44px;font-size:23px;color:#49666a}
+#canvasWrap:has(#buildPreviewCard:not(.hidden)) #placementHint{display:none}
+.build-preview-card.invalid{border-color:#c39e5e;background:#fff9edfa}
+.build-preview-card.invalid p{color:#875317}
+#placementConfirmActions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;border-top:1px solid #e2e9df;padding-top:6px}
+#placementConfirmActions[hidden]{display:none}
+#placementConfirmActions>span{font-size:11px;line-height:1.4;color:#607578;max-width:150px}
+#confirmBuild{min-height:44px;min-width:116px;border-radius:9px;padding:10px 14px;background:var(--player-strong,#167865);color:#fff;font-size:12px;font-weight:750}
+#confirmBuild:disabled{background:#dfe6df;color:#62716a;cursor:default}
+.object-card button:focus-visible,#confirmBuild:focus-visible{outline:3px solid var(--player-color,#13adb2);outline-offset:-3px}
+.network-alert{position:absolute;top:8px;left:8px;min-height:44px;padding:8px 12px;border-radius:9px;background:#fff0d7;color:#82551c;border:1px solid #d8b879;font-size:11px;font-weight:700;max-width:calc(100% - 112px);z-index:3}.command.active{box-shadow:inset 0 0 0 2px #15999d}.orders button:last-child{font-weight:700}.orders .active{background:#174f67!important;color:white!important}#toast{z-index:5;top:62px}.placement-hint{z-index:4;cursor:pointer}.tutorial{display:none}.menu{overflow:auto;min-height:690px}.menu-bottom{position:relative;margin:32px 0 0;padding-bottom:20px;bottom:auto;left:auto;right:auto;padding-left:4.2%;padding-right:4.2%}.modal-close{min-width:44px;min-height:44px}
+@media(max-width:760px){.menu{min-height:100dvh;height:auto;padding-bottom:10px}.topbar{gap:5px;padding:0 8px}.topbar .brand{padding:0;min-width:32px;min-height:44px}.resource{position:relative;padding:0 5px 12px 0;gap:3px;min-width:64px}.resource strong{font-size:16px}.income{position:absolute;bottom:0;left:16px;font-size:10px}.scoreboard{gap:6px}.scoreboard strong{font-size:10px}.top-actions>span{display:inline;font-size:9px}.hero .start-card{width:100%}.hero-note{margin-top:14px}.menu-bottom{margin-top:24px}.object-card{padding-top:8px;padding-bottom:8px}.object-heading{flex-wrap:wrap;gap:3px 8px}.map-heading>span:last-child{font-size:8px}.command strong,.command .cost{font-size:11px}.mobile-tabs button,.orders button{font-size:11px}}
 
 .game{padding-top:env(safe-area-inset-top)}

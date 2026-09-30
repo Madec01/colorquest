@@ -8,7 +8,7 @@
 (function (root) {
   'use strict';
 
-  const FORMAT = 'colorquest-snapshot', VERSION = 2;
+  const FORMAT = 'colorquest-snapshot', VERSION = 3;
   const MAX_TIME = 86400, MAX_ID = 10000000;
   const LEGACY_STATE_KEYS = [
     'width', 'height', 'difficulty', 'seed', 'time', 'duration', 'winner', 'winReason',
@@ -16,13 +16,15 @@
     'queues', 'rally', 'specializations', 'squads', '_id', '_nextExpand', '_spread',
     '_ai', '_vision', '_capture', '_holdEvent', 'tiles'
   ];
-  const STATE_KEYS = [...LEGACY_STATE_KEYS, 'mapId', 'aiMemory'];
+  const V2_STATE_KEYS = [...LEGACY_STATE_KEYS, 'mapId', 'aiMemory'];
+  const STATE_KEYS = [...V2_STATE_KEYS, 'mission'];
   const MAP_IDS = ['legacy', 'plain', 'lanes', 'crossroads'];
   const LEGACY_TILE_KEYS = ['x', 'y', 'owner', 'connected', 'explored', 'visible', 'blocked', 'source', 'isolation'];
   const TILE_KEYS = [...LEGACY_TILE_KEYS, 'terrain', 'rich', 'cache', 'aiVisible', 'aiExplored'];
   const STANCES = ['move', 'attack', 'hold', 'retreat'];
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const engine = () => root.CQEngine || (typeof module !== 'undefined' && module.exports ? require('./engine.js') : null);
+  const missions = () => root.CQMissions || (typeof module !== 'undefined' && module.exports ? require('./missions.js') : null);
 
   function invalid(path, reason) {
     throw new Error(`Sauvegarde invalide : ${path} ${reason}.`);
@@ -89,17 +91,30 @@
     if (!E?.Game) throw new Error('Le moteur Colorquest doit être chargé avant les sauvegardes.');
     record(snapshot, 'snapshot', ['format', 'version', 'state']);
     if (snapshot.format !== FORMAT) throw new Error('Format de sauvegarde Colorquest non reconnu.');
-    if (snapshot.version !== 1 && snapshot.version !== VERSION) throw new Error('Version de sauvegarde incompatible.');
-    const legacy = snapshot.version === 1;
+    if (![1, 2, VERSION].includes(snapshot.version)) throw new Error('Version de sauvegarde incompatible.');
+    const legacy = snapshot.version === 1, current = snapshot.version === VERSION;
     const state = snapshot.state, path = 'state', W = E.WIDTH, H = E.HEIGHT, cellCount = W * H;
-    record(state, path, legacy ? LEGACY_STATE_KEYS : STATE_KEYS);
-    if (!legacy) choice(state.mapId, `${path}.mapId`, MAP_IDS);
+    record(state, path, legacy ? LEGACY_STATE_KEYS : current ? STATE_KEYS : V2_STATE_KEYS);
+    const campaign = current && state.mission !== null;
+    if (campaign) {
+      const p = `${path}.mission`, mission = state.mission;
+      record(mission, p, ['id', 'stage', 'hold', 'trained', 'barracksTrained', 'nextRaid', 'raids']);
+      string(mission.id, `${p}.id`, 32);
+      if (!missions()?.get(mission.id)) invalid(`${p}.id`, 'désigne une mission inconnue');
+      choice(state.mapId, `${path}.mapId`, ['mission:' + mission.id]);
+      number(mission.stage, `${p}.stage`, 0, 2, true);
+      number(mission.hold, `${p}.hold`, 0, 20);
+      for (const key of ['trained', 'barracksTrained', 'raids']) number(mission[key], `${p}.${key}`, 0, MAX_ID, true);
+      if (mission.barracksTrained > mission.trained) invalid(`${p}.barracksTrained`, 'dépasse le total des unités formées');
+      number(mission.nextRaid, `${p}.nextRaid`, 0, MAX_TIME);
+    } else if (!legacy) choice(state.mapId, `${path}.mapId`, MAP_IDS);
+    const buildingTypes = Object.keys(E.BUILDING_STATS).filter(type => current || type !== 'barracks');
     choice(state.width, `${path}.width`, [W]);
     choice(state.height, `${path}.height`, [H]);
     choice(state.difficulty, `${path}.difficulty`, ['easy', 'normal']);
     number(state.seed, `${path}.seed`, 0, 4294967295, true);
     number(state.duration, `${path}.duration`, 1, MAX_TIME);
-    number(state.time, `${path}.time`, 0, state.duration + .101);
+    number(state.time, `${path}.time`, 0, campaign ? MAX_TIME : state.duration + .101);
     choice(state.winner, `${path}.winner`, [null, 0, 1, 2]);
     string(state.winReason, `${path}.winReason`, 160);
     number(state._id, `${path}._id`, 1, MAX_ID, true);
@@ -163,7 +178,7 @@
         id(memory.id, `${p}.id`);
         if (knownIds.has(memory.id)) invalid(`${p}.id`, 'duplique un souvenir');
         knownIds.add(memory.id);
-        choice(memory.type, `${p}.type`, Object.keys(E.BUILDING_STATS));
+        choice(memory.type, `${p}.type`, buildingTypes);
         position(memory, p, true);
         if (tile(memory).blocked) invalid(p, 'est sur une case bloquée');
         number(memory.seenAt, `${p}.seenAt`, 0, state.time);
@@ -195,13 +210,20 @@
     array(state.buildings, `${path}.buildings`, cellCount);
     state.buildings.forEach((building, i) => {
       const p = `${path}.buildings[${i}]`;
-      record(building, p, ['id', 'team', 'type', 'x', 'y', 'level', 'connected', 'age', 'attack', 'boostUntil', 'hp', 'maxHp'], ['lastHit']);
+      record(building, p, ['id', 'team', 'type', 'x', 'y', 'level', 'connected', 'age', 'attack', 'boostUntil', 'hp', 'maxHp'], current ? ['lastHit', 'queue', 'rally'] : ['lastHit']);
       register(building.id, `${p}.id`);
       team(building.team, `${p}.team`);
-      choice(building.type, `${p}.type`, Object.keys(E.BUILDING_STATS));
+      choice(building.type, `${p}.type`, buildingTypes);
       position(building, p, true);
       if (tile(building).blocked) invalid(p, 'est sur une case bloquée');
-      number(building.level, `${p}.level`, 1, 3, true);
+      number(building.level, `${p}.level`, 1, building.type === 'barracks' ? 1 : 3, true);
+      if (building.type === 'barracks') {
+        if (!own(building, 'queue') || !own(building, 'rally')) invalid(p, 'doit conserver sa file et son point de ralliement');
+        if (building.rally !== null) {
+          point(building.rally, `${p}.rally`, true);
+          if (tile(building.rally).blocked) invalid(`${p}.rally`, 'est sur une case bloquée');
+        }
+      } else if (own(building, 'queue') || own(building, 'rally')) invalid(p, 'réserve la file locale aux casernes');
       boolean(building.connected, `${p}.connected`);
       for (const key of ['age', 'attack', 'boostUntil']) number(building[key], `${p}.${key}`, 0, MAX_TIME + 12);
       number(building.maxHp, `${p}.maxHp`, 1, 10000);
@@ -213,7 +235,7 @@
       buildings.set(building.id, building);
     });
     for (let t = 1; t <= 2; t++) {
-      if (cores[t] > 1 || (state.winner === null && cores[t] !== 1)) invalid(`${path}.buildings`, `doit contenir un seul Cœur pour le camp ${t} en cours de partie`);
+      if (cores[t] > 1 || (state.winner === null && (!campaign || t === 1) && cores[t] !== 1)) invalid(`${path}.buildings`, `doit contenir un seul Cœur pour le camp ${t} en cours de partie`);
     }
 
     array(state.units, `${path}.units`, E.UNIT_LIMIT * 2);
@@ -254,11 +276,11 @@
       units.set(unit.id, unit);
     });
 
-    array(state.queues, `${path}.queues`, 3, 3);
-    state.queues.forEach((queue, t) => {
-      const p = `${path}.queues[${t}]`;
+    const reserved = [0, 0, 0];
+    const validateQueue = (queue, t, p) => {
       array(queue, p, t ? E.QUEUE_LIMIT : 0);
-      if (populations[t] + queue.length > E.UNIT_LIMIT) invalid(p, 'dépasse la population autorisée');
+      reserved[t] += queue.length;
+      if (populations[t] + reserved[t] > E.UNIT_LIMIT) invalid(p, 'dépasse la population autorisée');
       queue.forEach((job, i) => {
         const jp = `${p}[${i}]`;
         record(job, jp, ['id', 'unitId', 'type', 'cost', 'duration', 'remaining', 'started']);
@@ -273,6 +295,11 @@
         if (job.started !== (i === 0)) invalid(`${jp}.started`, 'ne correspond pas à la place dans la file');
         if (i && job.remaining !== job.duration) invalid(`${jp}.remaining`, 'a avancé alors que la formation attend');
       });
+    };
+    array(state.queues, `${path}.queues`, 3, 3);
+    state.queues.forEach((queue, t) => validateQueue(queue, t, `${path}.queues[${t}]`));
+    state.buildings.forEach((building, i) => {
+      if (building.type === 'barracks') validateQueue(building.queue, building.team, `${path}.buildings[${i}].queue`);
     });
 
     array(state.squads, `${path}.squads`, 3, 3);
@@ -322,6 +349,7 @@
     const game = Object.create(engine().Game.prototype);
     Object.assign(game, clone(state));
     if (snapshot.version === 1) migrateV1(game);
+    if (snapshot.version < 3) game.mission = null;
     return game;
   }
 

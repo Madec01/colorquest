@@ -3,7 +3,7 @@
 (() => {
   const pointers = new Map();
   const state = { zoom: 1, cx: 16, cy: 24, w: 1, h: 1, W: 32, H: 48, base: 1, mini: true };
-  let gesture = null, pinch = null, miniTime = -1;
+  let gesture = null, pinch = null, miniTime = -1, placementTarget = null;
   const wrap = document.getElementById('canvasWrap');
   const toolbar = document.createElement('div');
   toolbar.className = 'camera-tools';
@@ -19,18 +19,21 @@
   document.getElementById('cameraMiniToggle').setAttribute('aria-expanded',String(state.mini));
   document.getElementById('cameraMiniToggle').textContent='MINICARTE '+(state.mini?'▾':'▸');
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  const active = () => playing && game && !ended && !window.CQStrategy?.isOpen && !window.CQWorldUI?.isOpen && document.getElementById('modal').classList.contains('hidden');
+  const active = () => playing && game && !ended && !window.CQStrategy?.isOpen && !window.CQWorldUI?.isOpen && !window.CQCampaign?.isOpen && document.getElementById('modal').classList.contains('hidden');
+  function arena() { return game?.mission && window.CQMissions?.bounds(game.mission.id) || {x:0,y:0,width:state.W,height:state.H}; }
   function layout() {
+    const area = arena();
     const cell = state.base * state.zoom;
     const halfW = state.w / (2 * cell), halfH = state.h / (2 * cell);
-    state.cx = halfW >= state.W / 2 ? state.W / 2 : clamp(state.cx, halfW, state.W - halfW);
-    state.cy = halfH >= state.H / 2 ? state.H / 2 : clamp(state.cy, halfH, state.H - halfH);
+    state.cx = halfW >= area.width / 2 ? area.x + area.width / 2 : clamp(state.cx, area.x + halfW, area.x + area.width - halfW);
+    state.cy = halfH >= area.height / 2 ? area.y + area.height / 2 : clamp(state.cy, area.y + halfH, area.y + area.height - halfH);
     return { w: state.w, h: state.h, cell, x: state.w / 2 - state.cx * cell, y: state.h / 2 - state.cy * cell };
   }
   function apply() { view = layout(); miniTime = -1; }
   function resizeCamera(w, h, W, H) {
     state.w = Math.max(1, w); state.h = Math.max(1, h); state.W = W; state.H = H;
-    state.base = Math.max(.1, Math.min((state.w - 14) / W, (state.h - 14) / H));
+    const area = arena();
+    state.base = Math.max(.1, Math.min((state.w - 14) / area.width, (state.h - 14) / area.height));
     return layout();
   }
   function focus(x, y, zoom) {
@@ -42,7 +45,18 @@
     if (core) focus(core.x + .5, core.y + .5, Math.max(1.7, state.zoom));
   }
   function clearGesture() { pointers.clear(); gesture = null; pinch = null; drag = null; }
-  function reset() { clearGesture(); state.zoom = 1.7; home(); apply(); }
+  function overview() { const area = arena(); focus(area.x + area.width / 2, area.y + area.height / 2, 1); }
+  function clearPlacement() {
+    placementTarget = null;
+    const actions = document.getElementById('placementConfirmActions'); if (actions) actions.hidden = true;
+  }
+  function reset() {
+    clearGesture(); clearPlacement();
+    if (game?.mission) {
+      if (CQMissions.get(game.mission.id).index >= 3) { state.zoom=2.1; home(); apply(); }
+      else overview();
+    } else { state.zoom=1.7; home(); apply(); }
+  }
   function zoomAt(zoom, p = { x: state.w / 2, y: state.h / 2 }) {
     const world = gridPos(p); state.zoom = clamp(zoom, 1, 4);
     const s = state.base * state.zoom;
@@ -53,7 +67,7 @@
   document.getElementById('cameraZoomIn').onclick = () => zoomAt(state.zoom * 1.3);
   document.getElementById('cameraZoomOut').onclick = () => zoomAt(state.zoom / 1.3);
   document.getElementById('cameraHome').onclick = home;
-  document.getElementById('cameraOverview').onclick = () => focus(state.W / 2, state.H / 2, 1);
+  document.getElementById('cameraOverview').onclick = overview;
   document.getElementById('cameraMiniToggle').onclick = () => {
     state.mini = !state.mini; miniCanvas.hidden = !state.mini;
     document.getElementById('cameraMiniToggle').setAttribute('aria-expanded', String(state.mini));
@@ -62,7 +76,8 @@
   miniCanvas.addEventListener('pointerdown', e => {
     if (!active()) return; e.preventDefault();
     const r = miniCanvas.getBoundingClientRect();
-    focus((e.clientX-r.left)/r.width*state.W, (e.clientY-r.top)/r.height*state.H);
+    const area = arena();
+    focus(area.x+(e.clientX-r.left)/r.width*area.width, area.y+(e.clientY-r.top)/r.height*area.height);
   });
   function beginPinch() {
     const [a,b] = [...pointers.values()];
@@ -137,9 +152,10 @@
         const near=game.tiles.filter(t=>t.source&&t.explored&&t.owner===1&&t.connected).map(t=>({t,d:Math.hypot(t.x+.5-p.x,t.y+.5-p.y)})).sort((a,b)=>a.d-b.d)[0];
         if (near && near.d<Math.max(1.25,22/view.cell)) { bx=near.t.x; by=near.t.y; }
       }
-      const result=game.build(1,type,bx,by);
-      if(result?.ok===false){toast(result.message||'Impossible de construire ici.');audio('error_001');}
-      else { audio('drop_001');toast('Construction lancée : '+buildings[type].name);setMode(null);window.CQTutorial?.action('build',{type,x:bx,y:by}); }
+      if (game.mission) {
+        placementTarget={x:bx,y:by,type};hover={x:bx+.5,y:by+.5};updatePlacementControls();
+        const result=game.canBuild(1,type,bx,by);audio(result.ok?'select_001':'error_001');
+      } else commitBuild(type,bx,by);
       return;
     }
     if (mode?.kind==='power') {
@@ -148,7 +164,7 @@
       if(r?.ok!==false){setMode(null);window.CQTutorial?.action('power',{type,x:p.x,y:p.y});} return;
     }
     if (mode?.kind==='rally') {
-      const result=game.setRally(1,p.x,p.y);
+      const result=game.setRally(1,p.x,p.y,mode.producerId);
       toast(result.message);audio(result.ok?'confirmation_001':'error_001');
       if(result.ok){moveMarker={x:p.x,y:p.y,life:1};setMode(null)}return;
     }
@@ -178,8 +194,22 @@
       window.CQTutorial?.action('select',{unitIds:[...selection]});return;
     }
     if(nearestBuilding?.d<radius){selection=[];window.CQUI?.selectBuilding(nearestBuilding.b);return;}
-    if(selection.length)toast('Pour déplacer vos unités, touchez « Donner un ordre ».');
-    else {window.CQUI?.clearBuilding();if(!window.CQTutorial?.active&&window.CQWorldUI?.inspectTile(p.x,p.y))return;toast('Touchez une unité ou un bâtiment. Glissez pour explorer la carte.');}
+    if(selection.length)toast(game.mission?'Touchez « Attaquer / déplacer », puis votre destination.':'Pour déplacer vos unités, touchez « Donner un ordre ».');
+    else {window.CQUI?.clearBuilding();if(!game.mission&&!window.CQTutorial?.active&&window.CQWorldUI?.inspectTile(p.x,p.y))return;toast(game.mission?CQMissions.status(game).hint:'Touchez une unité ou un bâtiment. Glissez pour explorer la carte.');}
+  }
+  function commitBuild(type,x,y) {
+    const result=game.build(1,type,x,y);
+    if(!result.ok){toast(result.message||'Impossible de construire ici.');audio('error_001');return;}
+    audio('drop_001');toast('Construction terminée : '+buildings[type].name);setMode(null);
+    if(type==='barracks'){window.CQStrategy?.setRecruitSource?.(result.id);window.CQUI?.selectBuilding(game.buildings.find(b=>b.id===result.id));}
+    window.CQTutorial?.action('build',{type,x,y});
+  }
+  function updatePlacementControls() {
+    const actions=document.getElementById('placementConfirmActions'),button=document.getElementById('confirmBuild');
+    if(!actions||!button)return;
+    const candidate=placementTarget,shown=active()&&!!game.mission&&mode?.kind==='build'&&candidate?.type===mode.type;
+    actions.hidden=!shown;button.disabled=!shown||paused||!game.canBuild(1,candidate.type,candidate.x,candidate.y).ok;
+    button.onclick=()=>{if(active()&&!paused&&mode?.kind==='build'&&placementTarget?.type===mode.type)commitBuild(placementTarget.type,placementTarget.x,placementTarget.y);};
   }
   canvas.addEventListener('pointercancel',clearGesture);
   canvas.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId))clearGesture();});
@@ -188,24 +218,25 @@
   canvas.addEventListener('wheel',e=>{if(!active())return;e.preventDefault();zoomAt(state.zoom*Math.exp(-e.deltaY*.0015),screenPos(e));},{passive:false});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)clearGesture();});
   function update() {
+    updatePlacementControls();
     mini.hidden=state.zoom<=1.03;
     document.getElementById('cameraZoomOut').disabled=state.zoom<=1.001;
     document.getElementById('cameraZoomIn').disabled=state.zoom>=3.999;
     if(!game||mini.hidden||!state.mini)return;
     const stamp=Math.floor(performance.now()/120);if(stamp===miniTime)return;miniTime=stamp;
-    const sx=miniCanvas.width/state.W,sy=miniCanvas.height/state.H;
+    const area=arena(),sx=miniCanvas.width/area.width,sy=miniCanvas.height/area.height;
     mc.fillStyle='#eff1e9';mc.fillRect(0,0,miniCanvas.width,miniCanvas.height);
     for(const t of game.tiles){
-      if(!t.explored&&t.owner!==1)continue;
+      if((!t.explored&&t.owner!==1)||t.x<area.x||t.y<area.y||t.x>=area.x+area.width||t.y>=area.y+area.height)continue;
       mc.fillStyle=t.blocked?'#bdc7bf':t.owner===1?(t.connected?paletteColor('playerFill','#51c4bd'):paletteColor('playerIsolated','#bdcdc2')):t.owner===2?paletteColor('enemyFill','#efab95'):'#fffdf6';
-      mc.fillRect(t.x*sx,t.y*sy,sx+.4,sy+.4);
-      if(t.source){mc.fillStyle='#a68534';mc.fillRect(t.x*sx,t.y*sy,Math.max(t.rich?3:2,sx),Math.max(t.rich?3:2,sy));}
-      if(t.cache>0&&t.visible){mc.strokeStyle='#876522';mc.lineWidth=1;mc.strokeRect(t.x*sx,t.y*sy,Math.max(3,sx),Math.max(3,sy));}
+      const tx=(t.x-area.x)*sx,ty=(t.y-area.y)*sy;mc.fillRect(tx,ty,sx+.4,sy+.4);
+      if(t.source){mc.fillStyle='#a68534';mc.fillRect(tx,ty,Math.max(t.rich?3:2,sx),Math.max(t.rich?3:2,sy));}
+      if(t.cache>0&&t.visible){mc.strokeStyle='#876522';mc.lineWidth=1;mc.strokeRect(tx,ty,Math.max(3,sx),Math.max(3,sy));}
     }
-    for(const b of game.buildings){if(b.hp<=0||(b.team!==1&&!tileAt(b.x,b.y)?.visible))continue;mc.fillStyle=b.team===1?paletteColor('playerStrong','#087d85'):paletteColor('enemyStrong','#b64937');mc.fillRect((b.x+.5)*sx-1.5,(b.y+.5)*sy-1.5,3,3);}
-    const x=clamp(-view.x/view.cell,0,state.W),y=clamp(-view.y/view.cell,0,state.H);
-    const right=clamp((view.w-view.x)/view.cell,0,state.W),bottom=clamp((view.h-view.y)/view.cell,0,state.H);
-    mc.strokeStyle='#173e4d';mc.lineWidth=1.5;mc.strokeRect(x*sx+.75,y*sy+.75,Math.max(1,(right-x)*sx-1.5),Math.max(1,(bottom-y)*sy-1.5));
+    for(const b of game.buildings){if(b.hp<=0||(b.team!==1&&!tileAt(b.x,b.y)?.visible))continue;mc.fillStyle=b.team===1?paletteColor('playerStrong','#087d85'):paletteColor('enemyStrong','#b64937');mc.fillRect((b.x+.5-area.x)*sx-1.5,(b.y+.5-area.y)*sy-1.5,3,3);}
+    const x=clamp(-view.x/view.cell,area.x,area.x+area.width),y=clamp(-view.y/view.cell,area.y,area.y+area.height);
+    const right=clamp((view.w-view.x)/view.cell,area.x,area.x+area.width),bottom=clamp((view.h-view.y)/view.cell,area.y,area.y+area.height);
+    mc.strokeStyle='#173e4d';mc.lineWidth=1.5;mc.strokeRect((x-area.x)*sx+.75,(y-area.y)*sy+.75,Math.max(1,(right-x)*sx-1.5),Math.max(1,(bottom-y)*sy-1.5));
   }
   function capture(){return {cx:state.cx,cy:state.cy,zoom:state.zoom,mini:state.mini};}
   function restore(saved){
@@ -217,6 +248,6 @@
       document.getElementById('cameraMiniToggle').textContent='MINICARTE '+(state.mini?'▾':'▸');
     }
   }
-  window.CQCamera={resize:resizeCamera,reset,focus,update,zoomAt,capture,restore,get zoom(){return state.zoom;}};
+  window.CQCamera={resize:resizeCamera,reset,focus,overview,update,zoomAt,capture,restore,clearPlacement,get placement(){return placementTarget;},get zoom(){return state.zoom;}};
   resize();
 })();

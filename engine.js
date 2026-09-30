@@ -8,8 +8,9 @@
   'use strict';
 
   const Maps = typeof module !== 'undefined' && module.exports ? require('./maps.js') : root.CQMaps;
+  const Missions = typeof module !== 'undefined' && module.exports ? require('./missions.js') : root.CQMissions;
   const WIDTH = 32, HEIGHT = 48, UNIT_LIMIT = 36, QUEUE_LIMIT = 6;
-  const COSTS = { relay: 45, extractor: 65, bastion: 90, scout: 22, fighter: 35, breaker: 65, engineer: 55, saboteur: 60 };
+  const COSTS = { relay: 45, extractor: 65, bastion: 90, barracks: 100, scout: 22, fighter: 35, breaker: 65, engineer: 55, saboteur: 60 };
   const RECRUIT_TIMES = { scout: 4, fighter: 6, breaker: 9, engineer: 8, saboteur: 7 };
   const UPGRADE_COSTS = { core: [140, 260], relay: [55, 85], extractor: [80, 130], bastion: [100, 155] };
   const SPECIALIZATIONS = {
@@ -28,7 +29,8 @@
     core: { hp: 950, radius: 7, income: 2.6, damage: 14, range: 5 },
     relay: { hp: 170, radius: 6 },
     extractor: { hp: 145, radius: 2, income: 3.1 },
-    bastion: { hp: 250, radius: 2, damage: 14, range: 6.5 }
+    bastion: { hp: 250, radius: 2, damage: 14, range: 6.5 },
+    barracks: { hp: 220, radius: 3 }
   };
   const NEIGHBORS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -40,6 +42,7 @@
       this.height = HEIGHT;
       this.difficulty = options.difficulty || 'normal';
       this.mapId = Maps.get(options.mapId)?.id || Maps.DEFAULT_MAP;
+      this.mission = null;
       this.aiMemory = [];
       this.seed = (options.seed || 123456) >>> 0;
       this.time = 0;
@@ -70,6 +73,11 @@
         explored: false, visible: false, aiExplored: false, aiVisible: false,
         blocked: false, source: false, terrain: 'plain', rich: false, cache: 0, isolation: 0
       }));
+      if (options.missionId) {
+        if (!Missions?.get(options.missionId)) throw new RangeError('Mission inconnue.');
+        Missions.setup(this, options.missionId);
+        return;
+      }
       if (this.mapId === 'legacy') {
         // The seeded V0.4 geometry remains intact for the teaching scenario.
         for (let y = 3; y < HEIGHT - 3; y++) for (let x = 0; x < WIDTH; x++) {
@@ -163,6 +171,7 @@
 
     _building(team, type, x, y) {
       const b = { id: this._id++, team, type, x, y, level: 1, connected: true, age: 0, attack: 0, boostUntil: 0 };
+      if (type === 'barracks') { b.queue = []; b.rally = null; }
       b.hp = b.maxHp = this.getBuildingStats(b).hp;
       this.buildings.push(b);
       return b;
@@ -179,9 +188,10 @@
       return u;
     }
 
-    build(team, type, x, y) {
+    canBuild(team, type, x, y) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
       if (!validTeam(team) || !BUILDING_STATS[type] || type === 'core') return { ok: false, message: 'Bâtiment inconnu.' };
+      if (!this.can('build', type)) return { ok: false, message: 'Ce bâtiment sera découvert dans une prochaine mission.' };
       x = Math.floor(x); y = Math.floor(y);
       const t = this.tile(x, y), cost = this.getCost(team, type);
       if (!t || t.blocked) return { ok: false, message: 'Terrain inaccessible.' };
@@ -190,6 +200,16 @@
       if (type === 'extractor' && !t.source) return { ok: false, message: 'Placez l’extracteur sur une source de pigment.' };
       if (type !== 'extractor' && t.source) return { ok: false, message: 'Réservez cette source à un extracteur.' };
       if (this.money[team] < cost) return { ok: false, message: 'Pigment insuffisant.' };
+      return { ok: true, message: 'Emplacement connecté : construction possible.' };
+    }
+
+    can(action, type) { return !this.mission || !!Missions?.can(this, action, type); }
+
+    build(team, type, x, y) {
+      const allowed = this.canBuild(team, type, x, y);
+      if (!allowed.ok) return allowed;
+      x = Math.floor(x); y = Math.floor(y);
+      const cost = this.getCost(team, type);
       this.money[team] -= cost;
       const b = this._building(team, type, x, y);
       this.emit('build', 'Construction terminée', x, y, team);
@@ -204,6 +224,7 @@
 
     upgradeBuilding(team, id) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('upgrade')) return { ok: false, message: 'Les améliorations seront découvertes dans une prochaine mission.' };
       const b = this.buildings.find(b => b.id === id && b.hp > 0);
       if (!validTeam(team) || !b || b.team !== team) return { ok: false, message: 'Choisissez un de vos bâtiments.' };
       if (!b.connected) return { ok: false, message: 'Reconnectez ce bâtiment avant de l’améliorer.' };
@@ -223,6 +244,7 @@
 
     chooseSpecialization(team, key) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('specialize')) return { ok: false, message: 'Les spécialisations seront découvertes dans une prochaine mission.' };
       const spec = SPECIALIZATIONS[key], core = this.getCore(team);
       if (!validTeam(team) || !spec || !core) return { ok: false, message: 'Spécialisation inconnue.' };
       if ((core.level || 1) < 2) return { ok: false, message: 'Améliorez votre Cœur au niveau 2.' };
@@ -239,27 +261,49 @@
       return { ok: true, message: `${spec.name} activée pour cette partie.` };
     }
 
-    recruit(team, type) {
+    getRecruitProducers(team) {
+      return this.buildings.filter(b => b.team === team && b.hp > 0 && ['core', 'barracks'].includes(b.type));
+    }
+
+    getRecruitProducer(team, producerId) {
+      if (!validTeam(team)) return null;
+      return producerId == null ? this.getCore(team) || null : this.getRecruitProducers(team).find(b => b.id === producerId) || null;
+    }
+
+    getRecruitQueue(team, producerId) {
+      const producer = this.getRecruitProducer(team, producerId);
+      return producer ? producer.type === 'core' ? this.queues[team] : producer.queue : [];
+    }
+
+    getQueuedCount(team) {
+      // Include the historical core queue even after its destruction.
+      return this.queues[team].length + this.buildings.filter(b => b.team === team && b.type === 'barracks' && b.hp > 0)
+        .reduce((sum, b) => sum + b.queue.length, 0);
+    }
+
+    recruit(team, type, producerId) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
-      const core = this.getCore(team), stats = UNIT_STATS[type];
-      if (!validTeam(team) || !stats || !core) return { ok: false, message: 'Recrutement impossible.' };
+      if (!this.can('recruit', type)) return { ok: false, message: 'Cette unité sera découverte dans une prochaine mission.' };
+      const core = this.getCore(team), producer = this.getRecruitProducer(team, producerId), stats = UNIT_STATS[type];
+      if (!validTeam(team) || !stats || !core || !producer) return { ok: false, message: 'Recrutement impossible.' };
+      if (!producer.connected) return { ok: false, message: 'Reconnectez ce bâtiment pour former des unités.' };
       if ((core.level || 1) < stats.requiredLevel) return { ok: false, message: 'Cette unité nécessite un Cœur de niveau 2.' };
-      const queue = this.queues[team];
+      const queue = this.getRecruitQueue(team, producer.id);
       if (queue.length >= QUEUE_LIMIT) return { ok: false, message: 'File complète : 6 formations maximum.' };
-      if (this.units.filter(u => u.team === team && u.hp > 0).length + queue.length >= UNIT_LIMIT) return { ok: false, message: 'Limite de 36 unités, formations comprises.' };
+      if (this.units.filter(u => u.team === team && u.hp > 0).length + this.getQueuedCount(team) >= UNIT_LIMIT) return { ok: false, message: 'Limite de 36 unités, formations comprises.' };
       const cost = this.getCost(team, type);
       if (this.money[team] < cost) return { ok: false, message: 'Pigment insuffisant.' };
       this.money[team] -= cost;
       const id = this._id++, unitId = this._id++, duration = this.getRecruitTime(team, type);
       queue.push({ id, unitId, type, cost, duration, remaining: duration, started: queue.length === 0 });
-      this.emit('queued', 'Formation ajoutée', core.x, core.y, team);
+      this.emit('queued', 'Formation ajoutée', producer.x, producer.y, team);
       return { ok: true, message: 'Unité ajoutée à la file de formation.', id: unitId, jobId: id };
     }
 
-    cancelRecruit(team, jobId) {
+    cancelRecruit(team, jobId, producerId) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
       if (!validTeam(team)) return { ok: false, message: 'Formation inconnue.' };
-      const queue = this.queues[team], index = queue.findIndex(job => job.id === jobId);
+      const queue = this.getRecruitQueue(team, producerId), index = queue.findIndex(job => job.id === jobId);
       if (index < 0) return { ok: false, message: 'Cette formation est déjà terminée.' };
       const job = queue[index], refund = Math.floor(job.cost * (job.started ? .5 : 1));
       queue.splice(index, 1);
@@ -268,33 +312,42 @@
       return { ok: true, message: `Formation annulée : ${refund} pigments remboursés.`, refund };
     }
 
-    setRally(team, x, y) {
+    setRally(team, x, y, producerId) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
-      const core = this.getCore(team), t = this.tile(x, y);
-      if (!validTeam(team) || !core || !t || t.blocked) return { ok: false, message: 'Point de ralliement inaccessible.' };
-      if ((t.x !== core.x || t.y !== core.y) && !this.findPath(core.x, core.y, t.x, t.y).length) return { ok: false, message: 'Aucun chemin vers ce point.' };
-      this.rally[team] = { x: t.x, y: t.y };
+      if (!this.can('rally')) return { ok: false, message: 'Le ralliement sera découvert avec la caserne.' };
+      const producer = this.getRecruitProducer(team, producerId), t = this.tile(x, y);
+      if (!validTeam(team) || !producer || !t || t.blocked) return { ok: false, message: 'Point de ralliement inaccessible.' };
+      if ((t.x !== producer.x || t.y !== producer.y) && !this.findPath(producer.x, producer.y, t.x, t.y).length) return { ok: false, message: 'Aucun chemin vers ce point.' };
+      if (producer.type === 'core') this.rally[team] = { x: t.x, y: t.y };
+      else producer.rally = { x: t.x, y: t.y };
       return { ok: true, message: 'Les prochaines unités rejoindront ce point.' };
     }
 
     _updateRecruitment(team, dt) {
-      const core = this.getCore(team), queue = this.queues[team];
-      if (!core || !queue.length) return;
+      for (const producer of this.getRecruitProducers(team)) this._updateProducer(producer, dt);
+    }
+
+    _updateProducer(producer, dt) {
+      const team = producer.team, queue = this.getRecruitQueue(team, producer.id);
+      if (!producer.connected || !queue.length) return;
       const job = queue[0];
       job.started = true;
       job.remaining = Math.max(0, job.remaining - dt);
       if (job.remaining > .000001 || this.units.filter(u => u.team === team && u.hp > 0).length >= UNIT_LIMIT) return;
-      let x = core.x + .5 + (this.random() - .5) * 2, y = core.y + .5 + (this.random() - .5) * 2;
-      if (!this.tile(x, y) || this.tile(x, y).blocked) { x = core.x + .5; y = core.y + .5; }
+      let x = producer.x + .5 + (this.random() - .5) * 2, y = producer.y + .5 + (this.random() - .5) * 2;
+      if (!this.tile(x, y) || this.tile(x, y).blocked) { x = producer.x + .5; y = producer.y + .5; }
       const u = this._unit(team, job.type, x, y, job.unitId);
       queue.shift();
       if (queue[0]) queue[0].started = true;
-      if (this.rally[team]) this.order([u.id], this.rally[team].x, this.rally[team].y);
+      const rally = producer.type === 'core' ? this.rally[team] : producer.rally;
+      if (rally) this.order([u.id], rally.x, rally.y);
+      if (this.mission) Missions.onRecruit(this, u, producer);
       this.emit('recruit', 'Unité prête', x, y, team);
     }
 
     assignSquad(team, slot, ids) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('squad')) return { ok: false, message: 'Les escouades seront découvertes dans une prochaine mission.' };
       if (!validTeam(team) || !Number.isInteger(slot) || slot < 0 || slot > 2 || !Array.isArray(ids)) return { ok: false, message: 'Escouade inconnue.' };
       const squad = [...new Set(ids)].filter(id => this.units.some(u => u.id === id && u.team === team && u.hp > 0));
       if (ids.length && !squad.length) return { ok: false, message: 'Sélectionnez vos unités.' };
@@ -310,6 +363,7 @@
 
     command(team, ids, stance, x, y) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('command', stance)) return { ok: false, message: 'Les unités seront découvertes à la troisième mission.' };
       if (!validTeam(team) || !Array.isArray(ids) || !['hold', 'retreat', 'attack', 'move'].includes(stance)) return { ok: false, message: 'Ordre inconnu.' };
       const selected = this.units.filter(u => u.team === team && u.hp > 0 && ids.includes(u.id));
       if (!selected.length) return { ok: false, message: 'Sélectionnez vos unités.' };
@@ -331,6 +385,7 @@
 
     order(ids, x, y, stance = 'move') {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('command', stance)) return { ok: false, message: 'Les unités seront découvertes à la troisième mission.' };
       const t = this.tile(x, y);
       if (!t || t.blocked || !Array.isArray(ids)) return { ok: false, message: 'Destination inaccessible.' };
       if (!['move', 'attack', 'retreat'].includes(stance)) return { ok: false, message: 'Ordre inconnu.' };
@@ -356,6 +411,7 @@
 
     power(team, type, x, y) {
       if (this.winner !== null) return { ok: false, message: 'La partie est terminée.' };
+      if (!this.can('power', type)) return { ok: false, message: 'Les pouvoirs seront découverts dans une prochaine mission.' };
       if (!validTeam(team) || !['impulse', 'bleach'].includes(type)) return { ok: false, message: 'Pouvoir inconnu.' };
       if (this.cooldowns[team][type] > 0) return { ok: false, message: 'Pouvoir en recharge.' };
       const t = this.tile(x, y);
@@ -526,6 +582,7 @@
     }
 
     _aiThink() {
+      if (this.mission) return;
       const team = 2, foe = 1, core = this.getCore(team);
       if (!core) return;
       this.updateVisibility();
@@ -773,7 +830,16 @@
       }
       for (const b of this.buildings.filter(b => b.hp <= 0)) {
         this.emit('destroy', 'Bâtiment détruit', b.x, b.y, b.team);
-        if (b.type === 'core') { this.winner = 3 - b.team; this.winReason = 'Cœur adverse détruit'; }
+        if (b.type === 'barracks' && b.queue.length) {
+          const refund = b.queue.reduce((sum, job) => sum + Math.floor(job.cost * (job.started ? .5 : 1)), 0);
+          this.money[b.team] += refund;
+          b.queue.length = 0;
+          this.emit('refund', `Caserne détruite : ${refund} pigments de formation remboursés.`, b.x, b.y, b.team);
+        }
+        if (b.type === 'core' && (!this.mission || b.team === 1)) {
+          this.winner = 3 - b.team;
+          this.winReason = this.mission ? 'Votre Cœur a été détruit. Réessayez cette mission.' : 'Cœur adverse détruit';
+        }
       }
       for (const u of this.units.filter(u => u.hp <= 0)) this.emit('death', '', u.x, u.y, u.team);
       this.units = this.units.filter(u => u.hp > 0);
@@ -784,6 +850,10 @@
       if (this._capture >= .7) { this._capture -= .7; this._captureTerritory(); this._collectCaches(); }
       if (this._vision >= .3) { this._vision = 0; this.updateVisibility(); }
       if (this._ai >= (this.difficulty === 'easy' ? 5 : 3.3)) { this._ai = 0; this._aiThink(); }
+      if (this.mission) {
+        if (this.winner === null) Missions.update(this, dt);
+        return;
+      }
       for (let team = 1; team <= 2; team++) {
         this.hold[team] = this.scores[team] >= .6 ? this.hold[team] + dt : 0;
         if (this.hold[team] > 0 && !this._holdEvent[team]) { this._holdEvent[team] = true; this.emit('domination', '60 % atteints : tenez 45 secondes !', 0, 0, team); }

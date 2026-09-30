@@ -23,11 +23,11 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
-- [ ] J9 / V0.6 — Priorité proposée : campagne, cinq premières missions et interface qui se dévoile progressivement ; caserne avancée introduite dans la cinquième mission. Apprentissage et lisibilité à valider avant la suite.
+- [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [ ] J10 / V0.7 — Proposition : poursuivre la campagne avec défenses, réservoir, siège et autres déblocages, un apport principal par niveau ; scénarios variés qui réutilisent les acquis.
 - [ ] J11 / V0.8 — Proposition : trois puis quatre camps, alliances et mélange de couleurs, missions de coopération et affrontements à deux contre deux.
 
-Ces versions désignent un ordre de livraison proposé, sans calendrier annoncé. La campagne, les nouveaux bâtiments et les alliances ne sont pas encore implémentés.
+V0.6 est implémentée. V0.7 et V0.8 désignent un ordre proposé, sans calendrier annoncé : les autres bâtiments et les alliances restent à développer.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
@@ -77,10 +77,10 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Choix de carte avec aperçu, légende au toucher et reprise des anciennes sauvegardes sur leur toile originelle.
 - Hors périmètre de cette livraison : points d’observation, événements aléatoires et génération procédurale.
 
-### V0.6 — apprendre en jouant, avec une interface progressive (proposition)
+### V0.6 — apprendre en jouant, avec une interface progressive (réalisé)
 
 - La campagne devient le parcours conseillé pour découvrir le jeu. Chaque mission a une situation concrète, un objectif principal et un apport nouveau ; les acquis sont réutilisés pour éviter une succession d’exercices sans intérêt.
-- Première séquence proposée, à ajuster après essai :
+- Première séquence jouable, à ajuster après les retours :
 
 | Niveau | Nouveauté principale | Objectif concret |
 | --- | --- | --- |
@@ -90,12 +90,12 @@ Demandes implémentées ; vérifications décrites en bas du document :
 | 4 — Le lien | Connexion au Cœur, coupure et reconnexion. | Rétablir l’alimentation d’un secteur isolé puis le sécuriser. |
 | 5 — L’avant-poste | Caserne avancée. | Installer une production près du front et tenir une source disputée. |
 
-- Premières missions proposées de 2–4 minutes, sans minuterie punitive ; viser ensuite la durée habituelle des parties complètes. Petites cartes pensées pour être comprises en portrait sans zoom obligatoire, puis agrandissement progressif.
+- Premières missions courtes, sans minuterie punitive. La cible initiale de 2–4 minutes n’est pas une durée mesurée : les parcours automatisés optimisés prennent environ 7–85 secondes, sans temps de lecture ni hésitation. Mesurer la découverte humaine avant d’ajuster le rythme ; ne pas ajouter une attente artificielle. Petites cartes au départ, puis zoom initial sur le Cœur dès le niveau 3 et bouton Voir pour rejoindre l’objectif.
 - Réussir une mission ouvre la suivante et présente clairement la nouveauté obtenue. Pas de monnaie supplémentaire ni de répétition obligatoire pour débloquer la suite. Les objectifs bonus et distinctions restent facultatifs.
 - Le contenu de chaque mission détermine les commandes, unités, bâtiments, pouvoirs et niveaux technologiques disponibles, y compris lors d’une nouvelle tentative. Sauvegarder séparément la progression de campagne et l’état de la mission en cours ; reprise en pause, sans écoulement du temps d’absence.
 - Conserver le mode libre existant comme accès distinct, avec reprise des sauvegardes précédentes. Ne pas imposer de refaire un apprentissage pour retrouver une partie déjà commencée.
 
-#### Lisibilité à traiter dans la même livraison
+#### Lisibilité intégrée et validation humaine attendue
 
 - Afficher seulement les commandes utiles au niveau en cours. Présenter les prochains déblocages dans l’écran de campagne, sans remplir le jeu d’icônes verrouillées. Ajouter une commande nouvelle au moment où elle devient utile, avec une explication courte au bon endroit.
 - Un objectif principal visible, formulé en action concrète ; indiquer la prochaine action possible lorsqu’un débutant se retrouve bloqué. Privilégier des tâches réussies dans le jeu plutôt qu’un long texte à lire.
@@ -152,12 +152,24 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Modifications réalisées
 
+### V0.6 — 30 septembre 2026
+
+- Menu campagne prioritaire, cinq missions déverrouillées successivement et outils propres à chaque niveau. Un rejeu conserve ses restrictions ; les capacités non enseignées sont aussi bloquées dans le moteur. Le mode libre reste accessible avec tous ses outils.
+- Objectifs concrets vérifiés dans la simulation : atteindre une zone connectée ; produire à la source ; recruter et reprendre un poste ; reconnecter/défendre un secteur ; installer une caserne avancée et tenir la source 20 secondes. Attendre sans agir ne valide aucune mission. Les missions restent jouables au-delà de la durée du mode libre.
+- Opposition limitée au premier combat, puis vagues payées par l’économie adverse au niveau 5. Pas de lecture des forces cachées. Le scénario attaque la source annoncée ; il ne remplace pas l’IA du mode libre.
+- Caserne à 100 pigments, disponible au niveau 5 et en libre : file de six places, ralliement indépendant, sélection du producteur, annulation et plafond commun de 36 unités formations incluses. Coupure : production suspendue. Destruction : formations annulées, remboursement de 50 % du recrutement commencé et de 100 % de ceux en attente ; aucune unité fantôme.
+- Placement de campagne en deux étapes : aperçu au toucher puis Valider, sans dépense avant confirmation. Coût, portée et raison du refus visibles. Sélection d’un relais : chemin de connexion réel sur les cases du réseau. Fiches simplifiées, annulation accessible, panneau de placement sans superposition à l’ancien bandeau.
+- Objectif/hint permanents et prochaine commande mise en évidence. Bouton Voir, zoom initial au Cœur pour les missions avec unités, et commandes inutiles masquées. Au niveau 3/4, formation et annulation sont intégrées au bouton Combattant : aucun sélecteur de producteur inutile. Au niveau 5, Tenir ici permet de défendre la source sans poursuite. Mode libre : quatrième construction ajoutée dans une grille adaptée au téléphone.
+- Sauvegarde de mission séparée de la partie libre et des déblocages. Reprise en pause, avec producteur actif, caméra et sélection. Snapshot v3 et migrations exactes des versions 1/2 ; données inconnues conservées. Un échec d’enregistrement de victoire conserve le point de reprise et propose de réessayer. Protection des conflits entre fenêtres par emplacement.
+- Correctif tactile : une fiche d’unité périmée pouvait intercepter le toucher après un changement de scène du tutoriel ; elle disparaît maintenant immédiatement lorsque la sélection change.
+- Cache PWA incrémenté, nouveaux modules précachés. Graphismes géométriques natifs et sons existants conservés, sans dépendance réseau ni nouvel asset externe.
+
 ### Discussion après V0.5 — 30 septembre 2026
 
 - Retour sur le manque de plaisir consigné ; priorité V0.6 proposée autour d’actions tactiques, d’un objectif temporaire et de choix de comportement.
 - Ajout de la demande de nouveaux bâtiments : six concepts comparés, trois recommandés pour un premier lot, synergies et limites définies. Les pistes d’actions de peinture et d’objectif temporaire sont conservées pour la suite de la discussion.
 - Nouveau retour intégré : difficulté de lecture et de compréhension malgré le tutoriel. Priorité déplacée vers une campagne et une interface progressive ; cinq premières missions décrites, suite des déblocages et alliances à trois/quatre camps proposées. Mélange du territoire distingué de l’identité des unités, et besoins moteur/sauvegarde identifiés.
-- Lecture du moteur et de la feuille de route pour distinguer les fonctionnalités présentes des idées nouvelles. Cette session modifie uniquement le document de suivi ; la V0.5 jouable reste la version livrée.
+- Lecture du moteur et de la feuille de route pour distinguer les fonctionnalités présentes des idées nouvelles. À ce stade de la discussion, seule la documentation avait été modifiée ; l’implémentation V0.6 a ensuite été autorisée par « Go ».
 
 ### V0.5 — 30 septembre 2026
 
@@ -223,20 +235,21 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Bugs trouvés non corrigés
 
-- Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.5 exécutés.
-- Problème d’ergonomie confirmé par Martin le 30/09 : jeu encore difficile à lire et comprendre même après le tutoriel. Correction prioritaire à concevoir et valider avec une progression par missions, moins de commandes simultanées et des états de carte plus explicites ; ce problème n’est pas corrigé dans la V0.5.
+- Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
+- Ergonomie signalée par Martin après V0.5 : première réponse livrée avec campagne, outils progressifs, aperçu et fiches clarifiées. Le problème ne sera considéré résolu qu’après son essai : les captures et parcours automatisés ne prouvent pas la compréhension sans aide.
 
 ## Limites et risques à suivre
 
-- Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; les pistes V0.6 restent à éprouver en partie humaine.
+- Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; la campagne V0.6 reste à éprouver en partie humaine.
 - Les missions et les déblocages seuls ne résoudront pas une carte ou des commandes ambiguës : traiter la lisibilité en parallèle. Le mélange des couleurs d’alliance devra préserver l’identification du propriétaire des unités et bâtiments.
-- Le moteur et le format de sauvegarde V0.5 sont limités à deux camps. Campagne, plusieurs IA et alliances sont documentés comme prochains développements, pas fonctionnalités disponibles.
+- Le moteur et le format de sauvegarde V0.6 restent limités à deux camps. Plusieurs IA et alliances sont planifiées. Les cinq missions et la caserne sont disponibles ; réservoir, mortier et autres nouveaux bâtiments ne le sont pas.
+- La campagne est un premier chapitre court, avec opposition scénarisée. L’IA du mode libre conserve son recrutement au Cœur et ne construit pas encore de caserne ; lui apprendre à utiliser une production avancée est à prévoir avant un duel centré sur ce bâtiment.
 - L’IA connaît la géométrie des cartes pour naviguer ; elle ne connaît plus les positions adverses cachées. Vision radiale sans occlusion par les obstacles, identique pour les deux camps.
 - Trois dispositions fixes et symétriques ; aucune génération procédurale. Les reprises V0.4 et le tutoriel conservent l’ancienne géométrie.
 - Le calcul de trajet cherche un chemin géométrique, sans optimiser son temps selon les terrains lisses. Le bonus de vitesse s’applique bien sur les cases traversées.
 - Bâtiments traversables ; séparation souple des unités. Files de recrutement ajoutées en V0.3.
 - Les bonus de formation sont fixés quand l’unité entre en file : les améliorations suivantes bénéficient aux nouveaux recrutements.
-- Une seule sauvegarde locale par navigateur/application, sans synchronisation entre appareils. Effacer les données du navigateur efface la partie, la couleur et la préférence de carte. Une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture réussie. Le tutoriel se recommence et ne se sauvegarde pas.
+- Une sauvegarde libre, une sauvegarde de mission et une progression de campagne locales, sans synchronisation entre appareils. Effacer les données du navigateur efface les parties, les déblocages, la couleur et la préférence de carte. Une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture réussie. Le tutoriel se recommence et ne se sauvegarde pas.
 - Le tutoriel utilise des scènes pédagogiques contrôlées et des ressources garanties. Les scènes réseau figent la propagation passive pour rendre la coupure lisible.
 - Zoom limité à 1–4× ; minimap repliée par défaut sur téléphone. Confort à confirmer sur appareils réels.
 - Essais effectués en émulation Chromium, pas encore sur appareils Android/iPhone physiques.
@@ -258,6 +271,17 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.6
+
+- 12 scénarios missions et 8 casernes : objectifs réels, restrictions, récupération après erreurs, aucune victoire en restant inactif, plusieurs graines, files parallèles, ralliement, limite commune, pause/reprise après coupure et remboursement à la destruction.
+- 18 scénarios snapshots : cinq missions, continuation déterministe, casernes et files, état après 720 s, migrations V0.4/V0.5 authentiques. Relecture des anciennes enveloppes sans écrasement ni modification de leur partie.
+- Campagne navigateur en 390 × 844 et 360 × 640 : cinq victoires par actions tactiles et simulation accélérée sans forcer le résultat ; déblocages, rejeu limité aux outils du niveau, reprise, confirmation de placement. Victoire artificielle sans objectif refusée ; quota et progression inconnue protégés.
+- Casernes et lisibilité : commandes de recrutement et annulation, choix du producteur, ralliement propre, isolation, destruction, limite commune, fiches et tracé de connexion vérifiés. Aperçu de placement sans mutation ni révélation d’un terrain caché ; confirmation et annulation tactiles. Captures portrait inspectées.
+- Gestes de campagne : petite arène cadrée, glisser/pincer sans achat, transition à un doigt, case occupée refusée, achat unique après Valider et annulation sans dépense.
+- Sessions : emplacements indépendants, sauvegarde d’arrière-plan, reprise exacte avec caméra/producteur, tutoriel sans écrasement, conflits entre fenêtres, quota et mauvaises données. Migrations navigateur des deux fixtures historiques.
+- Régressions : moteur historique, V0.3, cartes/perception, tutoriel, équilibre des deux difficultés, Camp/escouades, alertes, couleurs et caméra. PWA vérifiée sous /colorquest/ : précache complet avec campagne, mise à jour différée, reprise exacte hors ligne et guide d’installation.
+- Tests dans Chromium émulé ; aucun essai physique Android/iPhone ni test de compréhension avec Martin effectué pendant cette livraison. Ces validations ne mesurent pas encore le plaisir ou la durée de découverte.
 
 ### V0.5
 

@@ -7,6 +7,9 @@ const S = require('../snapshots.js');
 // Generated once using engine.js AND snapshots.js from published commit bfb4e02.
 // Do not regenerate this fixture with the current engine: it proves real V0.4 compatibility.
 const legacyFixture = () => JSON.parse(fs.readFileSync(require.resolve('./fixtures/v04-snapshot.json'), 'utf8'));
+// Exact published V0.5 maps/engine/snapshot modules at 2a3cdad5606364802c6e6043b2c53f1280853a59.
+// Keep this fixture immutable when the simulation schema changes.
+const v5Fixture = () => JSON.parse(fs.readFileSync(require.resolve('./fixtures/v05-snapshot.json'), 'utf8'));
 
 let passed = 0;
 function test(name, fn) { fn(); passed++; console.log('✓ ' + name); }
@@ -198,8 +201,9 @@ test('Genuine V0.4 save migrates once without changing any existing state, geome
   assert.deepEqual(restored.aiMemory, []);
   assert.deepEqual(old, before, 'migration does not mutate the original save');
   const current = S.capture(restored);
-  assert.equal(current.version, 2);
-  assert.deepEqual(S.capture(S.restore(wire(current))), current, 'v2 does not reapply migration');
+  assert.equal(current.version, 3);
+  assert.equal(restored.mission, null);
+  assert.deepEqual(S.capture(S.restore(wire(current))), current, 'v3 does not reapply migration');
 });
 
 test('Legacy AI knowledge begins with current friendly sight and only visible enemy buildings', () => {
@@ -214,7 +218,7 @@ test('Legacy AI knowledge begins with current friendly sight and only visible en
   assert.deepEqual(S.capture(S.restore(wire(S.capture(restored)))), S.capture(restored));
 });
 
-test('Migrated games continue deterministically across the next v2 save and preserve reserved jobs', () => {
+test('Migrated games continue deterministically across the next current save and preserve reserved jobs', () => {
   const original = S.restore(legacyFixture()), resumed = S.restore(wire(S.capture(original)));
   const reserved = original.queues[1].map(job => job.unitId);
   for (let tick = 0; tick < 1500; tick++) {
@@ -240,7 +244,7 @@ test('Malformed v1 input is rejected before migration instead of being repaired 
   assert.equal({}.polluted, undefined);
 });
 
-test('V2 round trips each map, consumed objectives, both fog layers and stale AI memory', () => {
+test('Current snapshots round trip each map, consumed objectives, both fog layers and stale AI memory', () => {
   for (const mapId of ['plain', 'lanes', 'crossroads']) {
     const game = new E.Game({ seed: 91823, mapId });
     assert.equal(game.mapId, mapId);
@@ -267,6 +271,91 @@ test('V2 round trips each map, consumed objectives, both fog layers and stale AI
     for (let tick = 0; tick < 100; tick++) { game.update(.1); resumed.update(.1); }
     assert.deepEqual(S.capture(resumed), S.capture(game), 'continuation on ' + mapId);
   }
+});
+
+test('Genuine V0.5 saves preserve every historical field and deterministic continuation when migrating to v3', () => {
+  const old = v5Fixture(), before = wire(old);
+  assert.equal(old.version, 2);
+  assert.equal(old.state.mapId, 'lanes');
+  assert.ok(old.state.queues[1][0].remaining < old.state.queues[1][0].duration);
+  const restored = S.restore(old);
+  for (const [key, value] of Object.entries(before.state)) assert.deepEqual(restored[key], value, 'unchanged V0.5 field ' + key);
+  assert.equal(restored.mission, null);
+  assert.equal(restored.buildings.some(b => own(b, 'queue') || own(b, 'rally')), false, 'old buildings gain no producer fields');
+  assert.deepEqual(old, before);
+  const resumed = S.restore(wire(S.capture(restored)));
+  for (let tick = 0; tick < 400; tick++) { restored.update(.1); resumed.update(.1); }
+  assert.deepEqual(S.capture(resumed), S.capture(restored));
+  for (const mutate of [s => {s.state.mission = null;}, s => {s.state.mapId = 'mission:outpost';}, s => {s.state.buildings[0].type = 'barracks';}]) {
+    const malformed = v5Fixture(); mutate(malformed);
+    assert.throws(() => S.restore(malformed), /Sauvegarde invalide/);
+  }
+});
+
+test('All five mission checkpoints retain objectives, scripted AI and exact continuation', () => {
+  for (const missionId of ['first-ink', 'source', 'contact', 'link', 'outpost']) {
+    const original = new E.Game({missionId, seed: 9654});
+    if (original.can('recruit', 'fighter')) assert.equal(original.recruit(1, 'fighter').ok, true);
+    advance(original, 17);
+    const snapshot = wire(S.capture(original)), resumed = S.restore(snapshot);
+    assert.equal(snapshot.version, 3);
+    assert.equal(resumed.mission.id, missionId);
+    assert.deepEqual(resumed, original);
+    for (let tick = 0; tick < 220; tick++) { original.update(.1); resumed.update(.1); }
+    assert.deepEqual(S.capture(resumed), S.capture(original), 'mission continuation ' + missionId);
+  }
+  const patient = new E.Game({missionId: 'first-ink'});
+  patient.time = patient.duration + 10;
+  assert.equal(S.restore(wire(S.capture(patient))).time, patient.time, 'learning missions remain resumable after twelve minutes');
+});
+
+test('Barracks and core queues resume independently with rally, reserved IDs and refunds intact', () => {
+  const original = new E.Game({missionId: 'outpost', seed: 1337});
+  original.money[1] = 1500;
+  const distance = t => Math.hypot(t.x - 16, t.y - 23);
+  let location;
+  for (let attempt = 0; attempt < 5 && !location; attempt++) {
+    location = original.tiles.find(t => distance(t) <= 6 && original.canBuild(1, 'barracks', t.x, t.y).ok);
+    if (location) break;
+    const relay = original.tiles.filter(t => original.canBuild(1, 'relay', t.x, t.y).ok).sort((a,b) => distance(a) - distance(b))[0];
+    assert.ok(relay); assert.equal(original.build(1, 'relay', relay.x, relay.y).ok, true);
+    advance(original, 90);
+  }
+  assert.ok(location, 'mission has a legal construction tile');
+  assert.equal(original.build(1, 'barracks', location.x, location.y).ok, true);
+  const barracks = original.buildings.find(b => b.type === 'barracks' && b.team === 1);
+  const core = original.recruit(1, 'fighter'), active = original.recruit(1, 'fighter', barracks.id), waiting = original.recruit(1, 'fighter', barracks.id);
+  assert.ok(core.ok && active.ok && waiting.ok);
+  assert.equal(original.setRally(1, original.getCore(1).x, original.getCore(1).y, barracks.id).ok, true);
+  advance(original, 21);
+  assert.ok(barracks.queue[0].remaining < barracks.queue[0].duration);
+  const snapshot = wire(S.capture(original)), resumed = S.restore(snapshot);
+  assert.deepEqual(resumed, original);
+  const money = resumed.money[1];
+  assert.equal(resumed.cancelRecruit(1, waiting.jobId, barracks.id).refund, E.COSTS.fighter);
+  assert.equal(resumed.money[1], money + E.COSTS.fighter);
+  assert.equal(resumed.cancelRecruit(1, waiting.jobId, barracks.id).ok, false);
+  original.cancelRecruit(1, waiting.jobId, barracks.id);
+  for (let tick = 0; tick < 70; tick++) { original.update(.1); resumed.update(.1); }
+  assert.deepEqual(S.capture(resumed), S.capture(original));
+  assert.equal(resumed.units.filter(u => u.id === core.id).length, 1);
+  assert.equal(resumed.units.filter(u => u.id === active.id).length, 1);
+  assert.equal(resumed.mission.barracksTrained, 1);
+  assert.equal(resumed.mission.trained, 2);
+  const bad = mutate => {const data = wire(snapshot); mutate(data); assert.throws(() => S.restore(data), /Sauvegarde invalide/);};
+  const savedBarracks = data => data.state.buildings.find(b => b.type === 'barracks');
+  bad(s => {delete savedBarracks(s).queue;});
+  bad(s => {savedBarracks(s).level = 2;});
+  bad(s => {savedBarracks(s).queue[0].unitId = s.state.queues[1][0].unitId;});
+  bad(s => {savedBarracks(s).queue[0].cost++;});
+  bad(s => {savedBarracks(s).queue[1].remaining--;});
+  bad(s => {savedBarracks(s).rally = {x: -1, y: 0};});
+  bad(s => {s.state.buildings.find(b => b.type === 'core').queue = [];});
+  bad(s => {s.state.mission.id = 'unknown';});
+  bad(s => {s.state.mapId = 'plain';});
+  bad(s => {s.state.mission.stage = 3;});
+  bad(s => {s.state.mission.barracksTrained = s.state.mission.trained + 1;});
+  bad(s => {delete s.state.mission.hold;});
 });
 
 test('Completed games, destroyed cores and zero-time games round trip without changing results', () => {
@@ -369,6 +458,7 @@ test('Malformed, incompatible, oversized and internally inconsistent snapshots a
 test('The same module exposes CQSnapshot without requiring CommonJS in browsers', () => {
   const context = vm.createContext({});
   vm.runInContext(fs.readFileSync(require.resolve('../maps.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(require.resolve('../missions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(require.resolve('../engine.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(require.resolve('../snapshots.js'), 'utf8'), context);
   const result = vm.runInContext(`(() => {

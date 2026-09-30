@@ -2,6 +2,26 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
+## V0.6 — apprendre en jouant
+
+La **campagne** est le point de départ conseillé : cinq missions, une nouveauté à la fois et uniquement les commandes utiles à l’écran.
+
+1. **Première tache** : atteindre une zone avec des relais, sans adversaire.
+2. **La source** : relier une source et y construire un extracteur.
+3. **Premier contact** : former des combattants et reprendre un poste adverse.
+4. **Le lien** : reconnecter un secteur isolé et le sécuriser.
+5. **L’avant-poste** : construire une caserne près du front, y former des renforts et défendre une source pendant 20 secondes.
+
+Chaque victoire débloque la mission suivante. Rejouer un niveau conserve ses règles de départ. Les premiers niveaux sont de courts exercices sans limite de temps ; leur durée en découverte reste à mesurer avec des joueurs.
+
+- **Construction en campagne** : choisir le bâtiment, toucher une case, vérifier le coût, la portée et la connexion, puis toucher **Valider**. On peut déplacer l’aperçu ou annuler sans dépenser.
+- Un objectif permanent indique la prochaine action ; **Voir** recentre et zoome sur sa cible. Les missions avec unités commencent près du Cœur. Glisser et pincer restent disponibles.
+- Les fiches expliquent l’activité ou l’isolement ; sélectionner un relais affiche sa connexion réelle au Cœur.
+- **Caserne avancée**, également disponible en mode libre : 100 pigments, file indépendante de six places, ralliement propre et formation suspendue si le bâtiment est déconnecté. Le plafond de 36 unités, formations comprises, reste commun au camp. L’IA du mode libre recrute encore uniquement au Cœur.
+- Deux sauvegardes indépendantes : une partie libre et une mission. La progression des niveaux et le producteur sélectionné sont mémorisés ; reprise en pause, sans temps simulé pendant l’absence. Les parties V0.4/V0.5 restent compatibles.
+
+Les missions suivantes, les autres nouveaux bâtiments et les alliances à plusieurs IA restent dans la feuille de route.
+
 ## V0.5 — choisir son terrain de conquête
 
 - Trois cartes symétriques à choisir au menu : **La Plaine**, ouverte ; **Les Couloirs**, avec des passages à défendre ; **Le Carrefour**, au centre riche et disputé.
@@ -19,7 +39,7 @@ Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la
 - Le tutoriel conserve votre partie habituelle. Une nouvelle partie demande confirmation avant de remplacer la sauvegarde.
 - Détente plus progressif : premiers raids après 3 min, pression accrue après 5 min, attaque volontaire du Cœur après 7 min. La victoire territoriale peut survenir avant ; Stratégie conserve son rythme.
 
-Une seule sauvegarde par navigateur ou application, sur cet appareil. Il n’y a pas de synchronisation en ligne. Effacer les données du navigateur efface la partie ; une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture. Un stockage indisponible ou plein est signalé. Les exercices du tutoriel ne sont pas sauvegardés.
+Une sauvegarde de partie libre et une sauvegarde de mission par navigateur ou application, sur cet appareil. Il n’y a pas de synchronisation en ligne. Effacer les données du navigateur efface la partie ; une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture. Un stockage indisponible ou plein est signalé. Les exercices du tutoriel ne sont pas sauvegardés.
 
 ## V0.3 — développer et commander
 
@@ -57,9 +77,11 @@ node tests/v03.test.cjs
 node tests/snapshots.test.cjs
 node tests/world.test.cjs
 node tests/balance.test.cjs
+node tests/missions.test.cjs
+node tests/barracks.test.cjs
 ```
 
-Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs` et `tests/migration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs` et `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs` et `tests/readability.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
 ## Principe
 
@@ -67,11 +89,13 @@ Développez votre territoire avec les relais, exploitez les sources de pigment e
 
 Sur téléphone : touchez une unité (ou « Toute l’armée »), puis **Donner un ordre**, puis sa destination. Glissez pour déplacer la carte et pincez pour zoomer. Les onglets du bas donnent accès aux constructions, aux unités et aux pouvoirs. Le bouton « ? » ouvre l’aide.
 
-Les contrôles et les prix sont indiqués dans le jeu. Une première partie en mode détente est conseillée.
+Les contrôles et les prix sont indiqués dans le jeu. Commencez par la campagne pour découvrir les bases, puis essayez le mode libre en Détente.
 
 ## Fichiers
 
 - `engine.js` : simulation, économie, déplacements, combats, IA et conditions de victoire.
+- `missions.js` : cinq scénarios, restrictions, objectifs et opposition de campagne.
+- `campaign.js` / `campaign.css` : choix des missions, déblocages, guidage et interface progressive.
 - `maps.js` : disposition des trois cartes, terrains et ressources, commune au moteur et aux aperçus.
 - `app.js` : affichage Canvas, commandes, audio et interface.
 - `world-ui.js` / `world-ui.css` : sélection de carte, légende, inspection et rendu des terrains/objectifs.
