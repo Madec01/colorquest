@@ -21,10 +21,12 @@
     income.textContent='+'+(game.income[1]||2.6).toFixed(1).replace('.',',')+'/s';
     disconnected=game.buildings.filter(b=>b.team===1&&!b.connected);
     const newly=disconnected.filter(b=>previous.get(b.id)===true);
+    if(!window.CQAlerts){
     if(newly.length&&!window.CQTutorial?.active){toast('Réseau coupé : '+disconnected.length+' bâtiment(s) isolé(s). Touchez l’alerte pour les voir.');audio('error_001')}
     previous=new Map(game.buildings.filter(b=>b.team===1).map(b=>[b.id,b.connected]));
     alert.classList.toggle('hidden',!disconnected.length||!!window.CQTutorial?.active);
     alert.textContent='⚠ '+disconnected.length+' bâtiment'+(disconnected.length>1?'s':'')+' isolé'+(disconnected.length>1?'s':'')+' · Voir';
+    }
     let entity=game.buildings.find(b=>b.id===selectedId);
     const picked=game.units.filter(u=>selection.includes(u.id));
     if(!entity&&picked.length===1)entity=picked[0];

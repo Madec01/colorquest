@@ -2,6 +2,15 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
+## V0.5 — choisir son terrain de conquête
+
+- Trois cartes symétriques à choisir au menu : **La Plaine**, ouverte ; **Les Couloirs**, avec des passages à défendre ; **Le Carrefour**, au centre riche et disputé.
+- Six réserves de **60 pigments** par carte : approchez une unité, sauf un ingénieur, pour les récupérer une seule fois. Un ennemi proche bloque la collecte.
+- Huit sources, dont deux riches : un extracteur connecté sur une source riche produit **60 % de plus**.
+- Papier absorbant : propagation des bâtiments deux fois moins fréquente. Terrain lisse : déplacement des unités **30 % plus rapide**. Touchez le nom de la carte pour la légende ou un terrain découvert, sans unité sélectionnée, pour son effet.
+- IA limitée par sa vision, avec éclaireurs et mémoire des bâtiments observés. Les alertes d’attaque, de source perdue et de réseau coupé recentrent la caméra au toucher.
+- Sauvegardes V0.4 compatibles : reprise sur la toile d’origine, sans changement du terrain ni ajout de ressources. La carte choisie au menu concerne la prochaine partie.
+
 ## V0.4 — reprendre sa conquête, choisir sa couleur
 
 - Six couleurs dans le menu : cyan, bleu, violet, rose, vert et orange. Le camp adverse est assorti automatiquement ; le choix est mémorisé sur l’appareil.
@@ -29,7 +38,7 @@ Ouvrir le jeu en HTTPS, puis utiliser **Installer sur mon téléphone** dans le 
 
 Attendre l’indication de disponibilité hors ligne lors de la première ouverture. Ensuite les fichiers du jeu peuvent être chargés sans réseau. Les mises à jour sont proposées sans rechargement imposé pendant une partie.
 
-Le cache hors ligne conserve les fichiers du jeu ; la sauvegarde locale V0.4 conserve séparément la progression. L’installation n’est pas disponible depuis un simple fichier local. Une partie commencée dans V0.3 ne peut pas être récupérée rétroactivement : terminez-la avant cette première mise à jour.
+Le cache hors ligne conserve les fichiers du jeu ; la sauvegarde locale conserve séparément la progression. L’installation n’est pas disponible depuis un simple fichier local. Les sauvegardes existent depuis la V0.4 ; une partie d’une version antérieure ne peut pas être récupérée rétroactivement.
 
 ## Jouer
 
@@ -46,10 +55,11 @@ node tests/engine.test.js
 node tests/tutorial.test.cjs
 node tests/v03.test.cjs
 node tests/snapshots.test.cjs
+node tests/world.test.cjs
 node tests/balance.test.cjs
 ```
 
-Tests navigateur facultatifs : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter `node tests/camera.browser.cjs`, `node tests/tutorial.browser.cjs`, `node tests/v03.browser.cjs`, `node tests/pwa.browser.cjs`, `node tests/session.browser.cjs` et `node tests/palette.browser.cjs`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs` et `tests/migration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
 ## Principe
 
@@ -62,9 +72,12 @@ Les contrôles et les prix sont indiqués dans le jeu. Une première partie en m
 ## Fichiers
 
 - `engine.js` : simulation, économie, déplacements, combats, IA et conditions de victoire.
+- `maps.js` : disposition des trois cartes, terrains et ressources, commune au moteur et aux aperçus.
 - `app.js` : affichage Canvas, commandes, audio et interface.
+- `world-ui.js` / `world-ui.css` : sélection de carte, légende, inspection et rendu des terrains/objectifs.
+- `alerts.js` / `alerts.css` : alertes tactiles d’attaque, de source et de réseau.
 - `camera.js` / `camera.css` : gestes, caméra et minimap.
-- `readability.js` / `readability.css` : fiches, frontières, trajets et alertes.
+- `readability.js` / `readability.css` : fiches, frontières et trajets.
 - `tutorial.js` / `tutorial.css` : scénario pédagogique, étapes et guidage.
 - `strategy.js` / `strategy.css` : production, progression et escouades.
 - `snapshots.js` : format versionné, validation et restauration déterministe de la simulation.
@@ -76,4 +89,4 @@ Les contrôles et les prix sont indiqués dans le jeu. Une première partie en m
 - `ASSETS.md` : provenance et licences des ressources.
 - `AGENTS.md` : règles de travail pour les prochaines sessions.
 
-Cette première version sert à tester le plaisir de conquête et l'équilibrage ; elle ne constitue pas encore une version commerciale finalisée.
+Ce prototype sert à tester le plaisir de conquête et l’équilibrage. Les parcours tactiles sont vérifiés en Chromium émulé ; les essais sur téléphones physiques et les retours de parties humaines restent nécessaires.

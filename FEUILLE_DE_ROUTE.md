@@ -20,8 +20,8 @@ Dernière mise à jour : 30 septembre 2026.
 - [x] J5 / V0.2 — Lisibilité, caméra tactile et tutoriel interactif livrés.
 - [x] J6 / V0.3 — Ordres d’escouades, progression de base, spécialisations et installation sur téléphone livrés.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
-- [ ] J8 / V0.5 — Proposition : objectifs secondaires, terrains et cartes variées.
-- [ ] J9 / V0.6 — Proposition : perception limitée de l’IA, personnalités et rejouabilité.
+- [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
+- [ ] J9 / V0.6 — Proposition : missions courtes, personnalités d’IA, statistiques et ambiance musicale.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -53,19 +53,34 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Détente : développement initial plus lent, petits raids puis pression croissante. Stratégie inchangée.
 - La carte et les objectifs secondaires passent au jalon suivant : priorité à une expérience mobile que l’on peut interrompre.
 
-### V0.5 — carte et opportunités
-- Points d’observation, réserves ponctuelles de pigment et source centrale riche à défendre.
-- Passages étroits, terrain absorbant qui ralentit la propagation, terrain lisse qui accélère les déplacements.
-- Événements rares, annoncés à l’avance et symétriques ; pas de perte aléatoire arbitraire de la base.
-- Trois cartes conçues à la main avant un générateur procédural.
+### V0.5 — carte et opportunités (réalisé)
+- Trois cartes façonnées à la main : La Plaine (expansion libre), Les Couloirs (passages et contournements), Le Carrefour (centre disputé). Disposition symétrique entre les camps.
+- Six réserves de 60 pigments à récupérer avec une unité non ingénieur, une seule fois, sans ennemi à proximité ; huit sources dont deux riches à rendement +60 % avec extracteur connecté.
+- Papier absorbant : propagation passive des bâtiments deux fois moins fréquente. Terrain lisse : vitesse des unités +30 %. Capture par les unités inchangée.
+- IA soumise à sa vision ; exploration des éclaireurs et mémoire des dernières positions observées des bâtiments. Cette priorité est avancée depuis la V0.6.
+- Alertes « bâtiment attaqué », « source perdue » et « réseau coupé », touchables pour recentrer la carte ; regroupement pour éviter le bruit.
+- Choix de carte avec aperçu, légende au toucher et reprise des anciennes sauvegardes sur leur toile originelle.
+- Hors périmètre de cette livraison : points d’observation, événements aléatoires et génération procédurale.
 
 ### V0.6 — rejouabilité et confort
-- IA limitée par sa vision, personnalités distinctes et vraie courbe de difficulté.
+- Personnalités d’IA distinctes, missions courtes et ajustement de la difficulté sur retours humains ; perception limitée avancée en V0.5.
 - Statistiques de fin et historique visuel du territoire ; sauvegarde/reprise livrée en V0.4.
 - Défis optionnels et déblocages de nouvelles options ; éviter les bonus permanents qui rendent les anciennes parties triviales.
 - Musique d’ambiance et retour sonore des événements majeurs.
 
 ## Modifications réalisées
+
+### V0.5 — 30 septembre 2026
+
+- Trois dispositions façonnées à la main et symétriques, y compris les unités de départ. Les aperçus utilisent exactement les mêmes données que le moteur. Choix mémorisé sur l’appareil, indépendant de la carte sauvegardée.
+- Réserves contestables : collecte dans un rayon de 1,2 case, bloquée par un ennemi dans un rayon de 2,2 cases. Gain unique de 60 pigments, notification locale à la collecte. L’ingénieur reste consacré aux réparations.
+- Sources riches avec rendement ×1,6 à tous les niveaux d’extracteur connecté. Papier absorbant : une propagation passive sur deux ; terrain lisse : vitesse ×1,3. La capture des unités reste inchangée.
+- Vision calculée pour les deux camps avec les mêmes règles. L’IA cherche les ressources connues, explore avec ses éclaireurs et recrute un remplaçant si besoin. Sa mémoire conserve les dernières positions observées des bâtiments, pas leurs changements cachés. Pouvoirs et tirs de bastions exigent une vision alliée.
+- Rythme Détente conservé : développement initial, raids à partir de 3 min, pression à 5 min et assauts du Cœur à 7 min. Une régression qui envoyait trop tôt l’armée Stratégie vers la base adverse a été corrigée pendant les essais.
+- Légende tactile accessible par le nom de la carte ; inspection des terrains découverts quand aucune unité n’est sélectionnée. Pause explicite, navigation clavier contenue dans le panneau, fermeture à la fin de partie. Présentation des terrains sobre pour préserver la toile blanche et la lisibilité des camps. Introduction du menu resserrée sur écran court pour garder le bouton de lancement entièrement visible en 360 × 640.
+- Alertes prioritaires sur les bâtiments attaqués/détruits, les sources isolées/perdues et les coupures du réseau. Toucher recentre et sélectionne le bâtiment allié restant, sans ordre d’unité ni reprise automatique. Jusqu’à quatre alertes regroupées, rotation et fermeture manuelles ; pas de révélation de l’état ennemi caché.
+- Snapshot v2 : carte, ressources consommées, terrains et mémoire/vision IA sauvegardés. Migration du snapshot v1 : ancienne géométrie, unités, économie, files et caméra conservées ; aucun ajout de ressource ni simulation du temps d’absence. L’enveloppe locale et la clé de stockage restent compatibles.
+- Ancienne carte gardée pour le tutoriel, dont la conclusion renvoie à la nouvelle légende. Cache PWA incrémenté et tous les modules ajoutés au précache. Aucune dépendance réseau ajoutée.
 
 ### V0.4 — 30 septembre 2026
 
@@ -119,21 +134,22 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Bugs trouvés non corrigés
 
-- Aucun défaut bloquant détecté dans les scénarios moteur exécutés ; parcours navigateur validé.
-- Retour utilisateur sur la lisibilité traité par la V0.2 ; validation humaine sur téléphone réel encore attendue. Aucun blocage détecté dans les parcours automatisés V0.2.
+- Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.5 exécutés.
+- Validation humaine de la lisibilité et des gestes sur téléphone réel encore attendue ; les parcours automatisés ne remplacent pas ces retours.
 
 ## Limites et risques à suivre
 
-- L’IA connaît actuellement toute la carte et les positions adverses : ajouter une perception limitée avant une version compétitive.
-- Carte à disposition fixe avec petits écarts aléatoires ; symétrie imparfaite.
+- L’IA connaît la géométrie des cartes pour naviguer ; elle ne connaît plus les positions adverses cachées. Vision radiale sans occlusion par les obstacles, identique pour les deux camps.
+- Trois dispositions fixes et symétriques ; aucune génération procédurale. Les reprises V0.4 et le tutoriel conservent l’ancienne géométrie.
+- Le calcul de trajet cherche un chemin géométrique, sans optimiser son temps selon les terrains lisses. Le bonus de vitesse s’applique bien sur les cases traversées.
 - Bâtiments traversables ; séparation souple des unités. Files de recrutement ajoutées en V0.3.
 - Les bonus de formation sont fixés quand l’unité entre en file : les améliorations suivantes bénéficient aux nouveaux recrutements.
-- Une seule sauvegarde locale par navigateur/application, sans synchronisation entre appareils. Effacer les données du navigateur efface la partie et la couleur. Une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture réussie. Le tutoriel se recommence et ne se sauvegarde pas.
+- Une seule sauvegarde locale par navigateur/application, sans synchronisation entre appareils. Effacer les données du navigateur efface la partie, la couleur et la préférence de carte. Une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture réussie. Le tutoriel se recommence et ne se sauvegarde pas.
 - Le tutoriel utilise des scènes pédagogiques contrôlées et des ressources garanties. Les scènes réseau figent la propagation passive pour rendre la coupure lisible.
 - Zoom limité à 1–4× ; minimap repliée par défaut sur téléphone. Confort à confirmer sur appareils réels.
 - Essais effectués en émulation Chromium, pas encore sur appareils Android/iPhone physiques.
 - Audio : effets et jingles, pas encore de musique d’ambiance longue.
-- La cible 10–15 min reste à valider en jeu actif : en V0.4, sans aucune action, défaite par domination vers 6 min 09 à 6 min 38 en Détente (trois graines), contre ~4 min 20 en V0.3. Stratégie reste à ~3 min 11–13. Une victoire territoriale peut précéder le seuil de 7 min des assauts du Cœur.
+- La cible 10–15 min reste à valider en jeu actif : en V0.5, sans aucune action, défaite entre 6 min 09 et 7 min 32 en Détente et entre 3 min 01 et 3 min 10 en Stratégie (trois cartes × trois graines par mode). Une victoire territoriale peut précéder le seuil de 7 min des assauts du Cœur. Ces diagnostics ne prédisent pas la durée d’une partie jouée.
 
 - L'équilibrage doit être confirmé par des parties humaines ; des simulations ne mesurent pas le plaisir.
 - Vérifier la capacité à reprendre l'avantage après une coupure et limiter l'effet boule de neige.
@@ -143,13 +159,24 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ## Idées à évaluer (non promises)
 
 - Variantes supplémentaires de spécialisations après validation des trois branches V0.3.
-- Cartes avec fissures, passages et différentes propriétés du papier.
+- Autres propriétés du papier et points d’observation, après validation des terrains V0.5.
 - IA expansionniste, défensive ou orientée raids.
 - Statistiques de fin de partie et replay de la progression des couleurs.
 - Mode chronométré à points cumulés et mode domination.
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.5
+
+- 10 scénarios monde/perception : symétrie et accessibilité des cases/objectifs sur les trois cartes, collecte unique et contestée, source riche à chaque niveau et coupure de revenus, terrains, égalité des rayons de vision, mémoire sans mise à jour cachée, exploration et portée des bastions conditionnée par la vision alliée.
+- 7 scénarios de difficulté, dont 18 parties complètes : trois cartes × trois graines × deux modes. Aucune attaque du Cœur inactif avant 420 s en Détente ou 180 s en Stratégie dans ces diagnostics ; raids contre une expansion exposée et défense immédiate toujours actifs. Crédits de réserves distingués des revenus économiques dans les contrôles.
+- 15 scénarios de sauvegarde/migration : état exact, continuation déterministe, trois cartes et ressources/mémoire IA conservées, anciennes données validées avant migration, fichier authentique V0.4 continué pendant 150 s, données invalides rejetées. Les 8 scénarios moteur historiques, 15 V0.3 et 2 parcours tutoriel en simulation passent également.
+- Navigateur 390 × 844 et 360 × 640 : trois choix de carte et aperçu conformes, préférence conservée, reprise sur sa propre carte, légende/pause/focus clavier, inspection tactile et priorité aux ordres/constructions, brouillard respecté et absence de blocage si le stockage est refusé. Légende fermée automatiquement au résultat ; pause après passage en arrière-plan reflétée dans le panneau.
+- Alertes testées avec dégâts, destructions et déconnexions réels des quatre types de bâtiments ; reconnexion, recentrage, priorité, regroupement, absence d’alerte ennemie ou de reprise des anciens dégâts au rechargement. Boutons ≥44 px et contrôles de caméra accessibles sur les deux tailles.
+- Migration navigateur avec le fichier V0.4 réel : menu sans réécriture prématurée, reprise exacte sur l’ancienne toile, premier enregistrement v2 puis second rechargement identique ; nouvelle carte uniquement après remplacement confirmé.
+- Régressions navigateur : sauvegarde/reprise et erreurs de stockage, six couleurs, tutoriel de sept étapes, annulation du remplacement pendant un exercice, Camp/escouades et gestes caméra. PWA : modules précachés, mise à jour en partie suivie d’une reprise exacte hors ligne, installation/guide iOS/mode autonome simulés, échec de précache et cache tiers.
+- Captures portrait du choix de carte, de la légende, des terrains et des alertes inspectées. Essais en Chromium émulé ; fluidité, installation native et stockage sur téléphones physiques restent à confirmer.
 
 ### V0.4
 

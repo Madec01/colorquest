@@ -15,3 +15,6 @@
 - PWA : chaque livraison modifiant un fichier précaché doit changer RELEASE dans sw.js. Ajouter tout nouvel asset/module au précache. Ne pas imposer de rechargement pendant une partie.
 
 - Sauvegardes : tout changement d’état moteur persistant ou de statistiques doit être examiné avec snapshots.js. Ajouter les nouveaux champs au schéma et prévoir migration/version si nécessaire ; conserver le test de continuation déterministe et les parcours reprise/tutoriel. Ne jamais simuler le temps d’absence à la reprise.
+- Cartes V0.5 : maps.js est la source commune au moteur et aux aperçus. Conserver la symétrie et l’accessibilité des objectifs ; tester les trois cartes. La carte `legacy` est réservée au tutoriel et aux sauvegardes migrées, dont il faut conserver la géométrie.
+- Perception : les décisions de l’IA ne doivent pas lire les unités, bâtiments ou propriétaires cachés. La géométrie est connue, les positions de bâtiments observées peuvent rester en mémoire. Conserver les tests d’indépendance vis-à-vis des états ennemis cachés.
+- Format de sauvegarde courant : snapshot v2 dans l’enveloppe locale v1. Conserver la fixture authentique V0.4 et son test de migration navigateur ; changer une préférence de carte ne doit jamais modifier la partie sauvegardée.

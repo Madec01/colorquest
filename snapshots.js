@@ -1,19 +1,25 @@
 /* Versioned simulation snapshots. Keep this schema in step with engine.js.
  * No constructor, recomputation, random draw or elapsed wall-clock time is used
  * when restoring: a paused game continues on its exact next simulation tick.
+ * V1 migration preserves the entire old board, adding only neutral terrain and
+ * current AI sight. No new resource, obstacle, income or past sight is invented.
  * UI state, tutorial hooks and functions on a Game instance are never saved.
  */
 (function (root) {
   'use strict';
 
-  const FORMAT = 'colorquest-snapshot', VERSION = 1;
+  const FORMAT = 'colorquest-snapshot', VERSION = 2;
   const MAX_TIME = 86400, MAX_ID = 10000000;
-  const STATE_KEYS = [
+  const LEGACY_STATE_KEYS = [
     'width', 'height', 'difficulty', 'seed', 'time', 'duration', 'winner', 'winReason',
     'units', 'buildings', 'events', 'money', 'income', 'scores', 'hold', 'cooldowns',
     'queues', 'rally', 'specializations', 'squads', '_id', '_nextExpand', '_spread',
     '_ai', '_vision', '_capture', '_holdEvent', 'tiles'
   ];
+  const STATE_KEYS = [...LEGACY_STATE_KEYS, 'mapId', 'aiMemory'];
+  const MAP_IDS = ['legacy', 'plain', 'lanes', 'crossroads'];
+  const LEGACY_TILE_KEYS = ['x', 'y', 'owner', 'connected', 'explored', 'visible', 'blocked', 'source', 'isolation'];
+  const TILE_KEYS = [...LEGACY_TILE_KEYS, 'terrain', 'rich', 'cache', 'aiVisible', 'aiExplored'];
   const STANCES = ['move', 'attack', 'hold', 'retreat'];
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const engine = () => root.CQEngine || (typeof module !== 'undefined' && module.exports ? require('./engine.js') : null);
@@ -26,12 +32,13 @@
     if (!value || typeof value !== 'object' || Array.isArray(value)) invalid(path, 'doit être un objet');
     const proto = Object.getPrototypeOf(value);
     if (proto !== Object.prototype && proto !== null) invalid(path, 'possède un prototype non pris en charge');
-    const keys = Object.keys(value), allowed = new Set([...required, ...optional]);
+    const keys = Object.getOwnPropertyNames(value), allowed = new Set([...required, ...optional]);
+    if (Object.getOwnPropertySymbols(value).length) invalid(path, 'contient des champs inconnus');
     if (keys.length > allowed.size) invalid(path, 'contient des champs inconnus');
     for (const key of keys) {
       if (!allowed.has(key)) invalid(`${path}.${key}`, 'est un champ inconnu');
       const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      if (!descriptor || !own(descriptor, 'value')) invalid(`${path}.${key}`, 'doit être une valeur simple');
+      if (!descriptor || !descriptor.enumerable || !own(descriptor, 'value')) invalid(`${path}.${key}`, 'doit être une valeur simple');
     }
     for (const key of required) if (!own(value, key)) invalid(`${path}.${key}`, 'est manquant');
   }
@@ -40,8 +47,12 @@
     if (!Array.isArray(value) || value.length > max || (exact !== undefined && value.length !== exact)) {
       invalid(path, exact === undefined ? `doit contenir au plus ${max} éléments` : `doit contenir ${exact} éléments`);
     }
+    if (Object.getPrototypeOf(value) !== Array.prototype) invalid(path, 'possède un prototype non pris en charge');
+    if (Object.getOwnPropertySymbols(value).length || Object.getOwnPropertyNames(value).length !== value.length + 1) invalid(path, 'contient des champs inconnus');
     for (let index = 0; index < value.length; index++) {
       if (!own(value, index)) invalid(`${path}[${index}]`, 'est manquant');
+      const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+      if (!descriptor || !descriptor.enumerable || !own(descriptor, 'value')) invalid(`${path}[${index}]`, 'doit être une valeur simple');
     }
   }
 
@@ -78,9 +89,11 @@
     if (!E?.Game) throw new Error('Le moteur Colorquest doit être chargé avant les sauvegardes.');
     record(snapshot, 'snapshot', ['format', 'version', 'state']);
     if (snapshot.format !== FORMAT) throw new Error('Format de sauvegarde Colorquest non reconnu.');
-    if (snapshot.version !== VERSION) throw new Error(`Version de sauvegarde incompatible (${String(snapshot.version)}).`);
+    if (snapshot.version !== 1 && snapshot.version !== VERSION) throw new Error('Version de sauvegarde incompatible.');
+    const legacy = snapshot.version === 1;
     const state = snapshot.state, path = 'state', W = E.WIDTH, H = E.HEIGHT, cellCount = W * H;
-    record(state, path, STATE_KEYS);
+    record(state, path, legacy ? LEGACY_STATE_KEYS : STATE_KEYS);
+    if (!legacy) choice(state.mapId, `${path}.mapId`, MAP_IDS);
     choice(state.width, `${path}.width`, [W]);
     choice(state.height, `${path}.height`, [H]);
     choice(state.difficulty, `${path}.difficulty`, ['easy', 'normal']);
@@ -121,7 +134,7 @@
     array(state.tiles, `${path}.tiles`, cellCount, cellCount);
     state.tiles.forEach((cell, i) => {
       const p = `${path}.tiles[${i}]`;
-      record(cell, p, ['x', 'y', 'owner', 'connected', 'explored', 'visible', 'blocked', 'source', 'isolation'], ['weakenedUntil']);
+      record(cell, p, legacy ? LEGACY_TILE_KEYS : TILE_KEYS, ['weakenedUntil']);
       choice(cell.x, `${p}.x`, [i % W]);
       choice(cell.y, `${p}.y`, [Math.floor(i / W)]);
       choice(cell.owner, `${p}.owner`, [0, 1, 2]);
@@ -131,7 +144,33 @@
       if (cell.connected && (!cell.owner || cell.blocked)) invalid(p, 'connecte une case neutre ou bloquée');
       if (cell.visible && !cell.explored) invalid(p, 'rend visible une case non explorée');
       if (cell.blocked && cell.source) invalid(p, 'place une source sur une case bloquée');
+      if (!legacy) {
+        choice(cell.terrain, `${p}.terrain`, ['plain', 'absorbent', 'smooth']);
+        for (const key of ['rich', 'aiVisible', 'aiExplored']) boolean(cell[key], `${p}.${key}`);
+        choice(cell.cache, `${p}.cache`, [0, 60]);
+        if (cell.rich && !cell.source) invalid(p, 'place une richesse hors d’une source');
+        if (cell.cache && (cell.blocked || cell.source)) invalid(p, 'place une réserve sur une source ou une case bloquée');
+        if (cell.aiVisible && !cell.aiExplored) invalid(p, 'rend visible pour l’IA une case non explorée');
+      }
     });
+
+    if (!legacy) {
+      array(state.aiMemory, `${path}.aiMemory`, cellCount);
+      const knownIds = new Set();
+      state.aiMemory.forEach((memory, i) => {
+        const p = `${path}.aiMemory[${i}]`;
+        record(memory, p, ['id', 'type', 'x', 'y', 'seenAt']);
+        id(memory.id, `${p}.id`);
+        if (knownIds.has(memory.id)) invalid(`${p}.id`, 'duplique un souvenir');
+        knownIds.add(memory.id);
+        choice(memory.type, `${p}.type`, Object.keys(E.BUILDING_STATS));
+        position(memory, p, true);
+        if (tile(memory).blocked) invalid(p, 'est sur une case bloquée');
+        number(memory.seenAt, `${p}.seenAt`, 0, state.time);
+        // A hidden building can have changed or disappeared since this sighting.
+        // Do not validate memory against the current enemy state: it is stale by design.
+      });
+    }
 
     array(state.specializations, `${path}.specializations`, 3, 3);
     state.specializations.forEach((value, i) => choice(value, `${path}.specializations[${i}]`, i ? [null, ...Object.keys(E.SPECIALIZATIONS)] : [null]));
@@ -168,7 +207,7 @@
       number(building.maxHp, `${p}.maxHp`, 1, 10000);
       number(building.hp, `${p}.hp`, -10000, building.maxHp);
       if (own(building, 'lastHit')) number(building.lastHit, `${p}.lastHit`, -MAX_TIME, state.time);
-      const expected = E.Game.prototype.getBuildingStats.call(state, building);
+      const expected = E.Game.prototype.getBuildingStats.call(Object.assign(Object.create(E.Game.prototype), state), building);
       if (building.maxHp !== expected.hp) invalid(`${p}.maxHp`, 'ne correspond pas au niveau et à la spécialisation');
       if (building.type === 'core') cores[building.team]++;
       buildings.set(building.id, building);
@@ -282,7 +321,28 @@
     const state = validate(snapshot);
     const game = Object.create(engine().Game.prototype);
     Object.assign(game, clone(state));
+    if (snapshot.version === 1) migrateV1(game);
     return game;
+  }
+
+  function migrateV1(game) {
+    // Deliberately use only data from the validated old snapshot. Calling the
+    // current constructor/visibility/update helpers would rewrite old state.
+    const E = engine();
+    game.mapId = 'legacy';
+    const viewers = [
+      ...game.buildings.filter(b => b.team === 2 && b.hp > 0).map(b => ({ x: b.x + .5, y: b.y + .5, radius: b.type === 'core' ? 9 : 7 })),
+      ...game.units.filter(u => u.team === 2 && u.hp > 0).map(u => ({ x: u.x, y: u.y, radius: E.UNIT_STATS[u.type].vision }))
+    ];
+    for (const cell of game.tiles) {
+      cell.terrain = 'plain';
+      cell.rich = false;
+      cell.cache = 0;
+      cell.aiVisible = (cell.owner === 2 && cell.connected) || viewers.some(v => Math.hypot(cell.x + .5 - v.x, cell.y + .5 - v.y) <= v.radius);
+      cell.aiExplored = cell.aiVisible;
+    }
+    game.aiMemory = game.buildings.filter(b => b.team === 1 && b.hp > 0 && game.tiles[b.y * game.width + b.x].aiVisible)
+      .map(b => ({ id: b.id, type: b.type, x: b.x, y: b.y, seenAt: game.time }));
   }
 
   const api = Object.freeze({ FORMAT, VERSION, capture, restore });

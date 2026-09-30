@@ -19,7 +19,7 @@
   document.getElementById('cameraMiniToggle').setAttribute('aria-expanded',String(state.mini));
   document.getElementById('cameraMiniToggle').textContent='MINICARTE '+(state.mini?'▾':'▸');
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  const active = () => playing && game && !ended && !window.CQStrategy?.isOpen && document.getElementById('modal').classList.contains('hidden');
+  const active = () => playing && game && !ended && !window.CQStrategy?.isOpen && !window.CQWorldUI?.isOpen && document.getElementById('modal').classList.contains('hidden');
   function layout() {
     const cell = state.base * state.zoom;
     const halfW = state.w / (2 * cell), halfH = state.h / (2 * cell);
@@ -179,7 +179,7 @@
     }
     if(nearestBuilding?.d<radius){selection=[];window.CQUI?.selectBuilding(nearestBuilding.b);return;}
     if(selection.length)toast('Pour déplacer vos unités, touchez « Donner un ordre ».');
-    else {window.CQUI?.clearBuilding();toast('Touchez une unité ou un bâtiment. Glissez pour explorer la carte.');}
+    else {window.CQUI?.clearBuilding();if(!window.CQTutorial?.active&&window.CQWorldUI?.inspectTile(p.x,p.y))return;toast('Touchez une unité ou un bâtiment. Glissez pour explorer la carte.');}
   }
   canvas.addEventListener('pointercancel',clearGesture);
   canvas.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId))clearGesture();});
@@ -199,7 +199,8 @@
       if(!t.explored&&t.owner!==1)continue;
       mc.fillStyle=t.blocked?'#bdc7bf':t.owner===1?(t.connected?paletteColor('playerFill','#51c4bd'):paletteColor('playerIsolated','#bdcdc2')):t.owner===2?paletteColor('enemyFill','#efab95'):'#fffdf6';
       mc.fillRect(t.x*sx,t.y*sy,sx+.4,sy+.4);
-      if(t.source){mc.fillStyle='#a68534';mc.fillRect(t.x*sx,t.y*sy,Math.max(2,sx),Math.max(2,sy));}
+      if(t.source){mc.fillStyle='#a68534';mc.fillRect(t.x*sx,t.y*sy,Math.max(t.rich?3:2,sx),Math.max(t.rich?3:2,sy));}
+      if(t.cache>0&&t.visible){mc.strokeStyle='#876522';mc.lineWidth=1;mc.strokeRect(t.x*sx,t.y*sy,Math.max(3,sx),Math.max(3,sy));}
     }
     for(const b of game.buildings){if(b.hp<=0||(b.team!==1&&!tileAt(b.x,b.y)?.visible))continue;mc.fillStyle=b.team===1?paletteColor('playerStrong','#087d85'):paletteColor('enemyStrong','#b64937');mc.fillRect((b.x+.5)*sx-1.5,(b.y+.5)*sy-1.5,3,3);}
     const x=clamp(-view.x/view.cell,0,state.W),y=clamp(-view.y/view.cell,0,state.H);

@@ -66,7 +66,7 @@
     const previous = active ? originalDifficulty : difficulty;
     start({tutorial:true});
     originalDifficulty = previous;
-    game = new CQEngine.Game({ difficulty: 'easy', seed: 202602 });
+    game = new CQEngine.Game({ difficulty: 'easy', seed: 202602, mapId: 'legacy' });
     active = true; lesson = 0; recruitId = null; dummyId = null; branchId = null;
     playing = true; paused = false; ended = false;
     game.duration = 86400;
@@ -220,7 +220,7 @@
     stop(); paused = true; ended = true;
     $('pauseFlag').classList.add('hidden');
     try { localStorage.setItem('colorquest.tutorialComplete', '1'); } catch (_) { /* Storage may be unavailable. */ }
-    modal('<div class="win-symbol">✓</div><div class="eyebrow">ATELIER TERMINÉ</div><h2>Votre réseau prend vie.</h2><p>Vous savez explorer, construire, exploiter le pigment, recruter, combattre et couper ou réparer une connexion.</p><p>Dans une vraie partie, contrôlez <b>60 % du terrain connecté pendant 45 secondes</b>. Au bout de 12 minutes, le plus grand réseau gagne. L’IA jouera et les zones isolées s’effaceront progressivement.</p><button id="trainingPlay" class="primary">Jouer contre l’IA →</button><button id="trainingReplay" class="secondary">Rejouer le tutoriel</button>');
+    modal('<div class="win-symbol">✓</div><div class="eyebrow">ATELIER TERMINÉ</div><h2>Votre réseau prend vie.</h2><p>Vous savez explorer, construire, exploiter le pigment, recruter, combattre et couper ou réparer une connexion.</p><p>Dans une vraie partie, contrôlez <b>60 % du terrain connecté pendant 45 secondes</b>. Au bout de 12 minutes, le plus grand réseau gagne. L’IA jouera et les zones isolées s’effaceront progressivement. Touchez le nom de la carte pour découvrir les réserves, les sources riches et les terrains.</p><button id="trainingPlay" class="primary">Jouer contre l’IA →</button><button id="trainingReplay" class="secondary">Rejouer le tutoriel</button>');
     $('trainingPlay').onclick = normalGame;
     $('trainingReplay').onclick = begin;
   }

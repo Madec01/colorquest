@@ -40,7 +40,7 @@
     $('play').firstChild.textContent = saved.status === 'none' || saved.status === 'unavailable' ? 'Commencer la partie ' : 'Nouvelle partie ';
     if (saved.status === 'valid') {
       const g = saved.restored;
-      details.textContent = (g.difficulty === 'easy' ? 'Détente' : 'Stratégie') + ' · ' + clock(g.time) + ' · ' + (g.scores[1] * 100).toFixed(1).replace('.', ',') + ' % du terrain';
+      details.textContent = (window.CQWorldUI?.label(g.mapId)||'Toile classique') + ' · ' + (g.difficulty === 'easy' ? 'Détente' : 'Stratégie') + ' · ' + clock(g.time) + ' · ' + (g.scores[1] * 100).toFixed(1).replace('.', ',') + ' % du terrain';
       note.textContent = 'Sauvegarde sur cet appareil · reprise en pause';
     } else if (saved.status === 'invalid') {
       note.textContent = 'Sauvegarde illisible ou incompatible. Elle est conservée jusqu’à votre choix de la remplacer.';

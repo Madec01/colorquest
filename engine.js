@@ -7,6 +7,7 @@
 (function (root) {
   'use strict';
 
+  const Maps = typeof module !== 'undefined' && module.exports ? require('./maps.js') : root.CQMaps;
   const WIDTH = 32, HEIGHT = 48, UNIT_LIMIT = 36, QUEUE_LIMIT = 6;
   const COSTS = { relay: 45, extractor: 65, bastion: 90, scout: 22, fighter: 35, breaker: 65, engineer: 55, saboteur: 60 };
   const RECRUIT_TIMES = { scout: 4, fighter: 6, breaker: 9, engineer: 8, saboteur: 7 };
@@ -38,6 +39,8 @@
       this.width = WIDTH;
       this.height = HEIGHT;
       this.difficulty = options.difficulty || 'normal';
+      this.mapId = Maps.get(options.mapId)?.id || Maps.DEFAULT_MAP;
+      this.aiMemory = [];
       this.seed = (options.seed || 123456) >>> 0;
       this.time = 0;
       this.duration = 720;
@@ -64,25 +67,29 @@
       this._holdEvent = [false, false, false];
       this.tiles = Array.from({ length: WIDTH * HEIGHT }, (_, i) => ({
         x: i % WIDTH, y: Math.floor(i / WIDTH), owner: 0, connected: false,
-        explored: false, visible: false, blocked: false, source: false, isolation: 0
+        explored: false, visible: false, aiExplored: false, aiVisible: false,
+        blocked: false, source: false, terrain: 'plain', rich: false, cache: 0, isolation: 0
       }));
-      // Broken ridges leave several lanes through the portrait board.
-      for (let y = 3; y < HEIGHT - 3; y++) for (let x = 0; x < WIDTH; x++) {
-        const ridge = (y === 18 || y === 29) && ((x >= 3 && x <= 10) || (x >= 21 && x <= 28));
-        if (ridge && this.random() > .12) this.tile(x, y).blocked = true;
-      }
-      const sources = [[7, 37], [24, 37], [16, 31], [7, 24], [24, 23], [16, 16], [7, 10], [24, 10]];
-      for (const [x, y] of sources) {
-        this.tile(x, y).source = true;
-        this.tile(x, y).blocked = false;
-      }
+      if (this.mapId === 'legacy') {
+        // The seeded V0.4 geometry remains intact for the teaching scenario.
+        for (let y = 3; y < HEIGHT - 3; y++) for (let x = 0; x < WIDTH; x++) {
+          const ridge = (y === 18 || y === 29) && ((x >= 3 && x <= 10) || (x >= 21 && x <= 28));
+          if (ridge && this.random() > .12) this.tile(x, y).blocked = true;
+        }
+        const sources = [[7, 37], [24, 37], [16, 31], [7, 24], [24, 23], [16, 16], [7, 10], [24, 10]];
+        for (const [x, y] of sources) {
+          this.tile(x, y).source = true;
+          this.tile(x, y).blocked = false;
+        }
+      } else Maps.apply(this.tiles, this.mapId);
       for (let team = 1; team <= 2; team++) {
         const x = 16, y = team === 1 ? 41 : 6;
         this._building(team, 'core', x, y);
         for (const t of this.tiles) if (!t.blocked && Math.hypot(t.x - x, t.y - y) <= 6) t.owner = team;
-        this._unit(team, 'scout', x + .5, y - 1.5);
-        this._unit(team, 'fighter', x + (team === 1 ? 2.5 : -1.5), y + .5);
-        this._unit(team, 'fighter', x + .5, y + 2.5);
+        const mirrored = team === 2 && this.mapId !== 'legacy';
+        this._unit(team, 'scout', x + .5, y + (mirrored ? 2.5 : -1.5));
+        this._unit(team, 'fighter', x + (team === 1 || mirrored ? 2.5 : -1.5), y + .5);
+        this._unit(team, 'fighter', x + .5, y + (mirrored ? -1.5 : 2.5));
       }
       this.recompute();
       this.updateVisibility();
@@ -141,7 +148,9 @@
         stats.radius += tier;
       } else if (building.type === 'extractor') {
         stats.hp += tier * 45;
-        stats.income = [3.1, 4.5, 6][tier];
+        // Snapshot validation invokes this method on a plain saved state.
+        const tile = this.tiles[building.y * WIDTH + building.x];
+        stats.income = [3.1, 4.5, 6][tier] * (tile?.source && tile.rich ? 1.6 : 1);
       } else if (building.type === 'bastion') {
         stats.hp += tier * 80;
         stats.damage += tier * 5;
@@ -351,7 +360,7 @@
       if (this.cooldowns[team][type] > 0) return { ok: false, message: 'Pouvoir en recharge.' };
       const t = this.tile(x, y);
       if (!t) return { ok: false, message: 'Choisissez une zone.' };
-      if (team === 1 && !t.visible) return { ok: false, message: 'Cette zone doit être visible.' };
+      if (!(team === 1 ? t.visible : t.aiVisible)) return { ok: false, message: 'Cette zone doit être visible.' };
       if (type === 'impulse') {
         const b = this.buildings.filter(b => b.team === team && b.connected && ['relay', 'core'].includes(b.type))
           .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
@@ -430,18 +439,47 @@
     }
 
     updateVisibility() {
-      for (const t of this.tiles) t.visible = false;
-      const reveal = (x, y, radius) => {
+      for (const t of this.tiles) { t.visible = false; t.aiVisible = false; }
+      const reveal = (team, x, y, radius) => {
         for (let yy = Math.max(0, Math.floor(y - radius)); yy <= Math.min(HEIGHT - 1, Math.ceil(y + radius)); yy++) {
           for (let xx = Math.max(0, Math.floor(x - radius)); xx <= Math.min(WIDTH - 1, Math.ceil(x + radius)); xx++) {
             const t = this.tile(xx, yy);
-            if (Math.hypot(xx + .5 - x, yy + .5 - y) <= radius) { t.visible = true; t.explored = true; }
+            if (Math.hypot(xx + .5 - x, yy + .5 - y) <= radius) {
+              if (team === 1) { t.visible = true; t.explored = true; }
+              else { t.aiVisible = true; t.aiExplored = true; }
+            }
           }
         }
       };
-      for (const t of this.tiles) if (t.owner === 1 && t.connected) { t.visible = true; t.explored = true; }
-      for (const b of this.buildings) if (b.team === 1) reveal(b.x + .5, b.y + .5, b.type === 'core' ? 9 : 7);
-      for (const u of this.units) if (u.team === 1) reveal(u.x, u.y, UNIT_STATS[u.type].vision);
+      for (const t of this.tiles) if (t.connected) {
+        if (t.owner === 1) { t.visible = true; t.explored = true; }
+        else if (t.owner === 2) { t.aiVisible = true; t.aiExplored = true; }
+      }
+      for (const b of this.buildings) if (b.hp > 0) reveal(b.team, b.x + .5, b.y + .5, b.type === 'core' ? 9 : 7);
+      for (const u of this.units) if (u.hp > 0) reveal(u.team, u.x, u.y, UNIT_STATS[u.type].vision);
+      // Memory contains snapshots, never a reference to a hidden enemy object.
+      // A vanished building is forgotten only after its old tile is seen again.
+      this.aiMemory = this.aiMemory.filter(known => !this.tile(known.x, known.y)?.aiVisible ||
+        this.buildings.some(b => b.hp > 0 && b.team === 1 && b.id === known.id && b.x === known.x && b.y === known.y));
+      for (const b of this.buildings) if (b.hp > 0 && b.team === 1 && this.tile(b.x, b.y)?.aiVisible) {
+        const known = { id: b.id, type: b.type, x: b.x, y: b.y, seenAt: this.time };
+        const index = this.aiMemory.findIndex(item => item.id === b.id);
+        if (index < 0) this.aiMemory.push(known);
+        else this.aiMemory[index] = known;
+      }
+    }
+
+    _collectCaches() {
+      for (const tile of this.tiles) {
+        if (!tile.cache) continue;
+        const nearby = this.units.filter(u => u.hp > 0 && Math.hypot(u.x - tile.x - .5, u.y - tile.y - .5) <= 2.2);
+        const collector = nearby.find(u => u.type !== 'engineer' && Math.hypot(u.x - tile.x - .5, u.y - tile.y - .5) <= 1.2);
+        if (!collector || nearby.some(u => u.team !== collector.team)) continue;
+        const amount = tile.cache;
+        tile.cache = 0;
+        this.money[collector.team] += amount;
+        this.emit('cache', `Réserve récupérée : +${amount} pigments`, tile.x, tile.y, collector.team);
+      }
     }
 
     _spreadTerritory() {
@@ -452,6 +490,8 @@
         for (let y = b.y - radius; y <= b.y + radius; y++) for (let x = b.x - radius; x <= b.x + radius; x++) {
           const t = this.tile(x, y);
           if (!t || t.blocked || t.owner || Math.hypot(x - b.x, y - b.y) > radius) continue;
+          // Absorbent paper slows passive ink only; units can still capture it.
+          if (t.terrain === 'absorbent' && Math.floor(this.time + 1e-6) % 2 !== 0) continue;
           if (NEIGHBORS.some(([dx, dy]) => { const a = this.tile(x + dx, y + dy); return a?.owner === b.team && a.connected; })) claims.push([t, b.team]);
         }
       }
@@ -488,11 +528,12 @@
     _aiThink() {
       const team = 2, foe = 1, core = this.getCore(team);
       if (!core) return;
+      this.updateVisibility();
       const easy = this.difficulty === 'easy';
       // Détente changes strategic intent, never combat stats or victory rules.
       // The army first develops its half, then raids the midfield in short waves.
       // A player who attacks early can still be met by the full defending army.
-      const foeCore = this.getCore(foe);
+      const foeCore = this.aiMemory.find(b => b.type === 'core');
       const easyFrontier = this.time < 180 ? 14 : this.time < 300 ? 20 : this.time < 420 ? 26 : HEIGHT;
       const easyRaid = this.time >= 180 && (this.time - 180) % 90 < 35;
       const connected = this.tiles.filter(t => t.owner === team && t.connected && !t.blocked);
@@ -508,7 +549,8 @@
           let gain = 0;
           for (let dy = -6; dy <= 6; dy += 2) for (let dx = -6; dx <= 6; dx += 2) {
             const n = this.tile(t.x + dx, t.y + dy);
-            if (n && !n.blocked && !n.owner && dx * dx + dy * dy <= 36) gain++;
+            // Unknown or hidden ownership never informs an economic choice.
+            if (n && n.aiVisible && !n.blocked && !n.owner && dx * dx + dy * dy <= 36) gain++;
           }
           const score = gain + t.y * .055 + this.random() * 2;
           if (gain > 4 && score > bestScore) { best = t; bestScore = score; }
@@ -531,19 +573,26 @@
       const targetCount = (easy ? this.time < 300 ? 8 : 10 : 18) - reservedPlaces;
       if (army.length + queue.length < targetCount && queue.length < (easy ? 2 : 3)) {
         let type = count('breaker') < Math.floor(army.length / 5) ? 'breaker' : 'fighter';
-        if (core.level >= 2 && !count('engineer')) type = 'engineer';
+        if (!count('scout')) type = 'scout';
+        else if (core.level >= 2 && !count('engineer')) type = 'engineer';
         else if (core.level >= 2 && saboteurReady && !count('saboteur')) type = 'saboteur';
         if (this.money[team] >= this.getCost(team, type)) this.recruit(team, type);
       }
-      const threats = this.units.filter(u => u.team === foe && this.tile(u.x, u.y)?.owner === team);
+      const threats = this.units.filter(u => u.team === foe && u.hp > 0 && this.tile(u.x, u.y)?.aiVisible && this.tile(u.x, u.y)?.owner === team);
       let goal = null;
       if (threats.length) goal = threats.sort((a, b) => dist(a, core) - dist(b, core))[0];
       else if ((!easy && this.time > 65 || easy && (easyRaid || this.time >= 420)) && army.length >= 5) {
-        goal = this.buildings.filter(b => b.team === foe && (easy ? this.time >= 420 || b.type !== 'core' && (!foeCore || dist(b, foeCore) >= 10) : b.type !== 'core' || this.time > 180))
+        goal = this.aiMemory.filter(b => (easy ? this.time >= 420 || b.type !== 'core' && (foeCore ? dist(b, foeCore) >= 10 : b.y <= 31) : b.type !== 'core' || this.time > 180))
           .sort((a, b) => dist(a, core) - dist(b, core))[0];
         // An idle opponent still sees a small raid contest the central pigment.
         // Staying ten tiles from its Cœur leaves a readable, defendable front.
-        if (!goal && easy && easyRaid) goal = this.tile(16, 31);
+        if (!goal) {
+          // Investigate the mid-field first. Later expeditions advance beyond
+          // the known front instead of magically selecting a hidden building.
+          const front = Math.max(6, ...this.buildings.filter(b => b.team === team && b.connected).map(b => b.y));
+          const y = easy && this.time < 420 ? 31 : Math.min(!easy && this.time < 180 ? 31 : 42, front + 8);
+          goal = this.tiles.filter(t => !t.blocked && t.y === y).sort((a, b) => Math.abs(a.x - 16) - Math.abs(b.x - 16))[0];
+        }
       }
       const frontier = this.buildings.filter(b => b.team === team && b.connected && b.type === 'relay').sort((a, b) => b.y - a.y)[0];
       if (frontier) this.setRally(team, frontier.x, frontier.y);
@@ -574,19 +623,53 @@
         else this.command(team, [engineer.id], 'hold');
       }
       for (const saboteur of army.filter(u => u.type === 'saboteur')) {
-        const relay = this.buildings.filter(b => b.team === foe && b.type === 'relay' && (!easy || this.time >= 420 || easyRaid && (!foeCore || dist(b, foeCore) >= 10))).sort((a, b) => dist(saboteur, a) - dist(saboteur, b))[0];
+        const relay = this.aiMemory.filter(b => b.type === 'relay' && (!easy || this.time >= 420 || easyRaid && (foeCore ? dist(b, foeCore) >= 10 : b.y <= 31))).sort((a, b) => dist(saboteur, a) - dist(saboteur, b))[0];
         if (saboteur.hp < saboteur.maxHp * .3) this.command(team, [saboteur.id], 'retreat');
         else if (relay) this.order([saboteur.id], relay.x, relay.y, 'attack');
-        else if (easy && frontier) {
+        else if (frontier) {
           if (dist(saboteur, frontier) > 3) this.order([saboteur.id], frontier.x, frontier.y);
           else this.command(team, [saboteur.id], 'hold');
         }
       }
-      for (const scout of army.filter(u => u.type === 'scout' && !u.path.length)) {
-        const sources = this.tiles.filter(t => t.source && t.owner !== team && (!easy || this.time >= 420 || t.y <= (this.time < 300 ? 24 : 31))).sort((a, b) => dist(scout, a) - dist(scout, b));
-        if (sources.length) this.order([scout.id], sources[0].x, sources[0].y);
+      for (const scout of army.filter(u => u.type === 'scout')) {
+        if (scout.hp < scout.maxHp * .4 || scout.stance === 'retreat' && scout.hp < scout.maxHp * .8) {
+          this.command(team, [scout.id], 'retreat');
+          continue;
+        }
+        if (scout.path.length) continue;
+        const limit = easy ? this.time < 300 ? 24 : this.time < 420 ? 31 : HEIGHT - 1 : HEIGHT - 1;
+        const resources = this.tiles.filter(t => t.aiExplored && !t.blocked && t.y <= limit && dist(scout, t) > 2 &&
+          (t.aiVisible && t.cache > 0 || t.source && (t.aiVisible ? t.owner === 0 : true)))
+          .sort((a, b) => (dist(scout, a) - (a.aiVisible && a.cache ? 3 : 0)) - (dist(scout, b) - (b.aiVisible && b.cache ? 3 : 0)));
+        const destination = resources[0] || this._scoutDestination(scout, limit);
+        if (destination) this.order([scout.id], destination.x, destination.y);
       }
-      if (goal && !easy && this.cooldowns[team].bleach <= 0) this.power(team, 'bleach', goal.x, goal.y);
+      if (goal && this.tile(goal.x, goal.y)?.aiVisible && !easy && this.cooldowns[team].bleach <= 0) this.power(team, 'bleach', goal.x, goal.y);
+    }
+
+    _scoutDestination(scout, maxY) {
+      let best = null, bestScore = -Infinity;
+      // Geometry can guide navigation; enemy state and undiscovered objectives
+      // cannot. Sample information gain around reachable unexplored positions.
+      for (let y = 1; y <= maxY; y += 3) for (let x = 1; x < WIDTH; x += 3) {
+        const t = this.tile(x, y);
+        if (t.blocked || t.aiExplored || dist(scout, t) < 2) continue;
+        let unknown = 0;
+        for (let dy = -6; dy <= 6; dy += 2) for (let dx = -6; dx <= 6; dx += 2) {
+          const n = this.tile(x + dx, y + dy);
+          if (n && !n.aiExplored && dx * dx + dy * dy <= 36) unknown++;
+        }
+        const score = unknown / (dist(scout, t) + 4) + y * .015;
+        if (score > bestScore) { best = t; bestScore = score; }
+      }
+      return best;
+    }
+
+    _canSeePosition(team, x, y) {
+      const tile = this.tile(x, y);
+      if (tile?.owner === team && tile.connected) return true;
+      return this.buildings.some(b => b.team === team && b.hp > 0 && Math.hypot(x - b.x - .5, y - b.y - .5) <= (b.type === 'core' ? 9 : 7)) ||
+        this.units.some(u => u.team === team && u.hp > 0 && Math.hypot(x - u.x, y - u.y) <= UNIT_STATS[u.type].vision);
     }
 
     _combatTarget(u, stats) {
@@ -616,7 +699,7 @@
     }
 
     _moveUnit(u, speed, dt) {
-      let remaining = speed * dt;
+      let remaining = speed * dt * (this.tile(u.x, u.y)?.terrain === 'smooth' ? 1.3 : 1);
       while (remaining > 0 && u.path.length) {
         const p = u.path[0], d = dist(u, p);
         if (d <= remaining) { u.x = p.x; u.y = p.y; u.path.shift(); remaining -= d; }
@@ -638,7 +721,7 @@
         b.age += dt; b.attack = Math.max(0, b.attack - dt);
         if (b.hp <= 0 || !b.connected || !['bastion', 'core'].includes(b.type)) continue;
         const stats = this.getBuildingStats(b);
-        const target = this.units.filter(u => u.team !== b.team && u.hp > 0 && Math.hypot(u.x - b.x - .5, u.y - b.y - .5) < stats.range)
+        const target = this.units.filter(u => u.team !== b.team && u.hp > 0 && Math.hypot(u.x - b.x - .5, u.y - b.y - .5) < stats.range && this._canSeePosition(b.team, u.x, u.y))
           .sort((a, c) => dist(a, b) - dist(c, b))[0];
         if (target && b.attack <= 0) {
           target.hp -= stats.damage; target.lastHit = this.time; b.attack = .8;
@@ -698,7 +781,7 @@
       for (let team = 1; team <= 2; team++) for (let slot = 0; slot < 3; slot++) this.getSquad(team, slot);
       this._spread += dt; this._capture += dt; this._vision += dt; this._ai += dt;
       if (this._spread >= 1) { this._spread -= 1; this._spreadTerritory(); }
-      if (this._capture >= .7) { this._capture -= .7; this._captureTerritory(); }
+      if (this._capture >= .7) { this._capture -= .7; this._captureTerritory(); this._collectCaches(); }
       if (this._vision >= .3) { this._vision = 0; this.updateVisibility(); }
       if (this._ai >= (this.difficulty === 'easy' ? 5 : 3.3)) { this._ai = 0; this._aiThink(); }
       for (let team = 1; team <= 2; team++) {
@@ -714,7 +797,7 @@
     }
   }
 
-  const api = { Game, COSTS, UNIT_STATS, BUILDING_STATS, WIDTH, HEIGHT, UNIT_LIMIT, QUEUE_LIMIT, RECRUIT_TIMES, UPGRADE_COSTS, SPECIALIZATIONS };
+  const api = { Game, MAPS: Maps.catalog, COSTS, UNIT_STATS, BUILDING_STATS, WIDTH, HEIGHT, UNIT_LIMIT, QUEUE_LIMIT, RECRUIT_TIMES, UPGRADE_COSTS, SPECIALIZATIONS };
   root.CQEngine = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
