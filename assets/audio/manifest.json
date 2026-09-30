@@ -1,0 +1,34 @@
+{
+  "click_001.ogg": {
+    "bytes": 4876,
+    "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9"
+  },
+  "confirmation_001.ogg": {
+    "bytes": 8968,
+    "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a"
+  },
+  "drop_001.ogg": {
+    "bytes": 5859,
+    "sha256": "692ee3a6f1821402ca649ff735bee9591dc4846c8098fc7d6a90fd15fa57c1af"
+  },
+  "error_001.ogg": {
+    "bytes": 7373,
+    "sha256": "46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433"
+  },
+  "glass_001.ogg": {
+    "bytes": 6103,
+    "sha256": "183eebee20eb0a532b0b85104d139cbf2673eb66d95c3cc733ac9ea98362e7e8"
+  },
+  "jingles_PIZZI00.ogg": {
+    "bytes": 10382,
+    "sha256": "b442ade3308a2bbda4b8c572c86f9f1071c7bdbcfb1e6f915d35c605b61bd475"
+  },
+  "jingles_PIZZI03.ogg": {
+    "bytes": 16981,
+    "sha256": "88da900ec74a79fb845f2dcf2068383998833a9ee1b87a23f074924781af5700"
+  },
+  "select_001.ogg": {
+    "bytes": 5468,
+    "sha256": "aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a"
+  }
+}

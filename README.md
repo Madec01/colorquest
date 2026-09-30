@@ -1,6 +1,6 @@
 # Colorquest
 
-Un RTS minimaliste : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
+Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
 ## Jouer
 
@@ -10,9 +10,15 @@ Pour servir le jeu localement : `python3 -m http.server 8000`, puis ouvrir http:
 
 Le dépôt contient une version statique compatible avec GitHub Pages. L'hébergement Pages doit être activé dans les paramètres du dépôt pour obtenir une adresse de jeu publique.
 
+## Vérification du moteur
+
+`node tests/engine.test.js`
+
 ## Principe
 
 Développez votre territoire avec les relais, exploitez les sources de pigment et recrutez une armée. Seul le terrain relié au Cœur compte pour la domination. Couper une liaison affaiblit toute une branche.
+
+Sur téléphone : touchez une unité (ou « Toute l’armée »), puis sa destination. Les onglets du bas donnent accès aux constructions, aux unités et aux pouvoirs. Le bouton « ? » ouvre l’aide.
 
 Les contrôles et les prix sont indiqués dans le jeu. Une première partie en mode détente est conseillée.
 
