@@ -1,0 +1,13 @@
+.resume-card{margin:10px 0}
+.resume-button{display:block;width:100%;min-height:60px;padding:12px 14px;border:1px solid var(--player-color,var(--cyan));border-radius:10px;background:var(--player-soft,#edf9f5);text-align:left}
+.resume-button[hidden]{display:none}
+.resume-button>span{display:block;font-size:13px;font-weight:750;color:var(--player-strong,#175769)}
+.resume-button small{display:block;font-size:11px;line-height:1.5;margin-top:3px;color:#52656b;font-variant-numeric:tabular-nums}
+.save-note{font-size:10px;line-height:1.55;color:#647878;margin:8px 0}
+.save-warning{color:#975028!important}
+.modal-card p.save-note{font-size:11px;line-height:1.5}
+button.pause-flag{cursor:pointer;pointer-events:auto;border:1px solid #cad6cf;min-height:48px;z-index:4;font-size:13px;white-space:nowrap}
+button.pause-flag:focus-visible{outline:3px solid var(--cyan)}
+.pacing-note{font-size:10px;line-height:1.5;color:#647878;margin:-3px 0 10px;min-height:30px}
+@media(max-width:760px){.resume-button{padding:10px 12px}.save-note{font-size:10px}.has-install .hero>p{margin:12px 0 15px;line-height:1.5}.has-install h1{font-size:clamp(36px,10.8vw,46px);letter-spacing:-2px;margin:12px 0;line-height:1.06}.has-install .hero{margin-top:5px}.has-install .hero>.eyebrow{font-size:7px}.has-install .menu-nav{padding-top:12px;padding-bottom:12px}}
+@media(min-width:761px){.menu.has-install{height:auto;min-height:max(100dvh,1030px)}.menu.has-install .menu-bottom{position:relative;inset:auto;margin:28px 4.2%}}

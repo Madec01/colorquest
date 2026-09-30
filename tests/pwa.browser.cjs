@@ -17,7 +17,7 @@ const server = http.createServer((request, response) => {
   const file = path.join(root, name);
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) { response.writeHead(404).end(); return; }
   let body = fs.readFileSync(file);
-  if (name === 'sw.js') body = Buffer.from(body.toString().replace(/COLORQUEST_V03_[^']+/, 'COLORQUEST_V03_TEST_' + release));
+  if (name === 'sw.js') body = Buffer.from(body.toString().replace(/COLORQUEST_V\d+_[^']+/, 'COLORQUEST_V04_TEST_' + release));
   if (name === 'index.html') body = Buffer.from(body.toString().replace('</head>', '<meta name="pwa-test-release" content="' + release + '"></head>'));
   response.writeHead(200, { 'Content-Type': types[path.extname(name)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
   response.end(body);
@@ -80,6 +80,7 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.evaluate(() => paused), false);
     assert.equal(await page.evaluate(() => playing), true);
     await page.evaluate(() => CQInstall.showUpdate());
+    const updateSnapshot = await page.evaluate(() => CQSnapshot.capture(game));
     await Promise.all([page.waitForNavigation(), page.locator('#confirmGameUpdate').tap()]);
     await page.waitForFunction(() => CQInstall.offlineReady === true);
     assert.equal(await page.locator('meta[name="pwa-test-release"]').getAttribute('content'), '2');
@@ -91,7 +92,9 @@ const server = http.createServer((request, response) => {
     await context.setOffline(true);
     await page.goto(url + '?offline=1');
     await page.waitForFunction(() => CQInstall.offlineReady === true);
-    await page.locator('#play').tap();
+    await page.locator('#continueGame').tap();
+    assert.equal(await page.evaluate(() => paused), true, 'offline saved match resumes paused');
+    assert.deepEqual(await page.evaluate(() => CQSnapshot.capture(game)), updateSnapshot, 'update then cold offline restart preserves exact match');
     assert.equal(await page.evaluate(() => playing && !!game && !!CQEngine), true);
     assert.equal(await page.evaluate(async () => (await fetch('assets/audio/select_001.ogg')).status), 200);
     assert.deepEqual(errors, []);
@@ -103,7 +106,7 @@ const server = http.createServer((request, response) => {
     await iphone.goto(url); await iphone.locator('#installGame').tap();
     assert.match(await iphone.locator('#installDialog').innerText(), /Safari/);
     assert.match(await iphone.locator('#installDialog').innerText(), /écran d’accueil/);
-    assert.match(await iphone.locator('#installDialog').innerText(), /n’est pas encore sauvegardée/);
+    assert.match(await iphone.locator('#installDialog').innerText(), /se sauvegarde automatiquement/);
     assert.equal(await iphone.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await ios.close();
 

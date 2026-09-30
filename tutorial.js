@@ -5,13 +5,13 @@
   let scoutId = null, dummyId = null, branchId = null, transition = 0;
   let originalDifficulty = 'easy';
   const lessons = [
-    { title: 'Explorez la toile', text: 'Touchez la goutte cyan → « Donner un ordre » → cercle doré. Glissez pour déplacer la vue ; pincez pour zoomer.', target: [13, 37], tab: 'units' },
+    { title: 'Explorez la toile', text: 'Touchez votre éclaireur rond → « Donner un ordre » → cercle doré. Glissez pour déplacer la vue ; pincez pour zoomer.', target: [13, 37], tab: 'units' },
     { title: 'Étendez votre réseau', text: 'Touchez « Relais », puis le cercle doré. Le relais propage votre couleur et doit rester connecté.', target: [12, 38], tab: 'build', button: '[data-build="relay"]' },
-    { title: 'Exploitez le pigment', text: 'La source dorée devient cyan : attendez sa connexion, puis touchez « Extracteur » et la source.', target: [9, 36], tab: 'build', button: '[data-build="extractor"]' },
+    { title: 'Exploitez le pigment', text: 'La source dorée prend votre couleur : attendez sa connexion, puis touchez « Extracteur » et la source.', target: [9, 36], tab: 'build', button: '[data-build="extractor"]' },
     { title: 'Recrutez un combattant', text: 'Votre extracteur augmente le revenu. Dans « Mobiliser », touchez « Combattant », puis attendez 6 secondes : il sort de la file près du Cœur.', target: [16, 41], tab: 'units', button: '[data-recruit="fighter"]' },
-    { title: 'Gagnez une escarmouche', text: 'Touchez le carré cyan → « Donner un ordre » → cible corail. Votre combattant attaque automatiquement à portée.', target: [13, 28], tab: 'units' },
-    { title: 'Coupez le réseau adverse', text: 'Nouvelle scène : carré cyan → « Donner un ordre » → cercle doré. Coupez le couloir corail pour isoler le relais à gauche.', target: [20, 28], tab: 'units' },
-    { title: 'Reconnectez votre réseau', text: 'Carré cyan → « Donner un ordre » → brèche dorée. Le passage redevient cyan : votre relais est reconnecté !', target: [16, 34], tab: 'units' }
+    { title: 'Gagnez une escarmouche', text: 'Touchez votre combattant carré → « Donner un ordre » → cible adverse. Votre combattant attaque automatiquement à portée.', target: [13, 28], tab: 'units' },
+    { title: 'Coupez le réseau adverse', text: 'Nouvelle scène : votre combattant → « Donner un ordre » → cercle doré. Coupez le couloir adverse pour isoler le relais à gauche.', target: [20, 28], tab: 'units' },
+    { title: 'Reconnectez votre réseau', text: 'Votre combattant → « Donner un ordre » → brèche dorée. Le passage reprend votre couleur : votre relais est reconnecté !', target: [16, 34], tab: 'units' }
   ];
 
   const ribbon = document.createElement('section');
@@ -64,7 +64,7 @@
   function begin() {
     // start() calls stop(); remember difficulty outside of that lifecycle call.
     const previous = active ? originalDifficulty : difficulty;
-    start();
+    start({tutorial:true});
     originalDifficulty = previous;
     game = new CQEngine.Game({ difficulty: 'easy', seed: 202602 });
     active = true; lesson = 0; recruitId = null; dummyId = null; branchId = null;
@@ -215,7 +215,7 @@
     ribbon.classList.add('hidden');
     document.querySelectorAll('.training-target-command').forEach(e => e.classList.remove('training-target-command'));
   }
-  function normalGame() { const restore = originalDifficulty; stop(); difficulty = restore; start(); }
+  function normalGame() { difficulty = originalDifficulty; start(); }
   function finish() {
     stop(); paused = true; ended = true;
     $('pauseFlag').classList.add('hidden');

@@ -2,6 +2,16 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
+## V0.4 — reprendre sa conquête, choisir sa couleur
+
+- Six couleurs dans le menu : cyan, bleu, violet, rose, vert et orange. Le camp adverse est assorti automatiquement ; le choix est mémorisé sur l’appareil.
+- Sauvegarde locale automatique toutes les 10 secondes et lors des pauses, du passage en arrière-plan, du retour au menu et avant une mise à jour.
+- **Reprendre la partie** retrouve l’état du jeu, la caméra et la sélection. La reprise est en pause : toucher **Reprendre** pour continuer. Le temps d’absence ne fait pas avancer l’IA.
+- Le tutoriel conserve votre partie habituelle. Une nouvelle partie demande confirmation avant de remplacer la sauvegarde.
+- Détente plus progressif : premiers raids après 3 min, pression accrue après 5 min, attaque volontaire du Cœur après 7 min. La victoire territoriale peut survenir avant ; Stratégie conserve son rythme.
+
+Une seule sauvegarde par navigateur ou application, sur cet appareil. Il n’y a pas de synchronisation en ligne. Effacer les données du navigateur efface la partie ; une fermeture forcée peut perdre les dernières secondes depuis la dernière écriture. Un stockage indisponible ou plein est signalé. Les exercices du tutoriel ne sont pas sauvegardés.
+
 ## V0.3 — développer et commander
 
 - File de recrutement (six places) avec durée, progression et annulation : remboursement intégral avant formation, 50 % une fois commencée.
@@ -19,7 +29,7 @@ Ouvrir le jeu en HTTPS, puis utiliser **Installer sur mon téléphone** dans le 
 
 Attendre l’indication de disponibilité hors ligne lors de la première ouverture. Ensuite les fichiers du jeu peuvent être chargés sans réseau. Les mises à jour sont proposées sans rechargement imposé pendant une partie.
 
-**Le cache hors ligne n’est pas une sauvegarde de partie** : quitter ou recharger fait perdre la progression en cours. L’installation n’est pas disponible depuis un simple fichier local.
+Le cache hors ligne conserve les fichiers du jeu ; la sauvegarde locale V0.4 conserve séparément la progression. L’installation n’est pas disponible depuis un simple fichier local. Une partie commencée dans V0.3 ne peut pas être récupérée rétroactivement : terminez-la avant cette première mise à jour.
 
 ## Jouer
 
@@ -35,9 +45,11 @@ Version en ligne : https://madec01.github.io/colorquest/ (GitHub Pages).
 node tests/engine.test.js
 node tests/tutorial.test.cjs
 node tests/v03.test.cjs
+node tests/snapshots.test.cjs
+node tests/balance.test.cjs
 ```
 
-Tests navigateur facultatifs : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter `node tests/camera.browser.cjs`, `node tests/tutorial.browser.cjs`, `node tests/v03.browser.cjs` et `node tests/pwa.browser.cjs`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur facultatifs : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter `node tests/camera.browser.cjs`, `node tests/tutorial.browser.cjs`, `node tests/v03.browser.cjs`, `node tests/pwa.browser.cjs`, `node tests/session.browser.cjs` et `node tests/palette.browser.cjs`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
 ## Principe
 
@@ -55,6 +67,9 @@ Les contrôles et les prix sont indiqués dans le jeu. Une première partie en m
 - `readability.js` / `readability.css` : fiches, frontières, trajets et alertes.
 - `tutorial.js` / `tutorial.css` : scénario pédagogique, étapes et guidage.
 - `strategy.js` / `strategy.css` : production, progression et escouades.
+- `snapshots.js` : format versionné, validation et restauration déterministe de la simulation.
+- `session.js` / `session.css` : sauvegarde locale, reprise et cycle de vie mobile.
+- `palette.js` / `palette.css` : couleurs des camps et préférence locale.
 - `manifest.webmanifest`, `sw.js`, `install.js` / `install.css` : installation et cache hors ligne.
 - `style.css` et `index.html` : présentation et menus.
 - `FEUILLE_DE_ROUTE.md` : suivi vivant du projet.

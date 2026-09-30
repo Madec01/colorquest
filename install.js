@@ -75,7 +75,7 @@
       steps = '<ol><li>Ouvrez le <b>menu du navigateur ⋮</b>.</li><li>Choisissez <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>, si cette option est disponible.</li><li>Confirmez, puis lancez Colorquest depuis sa nouvelle icône.</li></ol><p>Sur ordinateur, utilisez aussi l’icône d’installation près de la barre d’adresse. Si votre navigateur ne propose pas l’installation, le jeu reste accessible ici.</p>';
     }
     const pending = installPending ? '<p>La demande a été acceptée. Terminez les étapes proposées par votre navigateur.</p>' : '';
-    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">Le mode hors ligne conserve les fichiers du jeu. Fermer ou recharger le jeu termine la partie en cours : sa progression n’est pas encore sauvegardée.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
+    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">Le mode hors ligne conserve les fichiers du jeu. La partie se sauvegarde automatiquement sur cet appareil ; retrouvez-la avec « Reprendre la partie ». Le tutoriel se recommence depuis le début.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
     dialog.querySelector('#installHelpDone').onclick = closeDialog;
     renderStatus();
   }
@@ -127,10 +127,17 @@
 
   function showUpdate() {
     if (!registration?.waiting) return;
-    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p>Recharger ouvre la nouvelle version. <b>La partie en cours dans cet onglet sera perdue.</b> Vous pouvez terminer votre partie avant de l’appliquer.</p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
+    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p>Recharger ouvre la nouvelle version. Votre partie sera sauvegardée avant le rechargement ; reprenez-la ensuite depuis le menu. Un tutoriel en cours se recommencera depuis le début.</p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
     dialog.querySelector('#cancelGameUpdate').onclick = closeDialog;
     dialog.querySelector('#confirmGameUpdate').onclick = () => {
       if (!registration.waiting) { closeDialog(); updateButton.hidden = true; return; }
+      if (activeMatch() && !window.CQTutorial?.active) {
+        const saved = window.CQSave?.save();
+        if (saved && !saved.ok && !saved.skipped) {
+          dialog.querySelector('p').textContent = saved.message + ' La mise à jour attendra votre retour au menu.';
+          return;
+        }
+      }
       reloadingForUpdate = true;
       dialog.querySelector('#confirmGameUpdate').disabled = true;
       dialog.querySelector('#confirmGameUpdate').textContent = 'Mise à jour…';

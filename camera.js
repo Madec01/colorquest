@@ -197,15 +197,25 @@
     mc.fillStyle='#eff1e9';mc.fillRect(0,0,miniCanvas.width,miniCanvas.height);
     for(const t of game.tiles){
       if(!t.explored&&t.owner!==1)continue;
-      mc.fillStyle=t.blocked?'#bdc7bf':t.owner===1?(t.connected?'#51c4bd':'#bdcdc2'):t.owner===2?'#efab95':'#fffdf6';
+      mc.fillStyle=t.blocked?'#bdc7bf':t.owner===1?(t.connected?paletteColor('playerFill','#51c4bd'):paletteColor('playerIsolated','#bdcdc2')):t.owner===2?paletteColor('enemyFill','#efab95'):'#fffdf6';
       mc.fillRect(t.x*sx,t.y*sy,sx+.4,sy+.4);
       if(t.source){mc.fillStyle='#a68534';mc.fillRect(t.x*sx,t.y*sy,Math.max(2,sx),Math.max(2,sy));}
     }
-    for(const b of game.buildings){if(b.hp<=0||(b.team!==1&&!tileAt(b.x,b.y)?.visible))continue;mc.fillStyle=b.team===1?'#087d85':'#b64937';mc.fillRect((b.x+.5)*sx-1.5,(b.y+.5)*sy-1.5,3,3);}
+    for(const b of game.buildings){if(b.hp<=0||(b.team!==1&&!tileAt(b.x,b.y)?.visible))continue;mc.fillStyle=b.team===1?paletteColor('playerStrong','#087d85'):paletteColor('enemyStrong','#b64937');mc.fillRect((b.x+.5)*sx-1.5,(b.y+.5)*sy-1.5,3,3);}
     const x=clamp(-view.x/view.cell,0,state.W),y=clamp(-view.y/view.cell,0,state.H);
     const right=clamp((view.w-view.x)/view.cell,0,state.W),bottom=clamp((view.h-view.y)/view.cell,0,state.H);
     mc.strokeStyle='#173e4d';mc.lineWidth=1.5;mc.strokeRect(x*sx+.75,y*sy+.75,Math.max(1,(right-x)*sx-1.5),Math.max(1,(bottom-y)*sy-1.5));
   }
-  window.CQCamera={resize:resizeCamera,reset,focus,update,zoomAt,get zoom(){return state.zoom;}};
+  function capture(){return {cx:state.cx,cy:state.cy,zoom:state.zoom,mini:state.mini};}
+  function restore(saved){
+    if(!saved||![saved.cx,saved.cy,saved.zoom].every(Number.isFinite))return;
+    clearGesture();focus(saved.cx,saved.cy,saved.zoom);
+    if(typeof saved.mini==='boolean'){
+      state.mini=saved.mini;miniCanvas.hidden=!state.mini;
+      document.getElementById('cameraMiniToggle').setAttribute('aria-expanded',String(state.mini));
+      document.getElementById('cameraMiniToggle').textContent='MINICARTE '+(state.mini?'▾':'▸');
+    }
+  }
+  window.CQCamera={resize:resizeCamera,reset,focus,update,zoomAt,capture,restore,get zoom(){return state.zoom;}};
   resize();
 })();

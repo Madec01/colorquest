@@ -263,10 +263,10 @@
   function draw(c,v){
     if(!allowed())return;const point=game.rally?.[1];if(!point)return;
     const x=v.x+(point.x+.5)*v.cell,y=v.y+(point.y+.5)*v.cell;if(x<-30||y<-35||x>v.w+30||y>v.h+30)return;
-    c.save();c.strokeStyle='#175769';c.fillStyle='#16b6ba';c.lineWidth=2;c.beginPath();c.moveTo(x,y+5);c.lineTo(x,y-19);c.stroke();
+    c.save();c.strokeStyle=paletteColor('selection','#175769');c.fillStyle=C.cyan;c.lineWidth=2;c.beginPath();c.moveTo(x,y+5);c.lineTo(x,y-19);c.stroke();
     c.beginPath();c.moveTo(x+1,y-18);c.lineTo(x+16,y-13);c.lineTo(x+1,y-8);c.closePath();c.fill();c.stroke();
     c.strokeStyle='#ffffff';c.lineWidth=2;c.beginPath();c.ellipse(x,y+6,7,3,0,0,Math.PI*2);c.stroke();
-    if(mode?.kind==='rally'||v.cell>=13){c.font='600 10px system-ui';c.textAlign='center';c.fillStyle='#fffef7';c.fillRect(x-29,y+11,58,15);c.fillStyle='#175769';c.fillText('Ralliement',x,y+22);}c.restore();
+    if(mode?.kind==='rally'||v.cell>=13){c.font='600 10px system-ui';c.textAlign='center';c.fillStyle='#fffef7';c.fillRect(x-29,y+11,58,15);c.fillStyle=paletteColor('selection','#175769');c.fillText('Ralliement',x,y+22);}c.restore();
   }
   function reset(){close(false);queueSignature='';developmentSignature='';selectedDoctrine=null;upgradeTarget=null;lastTick=0;discovery.classList.add('hidden');upgradeButton.classList.add('hidden');$s('objectCard')?.classList.remove('has-strategy-upgrade');}
   function onGameStart(){reset();watchedGame=game;update(true);}

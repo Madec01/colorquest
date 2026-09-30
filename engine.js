@@ -56,7 +56,7 @@
       this.specializations = [null, null, null];
       this.squads = [[], [[], [], []], [[], [], []]];
       this._id = 1;
-      this._nextExpand = this.difficulty === 'easy' ? 28 : 18;
+      this._nextExpand = this.difficulty === 'easy' ? 35 : 18;
       this._spread = 0;
       this._ai = 0;
       this._vision = 0;
@@ -489,6 +489,12 @@
       const team = 2, foe = 1, core = this.getCore(team);
       if (!core) return;
       const easy = this.difficulty === 'easy';
+      // Détente changes strategic intent, never combat stats or victory rules.
+      // The army first develops its half, then raids the midfield in short waves.
+      // A player who attacks early can still be met by the full defending army.
+      const foeCore = this.getCore(foe);
+      const easyFrontier = this.time < 180 ? 14 : this.time < 300 ? 20 : this.time < 420 ? 26 : HEIGHT;
+      const easyRaid = this.time >= 180 && (this.time - 180) % 90 < 35;
       const connected = this.tiles.filter(t => t.owner === team && t.connected && !t.blocked);
       for (const t of connected) {
         if (t.source && !this.buildings.some(b => Math.hypot(b.x - t.x, b.y - t.y) < 2.1) && this.money[team] >= this.getCost(team, 'extractor')) {
@@ -496,7 +502,7 @@
         }
       }
       if (this.money[team] >= this.getCost(team, 'relay') && this.time >= this._nextExpand) {
-        const candidates = connected.filter(t => !t.source && !this.buildings.some(b => Math.hypot(b.x - t.x, b.y - t.y) < 4.2));
+        const candidates = connected.filter(t => !t.source && (!easy || t.y <= easyFrontier) && !this.buildings.some(b => Math.hypot(b.x - t.x, b.y - t.y) < 4.2));
         let best = null, bestScore = -1;
         for (const t of candidates) {
           let gain = 0;
@@ -507,7 +513,7 @@
           const score = gain + t.y * .055 + this.random() * 2;
           if (gain > 4 && score > bestScore) { best = t; bestScore = score; }
         }
-        if (best) { this.build(team, 'relay', best.x, best.y); this._nextExpand = this.time + (easy ? 20 : 13); }
+        if (best) { this.build(team, 'relay', best.x, best.y); this._nextExpand = this.time + (easy ? this.time < 300 ? 35 : 30 : 13); }
       }
       // Development is deliberately delayed on easy. It uses the same prices as the player.
       const army = this.units.filter(u => u.team === team), queue = this.queues[team];
@@ -522,7 +528,7 @@
       const saboteurReady = this.time > (easy ? 230 : 150);
       // Keep places for support roles instead of filling the whole army before technology.
       const reservedPlaces = (core.level || 1) < 2 ? 2 : !saboteurReady && !count('saboteur') ? 1 : 0;
-      const targetCount = (easy ? 10 : 18) - reservedPlaces;
+      const targetCount = (easy ? this.time < 300 ? 8 : 10 : 18) - reservedPlaces;
       if (army.length + queue.length < targetCount && queue.length < (easy ? 2 : 3)) {
         let type = count('breaker') < Math.floor(army.length / 5) ? 'breaker' : 'fighter';
         if (core.level >= 2 && !count('engineer')) type = 'engineer';
@@ -532,9 +538,12 @@
       const threats = this.units.filter(u => u.team === foe && this.tile(u.x, u.y)?.owner === team);
       let goal = null;
       if (threats.length) goal = threats.sort((a, b) => dist(a, core) - dist(b, core))[0];
-      else if (this.time > (easy ? 105 : 65) && army.length >= 5) {
-        goal = this.buildings.filter(b => b.team === foe && (b.type !== 'core' || this.time > (easy ? 240 : 180)))
+      else if ((!easy && this.time > 65 || easy && (easyRaid || this.time >= 420)) && army.length >= 5) {
+        goal = this.buildings.filter(b => b.team === foe && (easy ? this.time >= 420 || b.type !== 'core' && (!foeCore || dist(b, foeCore) >= 10) : b.type !== 'core' || this.time > 180))
           .sort((a, b) => dist(a, core) - dist(b, core))[0];
+        // An idle opponent still sees a small raid contest the central pigment.
+        // Staying ten tiles from its Cœur leaves a readable, defendable front.
+        if (!goal && easy && easyRaid) goal = this.tile(16, 31);
       }
       const frontier = this.buildings.filter(b => b.team === team && b.connected && b.type === 'relay').sort((a, b) => b.y - a.y)[0];
       if (frontier) this.setRally(team, frontier.x, frontier.y);
@@ -544,7 +553,16 @@
         if (u.hp < u.maxHp * .25 || (u.stance === 'retreat' && u.hp < u.maxHp * .75)) this.command(team, [u.id], 'retreat');
         else healthy.push(u.id);
       }
-      if (goal) this.command(team, healthy, 'attack', goal.x, goal.y);
+      if (easy) {
+        const raiders = goal ? healthy.map(id => this.units.find(u => u.id === id)).sort((a, b) => dist(a, goal) - dist(b, goal))
+          .slice(0, threats.length || this.time >= 420 ? healthy.length : this.time < 300 ? 3 : 5).map(u => u.id) : [];
+        if (goal) this.command(team, raiders, 'attack', goal.x, goal.y);
+        for (const id of healthy.filter(id => !raiders.includes(id))) {
+          const u = this.units.find(u => u.id === id), guard = frontier || core;
+          if (dist(u, guard) > 3) this.order([id], guard.x, guard.y, 'attack');
+          else this.command(team, [id], 'hold');
+        }
+      } else if (goal) this.command(team, healthy, 'attack', goal.x, goal.y);
       else if (frontier) for (const id of healthy) {
         const u = this.units.find(u => u.id === id);
         if (!u.path.length && dist(u, frontier) > 4) this.order([id], frontier.x, frontier.y, 'attack');
@@ -556,12 +574,16 @@
         else this.command(team, [engineer.id], 'hold');
       }
       for (const saboteur of army.filter(u => u.type === 'saboteur')) {
-        const relay = this.buildings.filter(b => b.team === foe && b.type === 'relay').sort((a, b) => dist(saboteur, a) - dist(saboteur, b))[0];
+        const relay = this.buildings.filter(b => b.team === foe && b.type === 'relay' && (!easy || this.time >= 420 || easyRaid && (!foeCore || dist(b, foeCore) >= 10))).sort((a, b) => dist(saboteur, a) - dist(saboteur, b))[0];
         if (saboteur.hp < saboteur.maxHp * .3) this.command(team, [saboteur.id], 'retreat');
         else if (relay) this.order([saboteur.id], relay.x, relay.y, 'attack');
+        else if (easy && frontier) {
+          if (dist(saboteur, frontier) > 3) this.order([saboteur.id], frontier.x, frontier.y);
+          else this.command(team, [saboteur.id], 'hold');
+        }
       }
       for (const scout of army.filter(u => u.type === 'scout' && !u.path.length)) {
-        const sources = this.tiles.filter(t => t.source && t.owner !== team).sort((a, b) => dist(scout, a) - dist(scout, b));
+        const sources = this.tiles.filter(t => t.source && t.owner !== team && (!easy || this.time >= 420 || t.y <= (this.time < 300 ? 24 : 31))).sort((a, b) => dist(scout, a) - dist(scout, b));
         if (sources.length) this.order([scout.id], sources[0].x, sources[0].y);
       }
       if (goal && !easy && this.cooldowns[team].bleach <= 0) this.power(team, 'bleach', goal.x, goal.y);

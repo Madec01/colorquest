@@ -54,13 +54,13 @@
     for(const t of game.tiles){
       if(!t.owner||(!t.visible&&t.owner!==1)||t.blocked)continue;
       const x=v.x+t.x*s,y=v.y+t.y*s;if(x+s<0||y+s<0||x>v.w||y>v.h)continue;
-      c.strokeStyle=t.owner===1?(t.connected?'#259e8b':'#b5863c'):'#d46652';
+      c.strokeStyle=t.owner===1?(t.connected?paletteColor('playerStrong','#259e8b'):'#b5863c'):paletteColor('enemyStrong','#d46652');
       c.beginPath();
       const edges=[[0,-1,x,y,x+s,y],[1,0,x+s,y,x+s,y+s],[0,1,x,y+s,x+s,y+s],[-1,0,x,y,x,y+s]];
       for(const [dx,dy,a,b,e,f]of edges){const n=game.tile(t.x+dx,t.y+dy);if(!n||n.owner!==t.owner||n.connected!==t.connected){c.moveTo(a,b);c.lineTo(e,f)}}c.stroke();
     }
     // Paths follow the actual navigation route instead of crossing obstacles.
-    c.strokeStyle='#155a72b0';c.lineWidth=1.6;c.setLineDash([4,4]);
+    c.strokeStyle=paletteColor('selection','#155a72')+'b0';c.lineWidth=1.6;c.setLineDash([4,4]);
     for(const u of game.units.filter(u=>selection.includes(u.id)).slice(0,12)){
       if(!u.path.length)continue;c.beginPath();c.moveTo(v.x+u.x*s,v.y+u.y*s);
       for(const p of u.path)c.lineTo(v.x+p.x*s,v.y+p.y*s);c.stroke();
@@ -70,7 +70,7 @@
       if(b.team!==1&&!game.tile(b.x,b.y)?.visible)continue;
       const x=v.x+(b.x+.5)*s,y=v.y+(b.y+.5)*s;
       if(x<-60||y<-30||x>v.w+60||y>v.h+30)continue;
-      if(b.id===selectedId){c.strokeStyle='#174f67';c.lineWidth=2.5;c.beginPath();c.arc(x,y,s*1.35,0,Math.PI*2);c.stroke()}
+      if(b.id===selectedId){c.strokeStyle=paletteColor('selection','#174f67');c.lineWidth=2.5;c.beginPath();c.arc(x,y,s*1.35,0,Math.PI*2);c.stroke()}
       if(s>=13||b.id===selectedId){
         const label=names[b.type]+((b.level||1)>1?' '+b.level:'')+(!b.connected?' · ISOLÉ':'');c.font='600 11px system-ui';const tw=c.measureText(label).width;
         c.fillStyle=b.connected?'#fffef8eb':'#fff0dceb';c.beginPath();c.roundRect(x-tw/2-5,y+s+4,tw+10,17,4);c.fill();c.fillStyle=b.connected?'#204b58':'#885715';c.textAlign='center';c.fillText(label,x,y+s+16);

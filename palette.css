@@ -1,0 +1,52 @@
+.palette-picker{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+.palette-heading{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+.palette-heading h2{font-size:12px;font-weight:700;line-height:1.3;margin:0;letter-spacing:0}
+.palette-heading>span{font-size:9px;color:#70827c;white-space:nowrap}
+.palette-options{display:grid;grid-template-columns:repeat(6,minmax(44px,1fr));gap:3px}
+.palette-options>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:56px;padding:6px 2px;border:1px solid transparent;border-radius:9px;font-size:9px;font-weight:600;color:#59706e;line-height:1.1}
+.palette-options>button[aria-pressed=true]{border-color:var(--player-line);background:var(--player-soft);color:var(--player-selection);box-shadow:inset 0 0 0 1px var(--player-line)}
+.palette-swatch{display:grid;place-items:center;width:24px;height:24px;flex:none;background:var(--swatch);border-radius:50%;box-shadow:inset 0 0 0 1px #203e4618}
+.palette-swatch>i{display:none;place-items:center;font-style:normal;font-size:11px;font-weight:900;line-height:1;width:17px;height:17px;border-radius:50%;background:#fffef9;color:#1c3741}
+.palette-options>button[aria-pressed=true] .palette-swatch>i{display:grid}
+.palette-preview{display:flex;align-items:center;justify-content:center;gap:9px;min-height:27px;margin-top:5px;font-size:9px;line-height:1.35;color:#526c69}
+.palette-preview>span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.palette-preview strong{font-weight:650}
+.palette-preview i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.palette-preview .palette-player{background:var(--player-color)}
+.palette-preview .palette-enemy{background:var(--enemy-color)}
+.palette-preview .palette-versus{font-size:8px;color:#83928a}
+.palette-storage-note{font-size:10px;color:#886327;line-height:1.4;margin:4px 0 0}
+.has-palette .difficulty{margin-top:11px}
+/* Keep camp identity consistent in the HUD; danger, pigment sources and repair keep their semantic colours. */
+h1 em{color:var(--player-strong,var(--cyan))}
+.cyan-dot,.live-dot,.score-track i{background:var(--player-color,var(--cyan))}
+.coral-dot,.score-track b{background:var(--enemy-color,var(--coral))}
+.resource-icon,.win-symbol,.selection-card>div:first-child,.command .cost i,.install-icon{color:var(--player-color,var(--cyan))}
+.selection-card>div:first-child{background:var(--player-soft,#e2f5ee)}
+.difficulty .chosen{border-color:var(--player-line);background:var(--player-soft);box-shadow:0 0 0 1px var(--player-line)}
+.tutorial-entry{border-color:var(--player-line);background:var(--player-soft);color:var(--player-strong)}
+.command.active,.powers button.active{background:var(--player-soft);box-shadow:inset 0 0 0 1px var(--player-color)}
+.mobile-tabs .chosen,.income,.object-card:not(.isolated) span,.online{color:var(--player-strong)}
+.object-health i{background:var(--player-color)}
+.object-card:not(.isolated){border-color:var(--player-line)}
+.orders .active{background:var(--player-selection)!important}
+.strategy-open{color:var(--player-strong)!important}
+.strategy-open .strategy-badge,.strategy-trigger-progress,.strategy-production-peek b,.strategy-queue-bar>i{background:var(--player-color)}
+.strategy-desktop-trigger,.strategy-production-peek{border-color:var(--player-line);background:var(--player-soft)}
+.strategy-tabs>button[aria-pressed=true]{color:var(--player-strong);background:var(--player-soft)}
+.strategy-tabs>button[aria-pressed=true]:after{background:var(--player-color)}
+.strategy-money,.strategy-unit-icon,.strategy-unit-meta>b,.strategy-rally-card>span,.strategy-queue-icon,.strategy-upgrade-heading>span,.strategy-type-filters>button>span,.strategy-order-grid>button>span,.strategy-production-peek>button:first-child>span{color:var(--player-strong)}
+.strategy-unit-icon.engineer{color:#488964}
+.strategy-unit-card.is-locked .strategy-unit-icon{color:#8b9c8e}
+.strategy-upgrade-card>button,.strategy-doctrine-confirm>button{background:var(--player-strong)}
+.strategy-upgrade-card>button:disabled,.strategy-doctrine-confirm>button:disabled{background:#dce7da}
+.strategy-doctrine.preview,.strategy-doctrine.chosen,.strategy-type-filters>button[aria-pressed=true]{border-color:var(--player-color);background:var(--player-soft);box-shadow:inset 0 0 0 1px var(--player-color)}
+.strategy-doctrine-icon,.strategy-squad-number{color:var(--player-strong)}
+.strategy-squad-number,.strategy-squad>button.is-selected{background:var(--player-soft)}
+.object-card .strategy-object-upgrade{background:var(--player-soft);border-color:var(--player-line);color:var(--player-strong)}
+@media(max-width:359px){
+  .palette-options{grid-template-columns:repeat(3,minmax(44px,1fr));gap:4px}
+  .palette-options>button{flex-direction:row;min-height:44px;gap:6px}
+  .palette-swatch{width:22px;height:22px}
+  .palette-heading>span{font-size:8px}
+}
