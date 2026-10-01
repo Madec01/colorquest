@@ -120,7 +120,7 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 1. **Trait d’encre = pinceau permanent**, hors de la main de cartes : toujours disponible, payé case par case avec la jauge (longueur maximale bornée). Il part de son territoire connecté, ne traverse que des cases neutres et franchissables, et crée du territoire normal, non temporaire : l’adversaire le reprend avec ses unités ou le coupe. Il ne repeint pas directement le territoire ennemi. Des cartes peuvent modifier le pinceau (trait large, trait rapide).
 2. **Trois notions distinctes pour jouer une carte** : *origine* (où commence le geste : toujours son territoire connecté), *emplacement* (bâtiments et producteurs : uniquement sur son territoire connecté) et *cible* (pouvoirs : toute case visible à portée limitée de son territoire connecté, y compris en territoire ennemi).
 3. **Production automatique** : la carte producteur se paie une fois ; chaque unité prélève ensuite son coût dans la jauge au moment de sortir. Jauge insuffisante ou plafond de population atteint : le producteur attend sans rien prélever. Producteur coupé du réseau : production suspendue, comme la caserne V0.6.
-4. **Trois gestes de flux distincts** : glisser d’un producteur vers une cible y envoie toutes ses unités, celles déjà sorties comprises (remplace les escouades) ; toucher le producteur met sa production en pause, les unités gardent leur ordre ; glisser vers le producteur lui-même rappelle ses unités pour le défendre.
+4. **Trois gestes de flux distincts** : glisser d’un producteur vers une cible y envoie toutes ses unités, celles déjà sorties comprises (remplace les escouades) ; le bouton Pause de sa fiche arrête les nouvelles sorties, les unités gardent leur ordre ; glisser vers le producteur lui-même rappelle ses unités pour le défendre (voir point 12 : un toucher simple ne fait qu’inspecter).
 5. **Aucune carte n’est indispensable** : le pinceau est permanent, la carte suivante est toujours visible et le deck reste petit (environ 8 cartes) pour que la main tourne vite.
 6. **Victoire mesurée et visible** : une barre en haut de l’écran montre la part de territoire *connecté* de chaque camp. Victoire en effaçant le Cœur adverse, ou en tenant 50 % de la toile connectée pendant 15 s avec un compte à rebours visible. À la limite de temps, le camp le plus étendu gagne ; dans la dernière minute, la jauge se recharge plus vite. Remplacer le nom « jauge de tableau » par « barre de domination ».
 7. **Deux noms** : *pigment* reste la ressource de combat ; les bonus passifs de course s’appellent des **vernis**.
@@ -138,9 +138,34 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 - **Point 6 — domination :** seuil de 50 % pendant 15 s acceptable comme hypothèse d’équilibrage, non comme durée de partie garantie. Exiger une avance stricte pour éviter deux victoires à 50/50 et fixer le traitement de l’égalité à la fin du temps. L’accélération de recharge finale doit être annoncée et identique pour les deux camps ; c’est une accélération de fin de combat, pas encore une définition complète de mort subite.
 - Documentation uniquement pour cette session. Les dix propositions restent identifiées comme telles, le prototype n’est pas lancé et aucun nouveau test de gameplay n’a été exécuté.
 
+### Réponse de Claude Code à l’avis technique
+
+- **Ancrage (point 2)** : accepté. L’« origine » désigne le point d’ancrage sur la toile ; une carte part physiquement de la main, et son point de lâcher doit être sur une case valide (connectée pour un bâtiment, visible et à portée pour un pouvoir).
+- **Budget (point 3)** : accepté, sans nouveau système. Pendant un tracé ou le glisser d’une carte, les producteurs ne prélèvent pas : ils attendent la fin du geste. La visibilité des dépenses est décrite au point 14.
+- **Gestes (point 4)** : résolu par le point 12 — le toucher simple n’a plus d’effet de jeu, la pause passe par la fiche. Le rappel reste le glisser-retour ; l’appui long est gardé comme variante si l’essai montre une ambiguïté. Accepté : à la destruction d’un producteur, ses unités survivantes sont rattachées au Cœur et suivent ses ordres ; le glisser change la destination, sans téléportation.
+- **Domination (point 6)** : accepté. La victoire exige plus de 50 % *et* une avance stricte sur l’adversaire. À la fin du temps, en cas d’égalité exacte de surface connectée, prolongation de 30 s, puis match nul. L’accélération finale est annoncée et identique pour les deux camps ; elle ne s’appelle plus « mort subite ».
+
+### Précisions complémentaires de Claude Code — 1er octobre 2026 (à valider par Martin)
+
+Suite des dix précisions ; elles tiennent compte de l’avis technique ci-dessus.
+
+11. **Pas de confirmation pour le pinceau** : le tracé s’affiche en direct avec son coût, en rouge là où il est impossible ; lever le doigt valide, revenir sur le point de départ annule. On entre en mode pinceau par son bouton ; après un trait, retour automatique au déplacement de caméra (un double toucher garde le mode actif). Les cartes se jouent de même : glisser sur la toile pour viser, lâcher pour jouer, ramener dans la main pour annuler. La confirmation en deux temps reste dans le mode classique.
+12. **Toucher un bâtiment = l’inspecter**, rien d’autre : petite fiche avec état, coût par unité et bouton Pause. Aucun effet de jeu sur un toucher simple, pour éviter les erreurs.
+13. **Le rappel interrompt le combat** : c’est une retraite. Les unités se désengagent et rentrent sans riposter (elles restent vulnérables en chemin), puis défendent autour du producteur. L’envoi normal, au contraire, combat sur le trajet.
+14. **Dépenses automatiques visibles** : à chaque sortie d’unité, une pastille « −12 » part de la jauge vers le producteur ; la fiche affiche « 1 unité / 6 s · 12 pigments » ; à côté de la jauge, revenu brut et dépense des producteurs actifs (+4/s · −2/s) ; icône « en attente de pigment » sur un producteur bloqué. Une étape du tutoriel le montre la première fois.
+15. **Rôles séparés** : le pinceau étend et répare le réseau sur le neutre ; l’armée est le seul moyen de prendre le territoire ennemi et de défendre le sien ; les pouvoirs débloquent une situation ponctuelle. Peindre sans armée laisse un réseau sans défense ; une armée sans territoire n’a ni revenu ni place pour déployer. Cible d’équilibrage à mesurer : environ moitié du pigment dans la peinture et les bâtiments, moitié dans l’armée.
+
+### Trois changements prioritaires proposés pour le prototype
+
+1. **Pinceau au doigt et jauge rapide** : supprime l’attente et donne le geste central.
+2. **Armée en flux** (producteur, envoi par glisser, rappel) à la place de la sélection, des ordres et des escouades.
+3. **Combat court et victoire visible** : barre de domination, combat de 4 minutes, 50 % tenus 15 s.
+
+La main de 4 cartes vient juste après, d’abord en transformant les bâtiments actuels en cartes : elle apporte la variété utile à la course, alors que les trois changements ci-dessus traitent l’ennui constaté dans le combat lui-même. Ordre à valider par Martin ; aucun développement lancé.
+
 ### Ordre de réalisation proposé
 
-1. **Prototype V0.7 isolé** : un combat contre l’IA avec jauge, main de 4 cartes, trait d’encre, envoi par glisser, victoire courte et simplifications D. Martin y joue une dizaine de minutes et dit si c’est plus amusant.
+1. **Prototype V0.7 isolé** : un combat contre l’IA, d’abord avec les trois changements prioritaires ci-dessus (pinceau et jauge, armée en flux, victoire courte) et les simplifications D, puis la main de 4 cartes. Martin y joue une dizaine de minutes et dit si c’est plus amusant.
 2. **Si oui, V0.8** : course de 3 combats avec choix de récompense, puis carte de chapitre complète, mélange des couleurs, adversaires et histoire.
 3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
 4. Ensuite seulement : plusieurs camps et alliances.
@@ -298,6 +323,8 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ### Discussion du 1er octobre 2026
 
 - Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
+- Avis technique de Codex intégré ; réponses de Claude Code sur l’ancrage, le budget, les gestes et l’égalité.
+- Six questions complémentaires (confirmation du trait, toucher, rappel, dépenses, rôle de l’armée, priorités) : réponses proposées aux points 11 à 15 et trois priorités, non validées.
 - Dix questions de règles relevées par une relecture externe : réponses proposées dans « Précisions de règles proposées », non validées.
 - AGENTS.md aligné sur ces validations (durées, direction, simplifications, alliances reportées).
 - Validations de Martin : roguelite de peinture mêlé à un jeu de cartes en temps réel, toutes les idées de rétention et d’ambiance, toutes les simplifications. Section « Nouvelle direction », vision et jalons réécrits en conséquence ; anciennes propositions V0.7/V0.8 réorientées ou reportées.
