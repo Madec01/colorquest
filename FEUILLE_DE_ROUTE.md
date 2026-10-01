@@ -48,6 +48,17 @@ Vérifications détaillées dans la section dédiée : 60 contrôles ciblés mot
 
 V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 livrée ici ; V0.8 et les étapes suivantes restent à réaliser après validation du plaisir et de la lisibilité.
 
+## Suite proposée après V0.7.1 — 1er octobre, 13 h 06
+
+**Demande de Martin : « c'est quoi la suite ».** Proposition d’ordre de travail par Codex, à cadrer avec Claude pour le gameplay et la direction artistique. Aucun nouveau Go d’implémentation ni retour d’essai V0.7.1 dans cet échange ; la compréhension et le plaisir restent à confirmer. Cette mise à jour est documentaire uniquement.
+
+1. **Éprouver le combat libre et corriger son équilibre.** Vérifier sur téléphone que Martin sait peindre, envoyer/rappeler un groupe et expliquer une dépense ou une coupure. Examiner ensuite avec Claude la victoire obtenue en 78–81 s par le script de peinture et la combinaison Gomme/pinceau. Objectif : que peindre, défendre et attaquer soient tous utiles, avec des choix compréhensibles. Ne pas décider ici d’un ralentissement global, d’un nouveau coût ou d’une nouvelle règle sans ce bilan.
+2. **V0.8, première tranche : une course de trois combats.** Reprendre le périmètre réduit déjà proposé : combats courts, choix d’une récompense parmi trois entre les combats et sauvegarde/reprise de la course. Introduire peu de cartes et de vernis à la fois. Donner aux rencontres une différence lisible (disposition ou comportement adverse), avec un dernier adversaire plus exigeant ; modalités à définir avec Claude. La course complète de cinq à sept combats vient ensuite.
+3. **Enrichir les décisions pendant cette progression.** Les nouveaux bâtiments demandés par Martin doivent arriver comme des déblocages, chacun avec un rôle facile à expliquer. Réservoir d’encre pour sécuriser une branche ou mortier pour déloger une défense restent des candidats du catalogue, pas une sélection validée. Commencer par un seul mélange de cartes utile et visuellement distinct du territoire, avant de multiplier les combinaisons.
+4. **Après cette première course : développer les embranchements et la rejouabilité.** Chevalet, événements, histoire courte et course complète dans V0.8 ; galerie, défi du jour, collection, musique et sensations dans V0.9 ; plusieurs IA et alliances après validation de cette boucle. Les fonctions déjà prévues ne sont pas annoncées comme livrées.
+
+**Avis de Codex :** le gain attendu est de donner envie d’enchaîner un combat parce qu’un choix de récompense change la manière de jouer. Ajouter beaucoup de bâtiments ou de menus avant de vérifier le duel actuel risquerait de masquer le même manque d’intérêt. Aucun nouveau bug technique constaté par cette relecture ; les limites d’équilibrage, de sauvegarde du mode peinture et de validation sur appareil physique restent ouvertes ci-dessous.
+
 ## Retour de Martin après V0.7 — arbitrages demandés à Claude
 
 **1er octobre 2026, après le premier essai.** Martin constate une amélioration, mais trouve encore le jeu peu compréhensible et peu intuitif. Il demande ce qui reste à faire et souhaite que Codex pose ses questions à Claude Code, directeur du gameplay et de la direction artistique.
@@ -279,7 +290,7 @@ Les réponses de Claude du commit `d3d9176` sont la base historique du prototype
 
 ### Ordre de réalisation proposé
 
-1. **Prototype V0.7 isolé livré, puis corrections V0.7.1 à cadrer** : jauge, quatre cartes, pinceau, flux et victoire courte sont présents. Les réponses de Claude précisent les corrections des gestes, de l’inspection, de la retraite et des dépenses ; compléter la lisibilité et l’apprentissage avant un nouvel essai avec Martin. Son ordre initial « trois priorités puis quatre cartes » s’appuie sur un état antérieur à cette livraison ; il ne demande pas de supprimer la main existante.
+1. **V0.7 et corrections V0.7.1 livrées ; nouvel essai attendu** : jauge, quatre cartes, pinceau, flux, commandes au relâchement, inspection, retraite, dépenses visibles et six situations d’apprentissage sont présents. Confirmer avec Martin la compréhension et l’intérêt du combat libre, puis cadrer avec Claude les corrections d’équilibre nécessaires. Son ordre initial « trois priorités puis quatre cartes » s’appuie sur un état antérieur à cette livraison ; il ne demande pas de supprimer la main existante.
 2. **Si oui, V0.8** : course de 3 combats avec choix de récompense, puis carte de chapitre complète, mélange des couleurs, adversaires et histoire.
 3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
 4. Ensuite seulement : plusieurs camps et alliances.
