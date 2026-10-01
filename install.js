@@ -78,7 +78,7 @@
       steps = '<ol><li>Ouvrez le <b>menu du navigateur ⋮</b>.</li><li>Choisissez <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>, si cette option est disponible.</li><li>Confirmez, puis lancez Colorquest depuis sa nouvelle icône.</li></ol><p>Sur ordinateur, utilisez aussi l’icône d’installation près de la barre d’adresse. Si votre navigateur ne propose pas l’installation, le jeu reste accessible ici.</p>';
     }
     const pending = installPending ? '<p>La demande a été acceptée. Terminez les étapes proposées par votre navigateur.</p>' : '';
-    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">Le mode hors ligne conserve les fichiers du jeu. Les parties classiques se sauvegardent sur cet appareil. Le combat prototype se reprend tant que cette page reste ouverte ; un rechargement le recommence. Le tutoriel classique se recommence depuis le début.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
+    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">La course et les parties classiques se sauvegardent sur cet appareil lorsque le stockage est disponible. Attendez la confirmation de sauvegarde avant de fermer. Le combat libre de peinture et les tutoriels se recommencent après un rechargement. Le mode hors ligne conserve les fichiers du jeu ; il ne synchronise pas votre progression entre appareils.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
     dialog.querySelector('#installHelpDone').onclick = closeDialog;
     renderStatus();
   }
@@ -130,12 +130,18 @@
 
   function showUpdate() {
     if (!registration?.waiting) return;
-    const prototypePending = !!window.CQPaint?.hasMatch;
-    const message = prototypePending ? 'Le combat prototype en cours recommencera après le rechargement : il est conservé seulement tant que cette page reste ouverte. Vos sauvegardes classiques seront préservées. Vous pouvez terminer ce combat avant la mise à jour.' : 'Recharger ouvre la nouvelle version. Votre partie sera sauvegardée avant le rechargement ; reprenez-la ensuite depuis le menu. Un tutoriel en cours se recommencera depuis le début.';
-    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p>' + message + '</p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
+    const paintPending = !!window.CQPaint?.hasMatch;
+    const message = paintPending ? (window.CQPaint.sessionNotice || 'Ce combat de peinture reste dans cette fenêtre et recommencera après le rechargement.') : 'Recharger ouvre la nouvelle version. Votre partie sera sauvegardée avant le rechargement ; reprenez-la ensuite depuis le menu. Un tutoriel en cours se recommencera depuis le début.';
+    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p></p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
+    dialog.querySelector('p').textContent = message;
     dialog.querySelector('#cancelGameUpdate').onclick = closeDialog;
     dialog.querySelector('#confirmGameUpdate').onclick = () => {
       if (!registration.waiting) { closeDialog(); updateButton.hidden = true; return; }
+      const paintSaved = window.CQPaint?.flushSave?.();
+      if (paintSaved?.ok === false) {
+        dialog.querySelector('p').textContent = (paintSaved.message || 'La course n’a pas pu être sauvegardée.') + ' Gardez cette fenêtre ouverte ; la mise à jour attendra.';
+        return;
+      }
       if (classicMatch() && !window.CQTutorial?.active) {
         const saved = window.CQSave?.save();
         if (saved && !saved.ok && !saved.skipped) {

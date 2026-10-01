@@ -2,8 +2,8 @@
 const assert = require('node:assert/strict');
 const { Game, CARDS, CONFIG } = require('../paint-engine.js');
 const AI = require('../paint-ai.js');
-// Geometry is intentionally fixed. Repeating seeds checks deterministic setup,
-// not eight different maps or a statistical human win rate.
+// The default profile's original canvas remains a regression baseline. Repeating
+// seeds checks deterministic setup, not a statistical human win rate.
 const seeds = [7, 42];
 const measurements = [];
 
@@ -149,3 +149,36 @@ console.log('Idle-opponent simulations:', JSON.stringify(measurements));
 console.log('Simple player policies:', JSON.stringify(styles));
 console.log('Mirrored self-play:', JSON.stringify(mirrors));
 console.log(`Paint balance: ${seeds.length} deterministic idle matches, 6 varied action policies and 4 self-play matches passed.`);
+
+// Equal action budgets across all nine profile/map combinations: the same seed,
+// start delay, player policy cadence and base deck; no reward or hidden AI bonus.
+// These outcomes are measurements, not assertions that the painter must lose.
+const course = [];
+for (const mapId of ['canvas', 'narrows', 'crossroads']) for (const profile of ['rapid', 'builder', 'eraser']) {
+  for (const style of ['passive', 'painter', 'pressure', 'defense']) {
+    const game = new Game({ seed: 7, mapId });
+    AI.configure(game, 2, { profile });
+    const player = style === 'passive' ? () => {} : playerPolicy(style, 7);
+    let peakArmy = 0, firstDamage = null, firstLoss = null, lostShare = 0;
+    for (let frame = 0; frame < 2701 && game.winner === null; frame++) {
+      const before = game.scores[1];
+      game.update(.1); player(game); AI.update(game, .1);
+      if (before > game.scores[1] + 1e-8) {
+        lostShare += before - game.scores[1];
+        if (firstLoss === null) firstLoss = game.time;
+      }
+      if (firstDamage === null && (!game.getCore(1) || game.getCore(1).hp < game.getCore(1).maxHp)) firstDamage = game.time;
+      peakArmy = Math.max(peakArmy, game.getUnitCount(2));
+      assert.ok(game.pigment.every(value => Number.isFinite(value) && value >= -1e-8 && value <= CONFIG.pigmentCap + 1e-8));
+    }
+    assert.notEqual(game.winner, null, `${mapId}/${profile}/${style} must finish`);
+    assert.ok(game.time <= 270.01);
+    if (style === 'passive') assert.equal(game.winner, 2, `${profile} must defeat inaction on ${mapId}`);
+    course.push({ mapId, profile, style, winner: game.winner, time: +game.time.toFixed(1), peakArmy,
+      firstDamage: firstDamage === null ? null : +firstDamage.toFixed(1),
+      firstLoss: firstLoss === null ? null : +firstLoss.toFixed(1), lostShare: +lostShare.toFixed(3),
+      scores: game.scores.map(score => +score.toFixed(3)) });
+  }
+}
+console.log('Course profiles with equal player action budgets:', JSON.stringify(course));
+console.log(`Course balance: ${course.length} measured map/profile/style matches passed; no human win-rate inferred.`);

@@ -1,4 +1,4 @@
-/* V0.7.1 canvas view. Rendering is read-only: no simulation or input state lives here. */
+/* V0.8 canvas view. Rendering is read-only: no simulation or input state lives here. */
 (function (root, factory) {
   'use strict';
   const api = factory(root);
@@ -15,10 +15,12 @@
     playerIsolated: '#e0e9dd', playerHatch: '#73aaa3', enemyHatch: '#c29280',
     playerStrong: '#17636c', enemyStrong: '#a94a3a', selection: '#164b5c'
   });
-  const NAMES = Object.freeze({ core: 'Cœur', relay: 'Relais', extractor: 'Extracteur', bastion: 'Bastion', barracks: 'Caserne' });
+  const NAMES = Object.freeze({ core: 'Cœur', relay: 'Relais', extractor: 'Extracteur', bastion: 'Bastion', barracks: 'Caserne', mortar: 'Mortier' });
   const STATE_NAMES = Object.freeze({ paused: 'en pause', isolated: 'réseau coupé', held: 'visée en cours', funds: 'attend du pigment', full: 'armée complète', blocked: 'sortie bloquée' });
   const GOLD = '#a17b22';
   const CARD_INKS = Object.freeze({ blue: '#5686c7', red: '#d66d65', yellow: '#b99437' });
+  const HEAL_INK = '#357953';
+  const MORTAR_FALLBACK = Object.freeze({ minRange: 2.5, range: 7, blastRadius: 1.5 });
 
   function clamp(n, low, high) { return Math.max(low, Math.min(high, n)); }
   function palette(ui) { return ui.palette || root.CQPalette?.current || FALLBACK; }
@@ -84,6 +86,16 @@
   function observedBuildings(game) {
     // Filter sight BEFORE reading a hostile object's type, health or state.
     return game.buildings.filter(b => (b.team === 1 || visible(game, b.x, b.y)) && b.hp > 0);
+  }
+  function clipVisible(c, game, view, x, y, radius) {
+    // Transient motifs cannot paint over unknown cells around a visible target.
+    c.beginPath();
+    const minX = Math.max(0, Math.floor(x - radius)), maxX = Math.min(game.width - 1, Math.ceil(x + radius));
+    const minY = Math.max(0, Math.floor(y - radius)), maxY = Math.min(game.height - 1, Math.ceil(y + radius));
+    for (let ty = minY; ty <= maxY; ty++) for (let tx = minX; tx <= maxX; tx++) {
+      if (visible(game, tx, ty)) c.rect(view.x + tx * view.cell, view.y + ty * view.cell, view.cell, view.cell);
+    }
+    c.clip();
   }
   function drawTerrain(c, game, view, colors, motion) {
     const s = view.cell, W = game.width, H = game.height;
@@ -227,6 +239,12 @@
         c.lineTo(x + r * .63, p.y - r * .45); c.lineTo(x + r * .63, p.y - r * .78);
       }
       c.lineTo(p.x + r, p.y + r * .8); c.closePath();
+    } else if (type === 'mortar') {
+      // Slanted tube above a wide plinth; unlike a round droplet or shield.
+      c.beginPath(); c.moveTo(p.x - r * .94, p.y + r * .75); c.lineTo(p.x - r * .71, p.y + r * .18);
+      c.lineTo(p.x - r * .25, p.y + r * .18); c.lineTo(p.x - r * .58, p.y - r * .56);
+      c.lineTo(p.x + r * .05, p.y - r * .91); c.lineTo(p.x + r * .6, p.y + r * .18);
+      c.lineTo(p.x + r * .74, p.y + r * .18); c.lineTo(p.x + r * .94, p.y + r * .75); c.closePath();
     } else { c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); }
   }
   function producerNumber(game, id) {
@@ -235,7 +253,7 @@
   }
   function building(c, game, view, colors, b, selected, ghost) {
     const p = point(view, b.x, b.y), s = view.cell;
-    const r = Math.max(b.type === 'core' ? 12 : 8.5, s * (b.type === 'core' ? .8 : b.type === 'barracks' ? .58 : .51));
+    const r = Math.max(b.type === 'core' ? 12 : 8.5, s * (b.type === 'core' ? .8 : b.type === 'barracks' || b.type === 'mortar' ? .58 : .51));
     const color = teamColor(b.team, colors);
     c.save();
     if (ghost) c.globalAlpha = .65;
@@ -285,6 +303,9 @@
     } else if (b.type === 'bastion') {
       line(c, p.x, p.y - r * .35, p.x, p.y + r * .4);
       line(c, p.x - r * .32, p.y - r * .04, p.x + r * .32, p.y - r * .04);
+    } else if (b.type === 'mortar') {
+      line(c, p.x - r * .31, p.y - r * .47, p.x + r * .04, p.y + r * .15);
+      line(c, p.x - r * .49, p.y + r * .49, p.x + r * .5, p.y + r * .49);
     } else {
       c.beginPath(); c.arc(p.x, p.y, r * .18, 0, TAU); c.fill();
       c.beginPath(); c.arc(p.x, p.y, r * .51, -Math.PI * .27, Math.PI * .27); c.stroke();
@@ -411,6 +432,81 @@
     c.restore();
   }
 
+  function mortarStats() { return root.CQPaintEngine?.BUILDING_STATS?.mortar || MORTAR_FALLBACK; }
+  function reticle(c, p, radius, color, dash) {
+    c.strokeStyle = PAPER; c.lineWidth = 3.6; c.setLineDash(dash || []);
+    c.beginPath(); c.arc(p.x, p.y, radius, 0, TAU); c.stroke();
+    c.strokeStyle = color; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
+    const arm = Math.max(3.5, Math.min(7, radius * .3));
+    line(c, p.x - arm, p.y, p.x + arm, p.y); line(c, p.x, p.y - arm, p.x, p.y + arm);
+  }
+  function drawMortarAim(c, game, view, colors, ui) {
+    if (ui.mode === 'brush' || ui.mode === 'card') return;
+    const b = game.buildings.find(b => b.team === 1 && b.type === 'mortar' && b.hp > 0 && String(b.id) === String(ui.selectedProducer));
+    if (!b) return;
+    const stats = mortarStats(), from = point(view, b.x, b.y);
+    const aim = ui.mortarAim && String(ui.mortarAim.producerId) === String(b.id) ? ui.mortarAim : null;
+    const target = aim || b.mortarTarget;
+    c.save(); c.lineWidth = 1.15;
+    // Two thin bounds are shown only while inspecting or aiming this weapon.
+    c.strokeStyle = tone(colors, 'playerStrong'); c.globalAlpha = .55; c.setLineDash([6, 5]);
+    c.beginPath(); c.arc(from.x, from.y, stats.range * view.cell, 0, TAU); c.stroke();
+    c.strokeStyle = '#8b7066'; c.globalAlpha = .7; c.setLineDash([2, 4]);
+    c.beginPath(); c.arc(from.x, from.y, stats.minRange * view.cell, 0, TAU); c.stroke(); c.setLineDash([]);
+    c.globalAlpha = 1;
+    if (target && Number.isFinite(target.x) && Number.isFinite(target.y)) {
+      const to = point(view, target.x, target.y), valid = aim ? aim.ok !== false : visible(game, target.x, target.y) && b.connected !== false;
+      const color = valid ? tone(colors, 'playerStrong') : aim ? '#b8493e' : '#8b8177';
+      const height = Math.min(42, Math.hypot(to.x - from.x, to.y - from.y) * .2);
+      c.strokeStyle = color; c.lineWidth = 1.5; c.setLineDash([2, 4]);
+      c.beginPath(); c.moveTo(from.x, from.y);
+      c.quadraticCurveTo((from.x + to.x) / 2, (from.y + to.y) / 2 - height, to.x, to.y); c.stroke(); c.setLineDash([]);
+      reticle(c, to, stats.blastRadius * view.cell, color, [3, 4]);
+      if (aim && !valid) {
+        const d = Math.max(5, view.cell * .33); c.lineWidth = 2;
+        line(c, to.x - d, to.y - d, to.x + d, to.y + d); line(c, to.x + d, to.y - d, to.x - d, to.y + d);
+      }
+    }
+    c.restore();
+  }
+  function trajectory(from, to, progress) {
+    const lift = Math.min(42, Math.hypot(to.x - from.x, to.y - from.y) * .22);
+    const q = 1 - progress;
+    return {
+      x: q * q * from.x + 2 * q * progress * (from.x + to.x) / 2 + progress * progress * to.x,
+      y: q * q * from.y + 2 * q * progress * ((from.y + to.y) / 2 - lift) + progress * progress * to.y
+    };
+  }
+  function drawShells(c, game, view, colors, ui) {
+    const buildings = observedBuildings(game);
+    for (const shell of game.shells || []) {
+      if (!Number.isFinite(shell.x) || !Number.isFinite(shell.y)) continue;
+      const own = shell.team === 1;
+      // A hostile flight has no observable cue until its landing area is visible.
+      if (!own && !visible(game, shell.x, shell.y)) continue;
+      if (!(shell.remaining > 0)) continue;
+      const to = point(view, shell.x, shell.y, false), radius = Math.max(.3, shell.radius || mortarStats().blastRadius);
+      const color = own ? tone(colors, 'playerStrong') : tone(colors, 'enemyStrong');
+      const progress = clamp(1 - shell.remaining / Math.max(.01, shell.total || 1.2), 0, 1);
+      c.save();
+      if (!own) clipVisible(c, game, view, shell.x, shell.y, radius + 1);
+      c.globalAlpha = .9; reticle(c, to, radius * view.cell, color, [3, 3]);
+      c.lineWidth = 2.5; c.strokeStyle = color;
+      c.beginPath(); c.arc(to.x, to.y, radius * view.cell + 3, -Math.PI / 2, -Math.PI / 2 + progress * TAU); c.stroke();
+      c.restore();
+      // Never consult an unseen launcher's position. A warning at the destination
+      // is useful without disclosing where a hidden artillery piece was placed.
+      const sourceKnown = own || buildings.some(b => b.id === shell.sourceId);
+      if (!sourceKnown || !Number.isFinite(shell.fromX) || !Number.isFinite(shell.fromY) || ui.reducedMotion) continue;
+      const from = point(view, shell.fromX, shell.fromY, false), at = trajectory(from, to, progress);
+      const tail = trajectory(from, to, Math.max(0, progress - .13));
+      if (!own && !visible(game, (at.x - view.x) / view.cell, (at.y - view.y) / view.cell)) continue;
+      c.save(); c.lineWidth = 2; c.strokeStyle = color; c.globalAlpha = .65; line(c, tail.x, tail.y, at.x, at.y);
+      c.globalAlpha = 1; c.fillStyle = color; c.strokeStyle = PAPER; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(at.x, at.y, Math.max(3, view.cell * .21), 0, TAU); c.fill(); c.stroke(); c.restore();
+    }
+  }
+
   function drawBrush(c, game, view, colors, ui) {
     const result = ui.preview;
     const hasAcceptedPath = Array.isArray(result?.path);
@@ -502,16 +598,39 @@
     const effects = (game.events || []).slice(-40).concat((ui.effects || []).slice(-12));
     for (const ev of effects) {
       const age = game.time - (Number.isFinite(ev.time) ? ev.time : game.time);
+      const duration = ev.type === 'mixture' ? 3 : .75;
       const origin = Number.isFinite(ev.x) && Number.isFinite(ev.y) ? ev : ev.cells?.[0];
-      if (age < 0 || age > .75 || !origin || !Number.isFinite(origin.x) || !Number.isFinite(origin.y)) continue;
+      if (age < 0 || age > duration || !origin || !Number.isFinite(origin.x) || !Number.isFinite(origin.y)) continue;
       if (!visible(game, origin.x, origin.y)) continue;
       const centered = ev.type !== 'spawn' && !(ev.type === 'damage' && ev.objectType === 'droplet');
       const card = ev.type === 'power' ? root.CQPaintEngine?.CARDS?.[ev.cardId] : null;
-      const color = CARD_INKS[card?.color] || teamColor(ev.team || 1, colors);
-      const p = point(view, origin.x, origin.y, centered), alpha = 1 - age / .75;
+      const color = ev.type === 'mixture' ? HEAL_INK : CARD_INKS[card?.color] || teamColor(ev.team || 1, colors);
+      const p = point(view, origin.x, origin.y, centered), alpha = 1 - age / duration;
       const elapsed = ui.reducedMotion ? .15 : age;
       c.save(); c.globalAlpha = alpha * .8; c.strokeStyle = color; c.fillStyle = color; c.lineWidth = 1.5;
-      if (ev.type === 'paint') {
+      if (ev.type === 'mixture') {
+        const radius = Math.max(.5, ev.radius || 2), r = radius * view.cell;
+        clipVisible(c, game, view, origin.x, origin.y, radius + 1);
+        c.save(); c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.clip();
+        // Green remains a temporary line motif. Territory keeps its camp's fill.
+        c.globalAlpha = alpha * .45; c.lineWidth = 1.3;
+        const spacing = Math.max(9, view.cell * .6);
+        for (let offset = -r * 2; offset < r * 2; offset += spacing) line(c, p.x - r, p.y + offset + r, p.x + r, p.y + offset - r);
+        c.restore(); c.globalAlpha = alpha * .85; c.lineWidth = 1.6; c.setLineDash([1, 5]);
+        c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.stroke(); c.setLineDash([]);
+        const arm = Math.max(6, Math.min(10, view.cell * .5));
+        c.strokeStyle = PAPER; c.lineWidth = 6; line(c, p.x - arm, p.y, p.x + arm, p.y); line(c, p.x, p.y - arm, p.x, p.y + arm);
+        c.strokeStyle = color; c.lineWidth = 3; line(c, p.x - arm, p.y, p.x + arm, p.y); line(c, p.x, p.y - arm, p.x, p.y + arm);
+      } else if (ev.type === 'mortar-impact') {
+        const radius = Math.max(.5, ev.radius || 1.5);
+        clipVisible(c, game, view, origin.x, origin.y, radius + 1);
+        const r = radius * view.cell * (.6 + elapsed * .55);
+        c.lineWidth = ui.reducedMotion ? 2 : 2.5; c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.stroke();
+        for (let n = 0; n < 8; n++) {
+          const a = n * TAU / 8;
+          line(c, p.x + Math.cos(a) * r * .45, p.y + Math.sin(a) * r * .45, p.x + Math.cos(a) * r * .85, p.y + Math.sin(a) * r * .85);
+        }
+      } else if (ev.type === 'paint') {
         for (const tile of (ev.cells || []).slice(-16)) {
           if (!visible(game, tile.x, tile.y)) continue;
           const q = point(view, tile.x, tile.y);
@@ -605,11 +724,13 @@
     c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
     drawTerrain(c, game, view, colors, motion);
     drawFlow(c, game, view, colors, ui, motion);
+    drawMortarAim(c, game, view, colors, ui);
     for (const b of observedBuildings(game)) {
       const selected = b.team === 1 && ui.selectedProducer != null && String(b.id) === String(ui.selectedProducer);
       building(c, game, view, colors, b, selected, false);
     }
     drawUnits(c, game, view, colors, ui);
+    drawShells(c, game, view, colors, ui);
     drawEffects(c, game, view, colors, ui);
     if (ui.mode === 'brush') drawBrush(c, game, view, colors, ui);
     else if (ui.mode === 'card') drawCard(c, game, view, colors, ui);
@@ -623,10 +744,11 @@
 
     // A single selected label replaces a permanent map legend/help panel.
     const b = game.buildings.find(b => b.team === 1 && b.hp > 0 && ui.selectedProducer != null && String(b.id) === String(ui.selectedProducer));
-    if (b && ui.mode === 'navigate' && !ui.flowDrag) {
+    if (b && ui.mode === 'navigate' && !ui.flowDrag && !ui.mortarAim) {
       const p = point(view, b.x, b.y), state = b.connected === false ? 'isolated' : productionState(game, b);
       if (p.x >= 0 && p.x <= view.w && p.y >= 0 && p.y <= view.h) {
-        const text = NAMES[b.type] + (STATE_NAMES[state] ? ' · ' + STATE_NAMES[state] : '');
+        const range = b.type === 'mortar' ? ' · ' + String(mortarStats().minRange).replace('.', ',') + '–' + mortarStats().range + ' cases' : '';
+        const text = NAMES[b.type] + (STATE_NAMES[state] ? ' · ' + STATE_NAMES[state] : range);
         label(c, view, text, p.x, p.y + s * 1.25 + (b.hp < b.maxHp ? 5 : 0), tone(colors, 'playerStrong'), true);
       }
     }

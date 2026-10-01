@@ -2,9 +2,20 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
-## V0.7.1 — apprendre à peindre et commander au doigt
+## V0.8 — une course de trois combats
 
-Le nouveau mode est accessible en tête du menu, avec **Apprendre à peindre** et **Combat libre**. Le duel dure au plus quatre minutes, avec trente secondes de prolongation si les territoires connectés sont exactement égaux. La campagne et le mode libre classiques restent accessibles avec leurs sauvegardes.
+La course enchaîne **trois duels**, chacun sur une toile différente et face à un adversaire au style annoncé. Entre les deux premiers combats, choisissez **une récompense parmi trois** : une nouvelle carte, une carte moins chère ou un **vernis**, un effet valable jusqu’à la fin de cette course. Les récompenses s’appliquent au combat suivant ; les pigments, les bâtiments et les unités repartent de leur état initial à chaque rencontre.
+
+- **Mortier** : carte de bâtiment à débloquer, 40 pigments. Posez-le sur votre réseau, puis glissez depuis lui vers une zone visible ou utilisez le bouton de visée de sa fiche. Il frappe entre 2,5 et 7 cases, toutes les cinq secondes, avec un impact annoncé 1,2 seconde à l’avance. Son tir blesse les ennemis sans repeindre le sol. Une coupure suspend les tirs suivants ; les projectiles déjà partis continuent leur trajet.
+- **Vernis** : allonger les traits, accélérer les renforts sur le territoire connecté ou renforcer les bâtiments. Les améliorations de carte réduisent le coût d’une carte précise ; leurs effets sont indiqués avant le choix. Pas d’arbre de recherches en combat ni de bonus permanent de puissance entre les courses.
+- **Premier mélange**, à partir du deuxième combat : jouer une carte bleue et une carte jaune à deux cases au maximum et dans les quatre secondes soigne jusqu’à 12 points de vie aux gouttes alliées proches. Les couleurs des cartes sont indépendantes de la couleur de votre camp. Un motif vert temporaire signale le soin ; il ne change pas la propriété du territoire.
+- **Reprise locale** : la course, le combat en cours et le choix de récompenses se sauvegardent dans un emplacement séparé des parties classiques. Reprendre remet le combat en pause ; rien n’avance pendant l’absence. Une défaite termine la course ; un match nul permet de rejouer la rencontre sans gagner de récompense.
+
+La course complète de cinq à sept combats, les embranchements, le chevalet, les événements, le réservoir et les alliances restent dans la feuille de route. L’équilibre et le plaisir restent à confirmer par des parties humaines sur téléphone.
+
+## Peindre et commander au doigt
+
+**Apprendre à peindre** et **Combat libre** restent accessibles au menu à côté de la course. Chaque duel dure au plus quatre minutes, avec trente secondes de prolongation si les territoires connectés sont exactement égaux. La campagne et le mode libre classiques restent accessibles avec leurs sauvegardes.
 
 - **Peindre** : toucher Pinceau, tracer depuis sa couleur connectée sur le blanc visible, puis lever le doigt. Le chemin et son coût sont montrés avant l’achat. Une portion impossible apparaît en pointillés rouges ; seule la partie valide qui la précède est peinte et payée. Revenir au départ annule le trait. Après un trait, retour à la navigation ; un double toucher sur le bouton Pinceau le verrouille, un toucher le déverrouille.
 - **Jouer une carte** : glisser depuis la main et lâcher sur une case valide ; revenir dans la main annule. On peut aussi toucher une carte puis son emplacement. Bâtiments sur son réseau, extracteurs sur une source, pouvoirs sur une cible visible à portée. La main conserve quatre cartes et annonce la suivante.
@@ -15,9 +26,7 @@ Le nouveau mode est accessible en tête du menu, avec **Apprendre à peindre** e
 - **Apprendre** : six situations introduisent rejoindre une source, poser l’extracteur, produire et attaquer, reconnecter par le terrain neutre, rappeler pour défendre, puis dominer. Un objectif à la fois, avec les commandes du combat. Le revenu de la source vient de l’extracteur ; une case ennemie ne peut pas être repeinte au pinceau.
 - **Se repérer** : silhouettes distinctes, sources dorées, groupes et destinations visibles, hachures et lien rompu sur un secteur isolé. L’isolement arrête la production et retire ce territoire du score connecté ; aucun compte à rebours de disparition. Le pincement et les boutons +/− permettent de zoomer, le mode Vue de déplacer la toile.
 
-Le prototype se met en pause et se reprend **tant que cette page reste ouverte**. Fermer ou recharger la page recommence ce combat ; les sauvegardes classiques restent conservées. Le passage en arrière-plan ne fait pas avancer la simulation.
-
-Cet essai valide d’abord le plaisir et la lisibilité du combat. Courses, récompenses, vernis, chevalet, mélanges de cartes, galerie et alliances viennent ensuite ; ils ne sont pas encore disponibles.
+Le **combat libre de peinture et les exercices d’apprentissage** restent temporaires : ils se mettent en pause et se reprennent tant que cette page reste ouverte. Fermer ou recharger la page les recommence. La course et les parties classiques ont leurs propres sauvegardes. Le passage en arrière-plan ne fait pas avancer la simulation.
 
 ## V0.6 — apprendre en jouant
 
@@ -75,7 +84,7 @@ Ouvrir le jeu en HTTPS, puis utiliser **Installer sur mon téléphone** dans le 
 
 Attendre l’indication de disponibilité hors ligne lors de la première ouverture. Ensuite les fichiers du jeu peuvent être chargés sans réseau. Les mises à jour sont proposées sans rechargement imposé pendant une partie.
 
-Le cache hors ligne conserve les fichiers des deux modes ; la sauvegarde locale conserve séparément les parties et la progression classiques. Le combat prototype reste uniquement dans la page ouverte. L’installation n’est pas disponible depuis un simple fichier local. Les sauvegardes existent depuis la V0.4 ; une partie d’une version antérieure ne peut pas être récupérée rétroactivement.
+Le cache hors ligne conserve les fichiers de tous les modes. La sauvegarde locale conserve la course, les parties et la progression classiques dans des emplacements distincts. Attendez la confirmation de sauvegarde avant de fermer ; un stockage plein ou indisponible est signalé. Le combat libre de peinture et les tutoriels restent uniquement dans la page ouverte. L’installation n’est pas disponible depuis un simple fichier local. Les sauvegardes existent depuis la V0.4 ; une partie d’une version antérieure ne peut pas être récupérée rétroactivement.
 
 ## Jouer
 
@@ -101,9 +110,12 @@ node tests/paint-ai.test.cjs
 node tests/paint-balance.test.cjs
 node tests/paint-tutorial.test.cjs
 node tests/paint-renderer.test.cjs
+node tests/paint-course-engine.test.cjs
+node tests/paint-course.test.cjs
+node tests/paint-course-playthrough.test.cjs
 ```
 
-Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs`, `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs`, `tests/readability.browser.cjs`, `tests/paint.browser.cjs`, `tests/paint-tutorial.browser.cjs` et `tests/paint-integration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs`, `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs`, `tests/readability.browser.cjs`, `tests/paint.browser.cjs`, `tests/paint-tutorial.browser.cjs`, `tests/paint-integration.browser.cjs` et `tests/paint-course.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
 ## Principe du mode classique
 
@@ -115,10 +127,11 @@ Les contrôles et les prix sont indiqués dans le jeu. Commencez par la campagne
 
 ## Fichiers
 
-- `paint-engine.js` : règles, cartes, pinceau, réseau, production et combat V0.7.1.
+- `paint-engine.js` : règles, cartes, pinceau, réseau, production, trois toiles, vernis, mortier et premier mélange du combat V0.8.
 - `paint-ai.js` : décisions du nouvel adversaire depuis sa perception limitée.
 - `paint-renderer.js` : rendu de la toile, des camps, des flux et des effets.
-- `paint.js` / `paint.css` : interface tactile, caméra, inspection et reprise en mémoire du prototype.
+- `paint.js` / `paint.css` : interface tactile, caméra, inspection et cycle de vie du mode peinture.
+- `paint-course.js` / `paint-course.css` : rencontres, récompenses, progression, format de sauvegarde propre à la course et écrans portrait associés.
 - `paint-tutorial.js` / `paint-tutorial.css` : six situations d’apprentissage avec objectifs, guidage et progression propres au mode peinture.
 - `engine.js` : simulation, économie, déplacements, combats, IA et conditions de victoire.
 - `missions.js` : cinq scénarios, restrictions, objectifs et opposition de campagne.

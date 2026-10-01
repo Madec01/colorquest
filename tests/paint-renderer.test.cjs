@@ -95,4 +95,86 @@ test('reduced motion freezes the tutorial hand while keeping a static instructio
   assert.deepEqual(render(game, ui), atStart);
   assert.ok(atStart.some(call => call[0] === 'rotate' && call[1] === -.24), 'static finger stays visible');
 });
+
+function mortar(game, team = 1) {
+  const b = { id: 810, team, type: 'mortar', x: 8, y: 21, hp: 80, maxHp: 80, connected: true, mortarTarget: { x: 9, y: 17 } };
+  game.buildings.push(b); game.visibility[1][b.y * game.width + b.x] = true;
+  return b;
+}
+function shell(game, team = 1, x = 9.5, y = 19.5) {
+  const shot = { id: 820, team, sourceId: 810, fromX: 8.5, fromY: 21.5, x, y, remaining: .6, total: 1.2, radius: 1.5 };
+  game.shells = [shot]; return shot;
+}
+
+test('mortar range and targeting cues are selected-only and do not mutate the match', () => {
+  const game = new Engine.Game(), b = mortar(game);
+  const stat = Engine.BUILDING_STATS.mortar || { minRange: 2.5, range: 7 };
+  const rangeArc = log => log.some(c => c[0] === 'arc' && c[3] === stat.range * view.cell);
+  const before = JSON.stringify(game);
+  assert.equal(rangeArc(render(game)), false);
+  const log = render(game, { selectedProducer: b.id, mode: 'navigate' });
+  assert.ok(rangeArc(log));
+  assert.ok(log.some(c => c[0] === 'arc' && c[3] === stat.minRange * view.cell));
+  assert.ok(labels(log).some(label => label.startsWith('Mortier · ') && label.endsWith(' cases')));
+  assert.equal(rangeArc(render(game, { selectedProducer: b.id, mode: 'brush' })), false, 'painting does not keep artillery range clutter');
+  render(game, { selectedProducer: b.id, mode: 'mortar', mortarAim: { producerId: b.id, x: 9, y: 19, ok: false } });
+  assert.equal(JSON.stringify(game), before);
+});
+
+test('an inspected visible hostile mortar never exposes its chosen target', () => {
+  const game = new Engine.Game(), b = mortar(game, 2);
+  Object.defineProperty(b, 'mortarTarget', { get() { throw Error('private hostile target read'); } });
+  Object.defineProperty(b, 'connected', { get() { throw Error('private hostile network read'); } });
+  assert.doesNotThrow(() => render(game, { selectedProducer: b.id, mode: 'navigate' }));
+});
+
+test('an unseen hostile shell has no visual cue and its private flight state is not inspected', () => {
+  const game = new Engine.Game(), baseline = render(game);
+  const shot = shell(game, 2, 5.5, 7.5);
+  for (const field of ['remaining', 'sourceId', 'fromX', 'fromY', 'radius', 'total']) Object.defineProperty(shot, field, { get() { throw Error('hidden shell field ' + field); } });
+  assert.deepEqual(render(game), baseline);
+});
+
+test('a visible incoming warning does not reveal an unseen launcher or draw its trajectory', () => {
+  const game = new Engine.Game(), shot = shell(game, 2);
+  game.visibility[1][19 * game.width + 9] = true;
+  for (const field of ['fromX', 'fromY']) Object.defineProperty(shot, field, { get() { throw Error('hidden launcher ' + field); } });
+  const log = render(game);
+  const p = { x: 9.5 * view.cell, y: 19.5 * view.cell };
+  assert.ok(log.some(c => c[0] === 'arc' && c[1] === p.x && c[2] === p.y && c[3] === shot.radius * view.cell), 'landing warning is still visible');
+});
+
+test('own shells retain their landing warning under fog and reduced motion keeps it readable', () => {
+  const game = new Engine.Game(); mortar(game); const shot = shell(game, 1, 9.5, 8.5);
+  game.visibility[1][8 * game.width + 9] = false;
+  const before = JSON.stringify(game), log = render(game, { reducedMotion: true });
+  assert.ok(log.some(c => c[0] === 'arc' && c[1] === shot.x * view.cell && c[2] === shot.y * view.cell && c[3] === shot.radius * view.cell));
+  assert.equal(JSON.stringify(game), before);
+});
+
+test('green healing is a temporary, sight-clipped cross and line motif, never territory paint', () => {
+  const game = new Engine.Game(); game.visibility[1][19 * game.width + 9] = true;
+  game.events.push({ type: 'mixture', mixture: 'green', team: 1, x: 9, y: 19, radius: 2, time: 0 });
+  const before = JSON.stringify(game), log = render(game);
+  assert.ok(log.some(c => c[0] === 'set' && c[1] === 'strokeStyle' && c[2] === '#357953'));
+  assert.ok(log.filter(c => c[0] === 'clip').length >= 3, 'terrain, visible area and motif disc are separately clipped');
+  assert.equal(JSON.stringify(game), before);
+  game.time = 3.01;
+  const expired = render(game); game.events = [];
+  assert.deepEqual(render(game), expired, 'mixture vanishes after three seconds');
+  game.events.push({ type: 'mixture', mixture: 'green', team: 2, x: 5, y: 7, radius: 2, time: game.time });
+  assert.deepEqual(render(game), expired, 'unseen healing never exposes an enemy effect');
+});
+
+test('mortar impacts expire without leaving a territory mark', () => {
+  const game = new Engine.Game(); game.visibility[1][19 * game.width + 9] = true;
+  const owners = game.tiles.map(t => t.owner);
+  game.events.push({ type: 'mortar-impact', team: 2, x: 9, y: 19, radius: 1.5, time: game.time });
+  const log = render(game, { reducedMotion: true });
+  assert.ok(log.filter(c => c[0] === 'clip').length >= 2, 'splash is clipped to sight');
+  assert.deepEqual(game.tiles.map(t => t.owner), owners);
+  game.time = 1;
+  const expired = render(game); game.events = [];
+  assert.deepEqual(render(game), expired);
+});
 process.stdout.write(count + ' paint renderer contracts passed\n');

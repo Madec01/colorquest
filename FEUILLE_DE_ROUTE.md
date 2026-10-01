@@ -2,6 +2,16 @@
 
 Dernière mise à jour : 1er octobre 2026.
 
+## V0.8 — première course de trois combats livrée
+
+**Go de Martin reçu le 1er octobre à 13 h 18**, en réponse à la suite proposée ci-dessous. Périmètre de cette première tranche : trois combats, choix de récompenses, sauvegarde/reprise sur cet appareil, variantes d’arène et d’adversaire, premier bâtiment à débloquer. Le mortier est retenu pour cette implémentation à partir de son rôle déjà décrit au catalogue ; le réservoir reste ultérieur. Le premier mélange bleu + jaune soigne les gouttes proches, sans changer la propriété du sol ; son introduction sera progressive dans la course.
+
+**Statut : implémentée et vérifiée**, travail repris à la demande « Continu » de Martin. Trois arènes, trois profils d’adversaire, un choix parmi trois récompenses après chacune des deux premières victoires, mortier à débloquer, vernis, améliorations de cartes, mélange bleu + jaune dès le deuxième combat et sauvegarde locale avec reprise en pause. Les gestes V0.7.1, les six situations d’apprentissage et les sauvegardes classiques sont conservés. La publication et son commit sont annoncés à Martin après contrôle de la version en ligne.
+
+Le Go autorise à avancer vers la course et sa sauvegarde. Il ne remplace pas un retour humain sur la compréhension ou le plaisir de V0.7.1, qui n’a pas été fourni dans cet échange. Les réglages précis de cette tranche sont des choix d’implémentation à éprouver, pas de nouvelles réponses attribuées à Claude. La course complète de cinq à sept combats, le chevalet, les embranchements, les événements et les alliances restent à venir.
+
+Vérifications détaillées plus bas : règles et reprise déterministe, 48 simulations de diagnostic, une course de trois victoires obtenues par commandes légales, parcours tactiles en 360 × 640 et 390 × 844, stockage plein ou invalide, conflit entre fenêtres, mise à jour PWA, hors ligne et lancement autonome. Les transitions navigateur de fin de combat utilisent des états de test explicitement construits ; elles ne sont pas comptées comme des victoires jouées. Pas d’essai sur téléphone physique ni de validation humaine du plaisir.
+
 ## V0.7.1 — commandes au doigt et apprentissage livrés
 
 **Statut : implémentée et vérifiée après le Go de Martin du 1er octobre à 11 h 25.** Les propositions de Claude et les quatre corrections techniques de la réponse précédente constituent le périmètre de cette livraison. Les sections de discussion plus bas conservent leur statut historique ; leurs mentions « non implémenté / à valider » ne décrivent pas le jeu désormais livré. Le nouvel essai de compréhension et de plaisir par Martin reste attendu.
@@ -41,12 +51,19 @@ Vérifications détaillées dans la section dédiée : 60 contrôles ciblés mot
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
 - [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité réussies. Premier retour de Martin reçu : amélioration, mais compréhension et intuition encore insuffisantes ; validation humaine non acquise.
-- [x] J11 bis / V0.7.1 — Commandes au relâchement, inspection, retraite, économie visible, repères graphiques, six situations d’apprentissage et prolongation livrés après le Go. Corrections sources/reconnexion/isolement appliquées, économie peinture conservée. Contrôles techniques et parcours tactiles réussis ; faire confirmer la compréhension et le plaisir par Martin avant d’ajouter la course.
-- [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de vernis entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
+- [x] J11 bis / V0.7.1 — Commandes au relâchement, inspection, retraite, économie visible, repères graphiques, six situations d’apprentissage et prolongation livrés après le Go. Corrections sources/reconnexion/isolement appliquées, économie peinture conservée. Contrôles techniques et parcours tactiles réussis ; compréhension et plaisir toujours à confirmer. Le Go ultérieur de 13 h 18 a autorisé la première course.
+- [x] J12, première tranche / V0.8 — Trois combats sur trois toiles, adversaires à caractère, récompenses et vernis, mortier, premier mélange et sauvegarde de course. Livrés après le Go ; équilibre humain à éprouver.
+- [ ] J12, suite — Étendre à cinq à sept combats, carte de chapitre à embranchements, chevalet, événements et histoire courte ; régler le premier parcours d’après les retours avant d’élargir le contenu.
 - [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
 - [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
 
-V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 livrée ici ; V0.8 et les étapes suivantes restent à réaliser après validation du plaisir et de la lisibilité.
+V0.6 reste accessible pendant l’essai. V0.7.1 et la première tranche V0.8 sont livrées après leurs Go respectifs ; les étapes suivantes restent prévues. Un test technique réussi ne ferme pas le problème de compréhension et de plaisir.
+
+## Prochains jalons après cette première course
+
+1. **Retour de Martin sur une course réelle en portrait.** Peut-il expliquer sa défaite, choisir une récompense utile, viser au mortier et retrouver son combat après fermeture ? Observer d’abord le premier duel, puis la pression du dernier. Les profils IA ont évolué ; les coûts de base et la recharge n’ont pas été ralentis.
+2. **Réglages ciblés avec Claude.** Examiner les réseaux trop faciles à couper, le temps pour réagir aux bombardements et la place de Gomme puis pinceau. Le réservoir est un candidat pour amortir une coupure, pas une réponse automatiquement validée à une difficulté mal mesurée.
+3. **Puis développer le parcours.** Embranchements, chevalet et événements pour proposer des choix différents entre les combats ; course complète de cinq à sept rencontres ensuite. Galerie, défi du jour, collection et musique restent en J13, plusieurs IA et alliances en J14.
 
 ## Suite proposée après V0.7.1 — 1er octobre, 13 h 06
 
@@ -225,7 +242,9 @@ Cette section décrit le jeu disponible. Les propositions reçues ensuite de Cla
 6. **Victoire visible.** Effacer le Cœur adverse, tenir au moins 50 % du terrain praticable connecté avec une avance stricte pendant 15 s, ou avoir le plus grand territoire au bout de quatre minutes. Une égalité finale donne un match nul. La recharge des deux camps est multipliée par 1,5 pendant la dernière minute, annoncée à l’écran.
 7. **Gestes séparés.** Navigation et pinceau ont des modes explicites. Pincer ou annuler abandonne l’aperçu sans achat. Les prélèvements automatiques des casernes attendent pendant la visée, puis reprennent à la validation ou à l’annulation ; l’IA et le combat continuent.
 
-### Course roguelite (étape suivante, non livrée dans V0.7)
+### Course roguelite (cible complète ; première tranche livrée dans V0.8)
+
+La V0.8 réalise trois combats linéaires, deux choix de récompense, trois vernis, deux améliorations de carte, le mortier, le premier mélange et la sauvegarde. La cible ci-dessous décrit aussi du contenu futur : embranchements, chevalet, collection et galerie ne sont pas encore disponibles.
 
 - Une course = 5 à 7 combats sur une carte de chapitre à embranchements : combat, combat d’élite, chevalet, événement, boss. La course peut être interrompue et reprise, sans simuler le temps d’absence.
 - **Après chaque combat**, choisir une récompense parmi 3 : une nouvelle carte, l’amélioration d’une carte ou un **vernis** (effet passif pour la course, par exemple trait plus long, relais qui éclaboussent à leur destruction, unités qui laissent une traînée de couleur).
@@ -420,7 +439,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ### Catalogue de nouveautés à débloquer progressivement
 
-Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adaptés aux cartes, aux flux et à la progression roguelite. Ils ne sont pas tous inclus dans V0.7.
+Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adaptés aux cartes, aux flux et à la progression roguelite. La caserne avancée est disponible dans le classique ; le mortier est désormais une récompense de la course peinture V0.8. Réservoir, portails et observatoire restent proposés.
 
 #### Nouveaux bâtiments proposés
 
@@ -447,6 +466,18 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 - La campagne et les premières missions passent en priorité. Personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. La progression ouvre des possibilités de jeu ; éviter l’accumulation de bonus permanents qui rend les anciennes oppositions triviales.
 
 ## Modifications réalisées
+
+### V0.8 — 1er octobre 2026
+
+- **Course autonome de trois combats** dans `paint-course.js`, avec présentations et progression visibles. La toile ouverte affronte L’Esquisse (expansion), Les passages L’Architecte (installation défensive), Le tableau final L’Effaceur (coupures et mortier). Géométries symétriques, obstacles et sources fixes ; le paquet et les bonus du joueur persistent, chaque rencontre repart avec sa propre économie, ses unités et ses bâtiments initiaux.
+- **Deux choix de récompense**, un après chacune des deux premières victoires, parmi trois offres déterministes. La première sélection propose toujours le mortier. Les trois vernis donnent +3 cases possibles par trait, +15 % de vitesse sur le réseau connecté ou +20 % de vie aux bâtiments, Cœur amélioré compris. Deux améliorations réduisent le coût de Caserne (32 → 26) ou Éclaboussure (16 → 12). Aucun coût d’unité ni bonus permanent entre courses ; une récompense ne peut pas être dupliquée au rechargement.
+- **Mortier de peinture** : 40 pigments, 80 PV, portée 2,5–7 cases, tir toutes les 5 s après désignation d’une zone visible. Impact après 1,2 s, rayon 1,5 case, dégâts 18 aux unités et 12 aux bâtiments ennemis, sans capture ni tir allié. Les tirs suivants exigent une connexion et une cible visible ; un projectile déjà lancé poursuit son vol. Ciblage au glisser ou par bouton de fiche, arrêt explicite, portée minimale et point d’impact visibles. Le mortier remplace la deuxième Caserne du paquet, qui reste à huit cartes.
+- **Premier mélange**, introduit au deuxième combat : bleu + jaune dans l’un ou l’autre ordre, à deux cases au plus et en quatre secondes, soigne jusqu’à 12 PV aux unités alliées dans un rayon de deux cases autour de la seconde carte. Chaque carte conserve son coût et son effet ; les deux participations sont consommées pour ce mélange. Croix et hachures vertes temporaires, sans recoloration du sol. Les mots et motifs distinguent les cartes sans dépendre seulement des couleurs.
+- **Adversaires différenciés** via leur comportement, avec les mêmes coûts, revenu, dégâts et vision que le joueur. Réparation de réseau, pression plus précoce, ciblage de liaisons visibles, utilisation du mortier et du soin. L’adversaire du combat libre conserve ses résultats de référence. Aucun avantage économique ajouté pour rendre le dernier combat difficile.
+- **Sauvegarde de course versionnée**, séparée des slots classiques : état moteur, paquet, offres, récompenses, projectiles en vol, vision, mémoire IA, caméra et producteur sélectionné. Écriture environ toutes les 2,5 s et lors des pauses, transitions, changements de visibilité ou mises à jour. Reprise en pause, sans rattrapage du temps d’absence. Un nul permet de rejouer le même combat sans récompense supplémentaire ; une défaite termine la course.
+- **Erreurs de stockage explicites** : sauvegarde illisible conservée jusqu’à remplacement demandé, quota signalé sans effacer le dernier point valide, reprise en mémoire possible, conflit avec une autre fenêtre bloquant les écritures anciennes. La mise à jour PWA attend si la course ne peut pas être enregistrée.
+- **Interface portrait et PWA** : entrée « Commencer ma course », route de trois toiles, fiches de récompenses et détail des bonus, résultat avec cause exacte et scores connectés. Modules de course précachés, version de cache V0.8, aucun asset externe ajouté. Tutoriel, zoom, palette et classique conservés.
+- **Défauts corrigés pendant l’intégration** : accumulateur moteur remis à zéro si une carte termine le combat entre deux pas ; formats d’état IA finis et restaurables ; cibles de mortier sur obstacle acceptées pour les cases voisines ; double action tactile après changement d’écran neutralisée ; résultat de course affichant la véritable raison de fin plutôt qu’un texte générique. Lisibilité des descriptions de récompenses et caractère « + » corrigés.
 
 ### V0.7.1 — 1er octobre 2026
 
@@ -584,6 +615,7 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Bugs trouvés non corrigés
 
+- **V0.8 : aucun défaut bloquant restant observé dans les scénarios exécutés.** Le confort de la première course, sa difficulté et le plaisir ne sont pas considérés résolus par ces contrôles. Les risques précis sont suivis ci-dessous ; aucun bug connu n’est masqué par une récompense ou un résultat de test imposé.
 - **Compréhension et plaisir — retour humain attendu après V0.7.1 :** le défaut d’usage signalé sur V0.7 a motivé les nouveaux gestes, les repères et les six situations livrés. Aucun blocage restant observé dans les parcours exécutés ; le problème de compréhension ne sera déclaré résolu qu’après un nouvel essai de Martin.
 - V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Ces contrôles ne valident pas la compréhension : le premier retour de Martin ci-dessus signale un problème d’usage toujours ouvert.
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
@@ -591,15 +623,17 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Limites et risques à suivre
 
+- **Difficulté V0.8 à mesurer humainement.** Sur neuf combinaisons profil/arène, le script spécialisé dans la peinture perd huit fois ; les scripts sommaires de pression et de défense perdent aussi. Une stratégie mixte utilisant les commandes ordinaires gagne réellement les trois rencontres de la course (158,1 s, 205,5 s, 92,8 s), sans prix réduits ni état de victoire imposé. Ces résultats montrent des issues possibles, pas un taux de victoire humain. Le dernier adversaire peut sanctionner un réseau fragile très vite ; premier duel et boss restent prioritaires à observer avec Martin.
+- **Variété V0.8 bornée** : trois cartes géométriques fixes, six récompenses possibles, un mélange et une famille d’unités. La graine varie les offres, pas la géométrie. Le parcours est linéaire, sans chevalet, événement, collection permanente ni alliance. La description initiale d’une course complète reste un objectif futur.
+- **Sauvegarde V0.8 locale seulement** : un emplacement de course par navigateur/application, sans synchronisation entre appareils. Une fermeture forcée peut perdre les secondes depuis la dernière écriture (cadence de 2,5 s) ; effacer les données du navigateur efface la course. Une erreur de stockage est signalée et ne doit pas être confondue avec une sauvegarde réussie. Les combats libres peinture et tutoriels restent temporaires.
 - V0.7.1 : les situations pédagogiques sont distinctes, avec opposition scénarisée et pause après réussite. Leurs durées de 30–60 s sont des cibles de découverte, pas des durées humaines mesurées ni des attentes imposées. La scène de défense reste perdable et peut être recommencée.
 - V0.7.1 : l’équilibrage économique et l’IA de combat libre n’ont pas changé. Le script de peinture efficace gagne toujours vers 78–81 s ; comprendre les commandes ne démontre pas encore l’équilibre peinture/armée ni l’envie de rejouer. Gomme puis pinceau reste une combinaison à examiner avec Claude dans ce bilan.
-- V0.7 est un combat d’essai séparé : sa pause/reprise reste en mémoire dans la page. Une fermeture, un rechargement ou une mise à jour perd ce combat ; les modes classiques gardent leurs sauvegardes. Une vraie sauvegarde de course appartient à V0.8, après validation.
-- Le prototype utilise une seule arène fixe symétrique, un paquet fixe de huit cartes et une seule famille de gouttes. La graine ne change pas encore la disposition ni le comportement initial : plusieurs graines seules ne constituent pas une mesure de variété ou d’équilibrage.
+- Le combat libre peinture garde l’arène ouverte, le paquet de départ de huit cartes et la reprise en mémoire de V0.7. La sauvegarde persistante V0.8 concerne la course. Plusieurs graines seules ne constituent pas une mesure de variété ou d’équilibrage du combat libre.
 - Quatre minutes est une limite maximale, pas une durée garantie : une destruction du Cœur ou une domination tenue peut conclure plus tôt. Une politique automatisée de peinture efficace gagne en environ 80 s ; sa place face au développement militaire et la facilité à couper ce réseau sont à éprouver avec Martin, sans ajouter de règle avant son retour. Les essais automatisés ne remplacent pas des parties humaines.
 - Les détails suivants concernent le mode classique lorsqu’ils citent ses missions, escouades, spécialistes, cartes ou sauvegardes.
 - Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; la campagne V0.6 reste à éprouver en partie humaine.
 - Les missions et les déblocages seuls ne résoudront pas une carte ou des commandes ambiguës : traiter la lisibilité en parallèle. Le mélange des couleurs d’alliance devra préserver l’identification du propriétaire des unités et bâtiments.
-- Le moteur et le format de sauvegarde V0.6 restent limités à deux camps. Plusieurs IA et alliances sont planifiées. Les cinq missions et la caserne sont disponibles ; réservoir, mortier et autres nouveaux bâtiments ne le sont pas.
+- Le moteur et le format de sauvegarde V0.6 restent limités à deux camps, comme le nouveau mode peinture. Plusieurs IA et alliances sont planifiées. Dans le classique, les cinq missions et la caserne sont disponibles ; son catalogue n’a pas reçu le mortier de la course V0.8.
 - La campagne est un premier chapitre court, avec opposition scénarisée. L’IA du mode libre conserve son recrutement au Cœur et ne construit pas encore de caserne ; lui apprendre à utiliser une production avancée est à prévoir avant un duel centré sur ce bâtiment.
 - L’IA connaît la géométrie des cartes pour naviguer ; elle ne connaît plus les positions adverses cachées. Vision radiale sans occlusion par les obstacles, identique pour les deux camps.
 - Trois dispositions fixes et symétriques ; aucune génération procédurale. Les reprises V0.4 et le tutoriel conservent l’ancienne géométrie.
@@ -620,6 +654,8 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Idées à évaluer (non promises)
 
+- Pour le premier bilan V0.8, demander au joueur ce qui a coupé son réseau et quelle récompense a changé sa façon de jouer. Si ces réponses restent floues, corriger l’explication de ces événements avant d’ajouter une nouvelle carte ou une nouvelle monnaie.
+- Piste pour un embranchement ultérieur : choisir entre une toile ouverte propice à l’expansion et un passage à défendre, avec l’adversaire et la récompense annoncés. À cadrer avec Claude ; pas encore implémenté.
 - Transformer les anciennes idées de spécialisations en choix de cartes ou de vernis, après validation du prototype ; ne pas ajouter une seconde progression en combat.
 - Autres propriétés du papier et points d’observation, après validation des terrains V0.5.
 - Adversaires à caractère, statistiques de fin de partie et rejeu de la coloration : validés le 1er octobre, intégrés à la nouvelle direction.
@@ -627,6 +663,18 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.8 — 1er octobre 2026
+
+- Moteur peinture : 38 contrôles existants et 22 nouveaux contrôles de course passants. Géométries accessibles, économie de base inchangée, effets des récompenses, santé des bâtiments améliorés, mortier (portées, vision, délai, dégâts, coupure, destruction et projectiles), mélange et fin de combat entre deux pas de simulation.
+- `tests/paint-course.test.cjs` : 18 contrôles passants sur les trois rencontres, offres déterministes, récompenses uniques, paquet et bonus, reprise exacte, nul/défaite/victoire, données invalides, cohérence du monde restauré et continuation déterministe avec mémoire IA.
+- IA : 14 contrôles passants, dont profils, sauvegarde/restauration, absence de lecture ennemie cachée, ciblage du mortier, esquive d’un bombardement visible et mélange. Rendu : 14 contrôles passants, dont silhouette, portée et avertissement de bombardement, protection des informations hors vision, motif de soin et mouvement réduit. Apprentissage moteur : neuf contrôles passants.
+- `tests/paint-balance.test.cjs` : 48 simulations réalisées, soit 12 références de combat libre inchangées et 36 essais croisant trois profils, trois arènes et quatre politiques limitées. Ces diagnostics utilisent des actions légales, pas des avantages de ressources ; ils ne mesurent ni le plaisir ni la difficulté humaine. En combat libre, le script de peinture gagne toujours vers 78–81 s. Dans la course, les comportements IA ajoutés contrent davantage cette seule stratégie.
+- `tests/paint-course-playthrough.test.cjs` : course réellement remportée par une politique mixte, avec mortier puis Couche protectrice choisis après les victoires. Rencontres gagnées à 158,1 s (domination), 205,5 s (domination), 92,8 s (Cœur détruit). Commandes ordinaires, coûts normaux et perception limitée ; aucune injection de pigment, territoire, dégâts ou gagnant. Checkpoints vérifiés toutes les 30 s et après les résultats. Un parcours reproductible ne constitue pas un taux de victoire.
+- `tests/paint-course.browser.cjs` : gestes tactiles en 360 × 640 et 390 × 844, peinture et cartes réellement payées, flux, mélange, achat et visée du mortier, reprise exacte en pause avec caméra, vision et projectiles. Transitions vers récompense/nul/fin testées séparément avec des états terminaux construits et clairement signalés ; cause du résultat, choix unique et persistance vérifiés. Aucun débordement horizontal ou erreur JavaScript observé.
+- Stockage navigateur : contenu illisible préservé, remplacement explicite, quota refusé sans perte du dernier checkpoint, reprise en mémoire puis récupération ; deux fenêtres, arrêt de l’ancienne et relecture explicite de la plus récente. Mise à jour PWA bloquée en cas d’échec d’écriture, reprise exacte après succès, tous les nouveaux modules disponibles hors ligne et poursuite du combat enregistré. Lancement `file://` autonome vérifié.
+- Régressions navigateur : commandes V0.7.1 et six leçons entièrement rejouées dans les deux portraits après correction des doubles événements tactiles ; intégration classique, palette, sauvegardes et PWA vérifiées. Les 18 contrôles de snapshots classiques restent passants ; moteur, format de sauvegarde et missions classiques non modifiés.
+- Captures portrait inspectées : présentation du parcours, choix des récompenses, deuxième combat, mortier et écran final. Les vérifications portent sur Chromium en émulation tactile ; pas de téléphone physique ni de nouvel avis de Claude sur ces réglages. Lisibilité et plaisir restent à confirmer avec Martin.
 
 ### V0.7.1 — 1er octobre 2026
 

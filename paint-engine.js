@@ -1,4 +1,4 @@
-/* Colorquest V0.7.1: isolated, deterministic paint-and-cards simulation.
+/* Colorquest V0.8: isolated, deterministic paint-and-cards simulation.
  * No DOM, storage, audio, AI, or dependency on the classic game.
  * Tile positions are integers; unit positions are continuous cell centres.
  */
@@ -26,16 +26,50 @@
     splash: Object.freeze({ id: 'splash', name: 'Éclaboussure', kind: 'power', type: 'splash', description: 'Blesse les ennemis visibles dans la zone.', cost: 16, icon: '✦', color: 'red', range: 5, radius: 2 }),
     bastion: Object.freeze({ id: 'bastion', name: 'Bastion', kind: 'building', type: 'bastion', description: 'Défend les environs tant qu’il reste relié.', cost: 30, icon: '⬟', color: 'blue', radius: 1.5 }),
     wave: Object.freeze({ id: 'wave', name: 'Vague', kind: 'power', type: 'wave', description: 'Repousse et blesse les gouttes ennemies visibles.', cost: 12, icon: '≈', color: 'blue', range: 5, radius: 2.4 }),
-    bleach: Object.freeze({ id: 'bleach', name: 'Gomme', kind: 'power', type: 'bleach', description: 'Efface la couleur ennemie visible, sauf sous ses bâtiments.', cost: 14, icon: '▱', color: 'yellow', range: 5, radius: 2.2 })
+    bleach: Object.freeze({ id: 'bleach', name: 'Gomme', kind: 'power', type: 'bleach', description: 'Efface la couleur ennemie visible, sauf sous ses bâtiments.', cost: 14, icon: '▱', color: 'yellow', range: 5, radius: 2.2 }),
+    mortar: Object.freeze({ id: 'mortar', name: 'Mortier', kind: 'building', type: 'mortar', description: 'Bombarde une zone visible à 2,5–7 cases. Glissez pour viser ; impact après 1,2 s, toutes les 5 s.', cost: 40, icon: '⊙', color: 'red', radius: 1.2 })
   });
   const BUILDING_STATS = Object.freeze({
     core: { hp: 240, sight: 5, range: 3.5, damage: 8, interval: 1 },
     relay: { hp: 70, sight: 3, radius: 3.2 },
     extractor: { hp: 75, sight: 3, radius: 1.5 },
     bastion: { hp: 125, sight: 4.5, radius: 1.5, range: 4.2, damage: 8, interval: .95 },
-    barracks: { hp: 100, sight: 3, radius: 1.8 }
+    barracks: { hp: 100, sight: 3, radius: 1.8 },
+    mortar: { hp: 80, sight: 5, radius: 1.2, minRange: 2.5, range: 7, unitDamage: 18, buildingDamage: 12, interval: 5, flightTime: 1.2, blastRadius: 1.5 }
   });
   const UNIT_STATS = Object.freeze({ hp: 32, speed: 1.65, damage: 6, range: 1.3, interval: .9, sight: 3.5, aggro: 3.3 });
+  const DEFAULT_DECK = Object.freeze(['relay', 'barracks', 'extractor', 'splash', 'bastion', 'wave', 'bleach', 'barracks']);
+  const MIXTURE = Object.freeze({ window: 4, distance: 2, radius: 2, heal: 12 });
+  const freezeCells = cells => Object.freeze(cells.map(cell => Object.freeze(cell)));
+  const MAPS = Object.freeze({
+    canvas: Object.freeze({ id: 'canvas', name: 'Toile ouverte', description: 'Des espaces ouverts pour prendre ses marques.',
+      blocked: freezeCells([[3, 12], [4, 12], [3, 13], [4, 13], [14, 13], [15, 13], [14, 14], [15, 14]]),
+      sources: freezeCells([[5, 19], [13, 19], [5, 7], [13, 7], [9, 13]]) }),
+    narrows: Object.freeze({ id: 'narrows', name: 'Le passage', description: 'Deux seuils resserrent les armées au centre de la toile.',
+      blocked: freezeCells([12, 14].flatMap(y => [0, 1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 16, 17, 18].map(x => [x, y]))),
+      sources: freezeCells([[4, 18], [14, 18], [4, 8], [14, 8], [9, 13]]) }),
+    crossroads: Object.freeze({ id: 'crossroads', name: 'Les croisements', description: 'Des îlots séparent plusieurs voies autour des sources.',
+      blocked: freezeCells([9, 10, 11, 15, 16, 17].flatMap(y => [5, 6, 7, 11, 12, 13].map(x => [x, y]))),
+      sources: freezeCells([[9, 18], [9, 8], [3, 13], [15, 13], [9, 13]]) })
+  });
+  function normalizeModifiers(value) {
+    if (value == null) value = {};
+    if (typeof value !== 'object' || Array.isArray(value)) throw new RangeError('Vernis invalides.');
+    const bounded = (key, max, integer = false) => {
+      const amount = value[key] === undefined ? 0 : value[key];
+      if (!Number.isFinite(amount) || amount < 0 || amount > max || (integer && !Number.isInteger(amount))) throw new RangeError('Vernis invalide : ' + key);
+      return amount;
+    };
+    const discounts = value.cardDiscounts === undefined ? {} : value.cardDiscounts;
+    if (!discounts || typeof discounts !== 'object' || Array.isArray(discounts) || Object.keys(discounts).some(key => key !== 'barracks' && key !== 'splash')) throw new RangeError('Réduction de carte invalide.');
+    const cardDiscounts = {};
+    for (const [id, max] of [['barracks', 6], ['splash', 4]]) {
+      const amount = discounts[id] === undefined ? 0 : discounts[id];
+      if (!Number.isInteger(amount) || amount < 0 || amount > max) throw new RangeError('Réduction de carte invalide : ' + id);
+      cardDiscounts[id] = amount;
+    }
+    return { brushBonus: bounded('brushBonus', 3, true), reinforcementSpeed: bounded('reinforcementSpeed', .15), buildingHealth: bounded('buildingHealth', .2), cardDiscounts };
+  }
   const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
   const validTeam = team => team === 1 || team === 2;
   const point = (x, y) => Number.isInteger(x) && Number.isInteger(y);
@@ -47,6 +81,12 @@
     constructor(options = {}) {
       this.width = CONFIG.width;
       this.height = CONFIG.height;
+      this.mapId = options.mapId === undefined ? 'canvas' : options.mapId;
+      if (!Object.hasOwn(MAPS, this.mapId)) throw new RangeError('Toile inconnue.');
+      this.modifiers = [null, normalizeModifiers(options.modifiers && options.modifiers[1]), normalizeModifiers(options.modifiers && options.modifiers[2])];
+      this.mixtures = options.mixtures === true;
+      this._mixtureLast = [null, null, null];
+      this.shells = [];
       this.seed = (Number.isFinite(options.seed) ? options.seed : 71001) >>> 0;
       this.time = 0;
       this.duration = Number.isFinite(options.duration) && options.duration > 0 ? options.duration : CONFIG.duration;
@@ -61,8 +101,14 @@
       this.hold = [0, 0, 0];
       this.buildings = [];
       this.units = [];
-      this.hands = [[], ['relay', 'barracks', 'extractor', 'splash'], ['relay', 'barracks', 'extractor', 'splash']];
-      this.decks = [[], ['bastion', 'wave', 'bleach', 'barracks'], ['bastion', 'wave', 'bleach', 'barracks']];
+      this.hands = [[], [], []];
+      this.decks = [[], [], []];
+      for (let team = 1; team <= 2; team++) {
+        const deck = options.decks && options.decks[team] !== undefined ? options.decks[team] : DEFAULT_DECK;
+        if (!Array.isArray(deck) || deck.length !== 8 || deck.some(id => typeof id !== 'string' || !Object.hasOwn(CARDS, id))) throw new RangeError('Un paquet contient exactement huit cartes connues.');
+        this.hands[team] = deck.slice(0, 4);
+        this.decks[team] = deck.slice(4);
+      }
       this.events = [];
       this.spendingHeld = [false, false, false];
       this._id = 1;
@@ -77,9 +123,9 @@
       }));
       this.visibility = [[], this.tiles.map(() => false), this.tiles.map(() => false)];
       this.explored = [[], this.tiles.map(() => false), this.tiles.map(() => false)];
-      // Fixed rotationally symmetric geometry. The seed controls no hidden bonuses.
-      for (const [x, y] of [[3, 12], [4, 12], [3, 13], [4, 13], [14, 13], [15, 13], [14, 14], [15, 14]]) this.tile(x, y).blocked = true;
-      for (const [x, y] of [[5, 19], [13, 19], [5, 7], [13, 7], [9, 13]]) this.tile(x, y).source = true;
+      // Public rotationally symmetric geometry. The seed controls no hidden bonuses.
+      for (const [x, y] of MAPS[this.mapId].blocked) this.tile(x, y).blocked = true;
+      for (const [x, y] of MAPS[this.mapId].sources) this.tile(x, y).source = true;
       for (let team = 1; team <= 2; team++) {
         const start = CONFIG.coreStarts[team];
         this._addBuilding(team, 'core', start.x, start.y);
@@ -93,6 +139,12 @@
       return this.tiles[y * this.width + x];
     }
     get timeLimit() { return this.duration + (this.overtime ? this.overtimeDuration : 0); }
+    getCard(team, id) {
+      if (!validTeam(team) || !Object.hasOwn(CARDS, id)) return null;
+      const card = CARDS[id], discount = this.modifiers[team].cardDiscounts[id] || 0;
+      return discount ? Object.assign({}, card, { cost: card.cost - discount }) : card;
+    }
+    getBrushLimit(team) { return CONFIG.brushLimit + (validTeam(team) ? this.modifiers[team].brushBonus : 0); }
     getCore(team) { return this.buildings.find(b => b.team === team && b.type === 'core' && b.hp > 0) || null; }
     getProducers(team) { return this.buildings.filter(b => b.team === team && b.hp > 0 && (b.type === 'core' || b.type === 'barracks')); }
     getUnitCount(team) { return this.units.filter(u => u.team === team && u.hp > 0).length; }
@@ -110,11 +162,12 @@
     }
     _addBuilding(team, type, x, y) {
       const stats = BUILDING_STATS[type];
+      const maxHp = stats.hp * (1 + this.modifiers[team].buildingHealth);
       const building = {
-        id: this._id++, team, type, x, y, hp: stats.hp, maxHp: stats.hp,
+        id: this._id++, team, type, x, y, hp: maxHp, maxHp,
         connected: false, level: 1, productionPaused: false, productionProgress: 0,
         productionState: type === 'barracks' ? 'running' : 'none', productionReason: '',
-        flow: null, flowMode: 'attack', attackCooldown: 0
+        flow: null, flowMode: 'attack', mortarTarget: null, attackCooldown: 0
       };
       this.buildings.push(building);
       return building;
@@ -200,18 +253,25 @@
     perception(team) {
       if (!validTeam(team)) throw new RangeError('Camp inconnu.');
       const visible = o => o.team === team || this.isVisible(team, o.x, o.y);
-      const buildings = this.buildings.filter(b => b.hp > 0 && visible(b)).map(b => b.team === team ? Object.assign({}, b, { flow: copyPoint(b.flow) }) : {
+      const buildings = this.buildings.filter(b => b.hp > 0 && visible(b)).map(b => b.team === team ? Object.assign({}, b, { flow: copyPoint(b.flow), mortarTarget: copyPoint(b.mortarTarget) }) : {
         id: b.id, team: b.team, type: b.type, x: b.x, y: b.y, hp: b.hp, maxHp: b.maxHp, level: b.level, connected: null
       });
       const units = this.units.filter(u => u.hp > 0 && visible(u)).map(u => u.team === team ? {
         id: u.id, team: u.team, type: u.type, producerId: u.producerId, x: u.x, y: u.y, hp: u.hp, maxHp: u.maxHp, target: copyPoint(u.target), retreating: u.retreating
       } : { id: u.id, team: u.team, type: u.type, x: u.x, y: u.y, hp: u.hp, maxHp: u.maxHp });
+      const shells = this.shells.filter(shell => shell.team === team || this.isVisible(team, shell.x, shell.y)).map(shell => {
+        const seen = { id: shell.id, team: shell.team, x: shell.x, y: shell.y, remaining: shell.remaining, total: shell.total, radius: shell.radius };
+        const source = this.buildings.find(b => b.id === shell.sourceId && b.hp > 0);
+        if (shell.team === team || (source && this.isVisible(team, source.x, source.y))) Object.assign(seen, { sourceId: shell.sourceId, fromX: shell.fromX, fromY: shell.fromY });
+        return seen;
+      });
       return {
-        team, width: this.width, height: this.height, time: this.time, duration: this.duration,
+        team, width: this.width, height: this.height, mapId: this.mapId, time: this.time, duration: this.duration,
         overtime: this.overtime, overtimeDuration: this.overtimeDuration, timeLimit: this.timeLimit, remaining: Math.max(0, this.timeLimit - this.time),
         accelerated: this.accelerated, winner: this.winner, pigment: this.pigment[team], income: this.income[team], outflow: this.productionOutflow(team),
         hand: this.hands[team].slice(), deck: this.decks[team].slice(), scores: this.scores.slice(), hold: this.hold.slice(),
-        coreStarts: CONFIG.coreStarts.map(copyPoint), buildings, units,
+        coreStarts: CONFIG.coreStarts.map(copyPoint), buildings, units, shells, brushLimit: this.getBrushLimit(team),
+        mixtures: this.mixtures, mixtureLast: this._mixtureLast[team] ? Object.assign({}, this._mixtureLast[team]) : null,
         tiles: this.tiles.map((tile, index) => ({
           x: tile.x, y: tile.y, blocked: tile.blocked, source: tile.source,
           visible: this.visibility[team][index], explored: this.explored[team][index],
@@ -248,7 +308,7 @@
         else if (tile.owner && tile.owner !== team) reason = 'Les unités et les pouvoirs attaquent la couleur ennemie.';
         const key = p.y * this.width + p.x;
         const newCell = tile && !tile.owner && !seen.has(key);
-        if (!reason && newCell && result.cells.length >= CONFIG.brushLimit) reason = 'Maximum ' + CONFIG.brushLimit + ' nouvelles cases par tracé.';
+        if (!reason && newCell && result.cells.length >= this.getBrushLimit(team)) reason = 'Maximum ' + this.getBrushLimit(team) + ' nouvelles cases par tracé.';
         if (!reason && newCell && !this.canSpend(team, (result.cells.length + 1) * CONFIG.brushCost)) reason = 'Pigment insuffisant pour prolonger ce tracé.';
         if (reason) { result.reason = reason; result.rejectedPath = path.slice(i); break; }
         result.path.push(copyPoint(p));
@@ -273,7 +333,7 @@
 
     previewCard(team, handIndex, x, y) {
       const cardId = validTeam(team) && Number.isInteger(handIndex) ? this.hands[team][handIndex] : null;
-      const card = CARDS[cardId];
+      const card = this.getCard(team, cardId);
       const result = { ok: false, message: '', cost: card ? card.cost : 0, cardId: cardId || null, x, y, radius: card ? card.radius : 0 };
       const fail = message => Object.assign(result, { message });
       if (this.winner !== null) return fail('Le combat est terminé.');
@@ -303,7 +363,7 @@
     playCard(team, handIndex, x, y) {
       const result = this.previewCard(team, handIndex, x, y);
       if (!result.ok) return result;
-      const card = CARDS[result.cardId];
+      const card = this.getCard(team, result.cardId);
       this.pigment[team] = Math.max(0, this.pigment[team] - card.cost);
       if (card.kind === 'building') {
         const building = this._addBuilding(team, card.type, x, y);
@@ -311,6 +371,7 @@
         result.buildingId = building.id;
         this._event('build', team, { x, y, buildingId: building.id, buildingType: card.type, radius: card.radius, cells });
       } else this._applyPower(team, card, x, y);
+      Object.assign(result, this._applyMixture(team, card, x, y));
       this.hands[team][handIndex] = this.decks[team].shift();
       this.decks[team].push(card.id);
       this._removeDead();
@@ -342,6 +403,50 @@
         if (card.id === 'splash') for (const b of this.buildings) if (b.hp > 0 && b.team !== team && this.isVisible(team, b.x, b.y) && sqrDistance(centre(b), impact) <= card.radius ** 2) this._damage(b, 12);
       }
       this._event('power', team, { cardId: card.id, x, y, radius: card.radius });
+    }
+
+    _applyMixture(team, card, x, y) {
+      if (!this.mixtures) return {};
+      if (card.color !== 'blue' && card.color !== 'yellow') return {};
+      const previous = this._mixtureLast[team];
+      if (previous && previous.color !== card.color && this.time - previous.time <= MIXTURE.window + 1e-8 && Math.hypot(x - previous.x, y - previous.y) <= MIXTURE.distance) {
+        this._mixtureLast[team] = null;
+        const impact = { x: x + .5, y: y + .5 };
+        let healed = 0;
+        for (const unit of this.units) if (unit.team === team && unit.hp > 0 && sqrDistance(unit, impact) <= MIXTURE.radius ** 2) {
+          const amount = Math.min(MIXTURE.heal, unit.maxHp - unit.hp);
+          if (amount > 0) { unit.hp += amount; healed += amount; }
+        }
+        this._event('mixture', team, { x, y, radius: MIXTURE.radius, mixture: 'green', healed });
+        return { mixture: 'green', healed };
+      }
+      this._mixtureLast[team] = { color: card.color, x, y, time: this.time };
+      return {};
+    }
+
+    previewMortarTarget(team, buildingId, x, y) {
+      const stats = BUILDING_STATS.mortar;
+      const result = { ok: false, message: '', x, y, radius: stats.blastRadius, minRange: stats.minRange, range: stats.range };
+      const fail = message => Object.assign(result, { message });
+      if (this.winner !== null) return fail('Le combat est terminé.');
+      const mortar = this.buildings.find(b => b.id === buildingId && b.team === team && b.type === 'mortar' && b.hp > 0);
+      if (!validTeam(team) || !mortar) return fail('Choisissez votre mortier.');
+      if (x === null && y === null) return Object.assign(result, { ok: true, message: 'Bombardement arrêté.' });
+      if (!mortar.connected) return fail('Le mortier doit être relié au Cœur.');
+      if (!this.tile(x, y)) return fail('Restez sur la toile.');
+      if (!this.isVisible(team, x, y)) return fail('Zone hors de vue.');
+      const distance = Math.hypot(x - mortar.x, y - mortar.y);
+      if (distance < stats.minRange) return fail('Cible trop proche : au moins 2,5 cases.');
+      if (distance > stats.range) return fail('Cible trop loin : portée de 7 cases.');
+      return Object.assign(result, { ok: true, message: 'Bombardement toutes les 5 s · impact après 1,2 s.' });
+    }
+    setMortarTarget(team, buildingId, x, y) {
+      const result = this.previewMortarTarget(team, buildingId, x, y);
+      if (!result.ok) return result;
+      const mortar = this.buildings.find(b => b.id === buildingId && b.team === team && b.type === 'mortar');
+      mortar.mortarTarget = x === null ? null : { x, y };
+      this._event('mortar-target', team, { x: mortar.x, y: mortar.y, buildingId, target: copyPoint(mortar.mortarTarget) });
+      return result;
     }
 
     setFlow(team, producerId, x, y) {
@@ -386,7 +491,8 @@
       const cost = CONFIG.coreUpgradeCosts[core.level - 1];
       if (!this.canSpend(team, cost)) return { ok: false, message: 'Pigment insuffisant.', cost };
       this.pigment[team] -= cost;
-      core.level++; core.maxHp += 80; core.hp += 80;
+      const extraHealth = 80 * (1 + this.modifiers[team].buildingHealth);
+      core.level++; core.maxHp += extraHealth; core.hp += extraHealth;
       this.recompute();
       this._event('upgrade', team, { x: core.x, y: core.y, level: core.level });
       return { ok: true, message: 'Cœur niveau ' + core.level + '.', cost, level: core.level };
@@ -472,7 +578,9 @@
         unit.path = this._findPath(Math.floor(unit.x), Math.floor(unit.y), tx, ty, unit.team);
         unit.pathTarget = { x: tx, y: ty };
       }
-      let remaining = UNIT_STATS.speed * dt;
+      const ground = this.tile(Math.floor(unit.x), Math.floor(unit.y));
+      const speedBonus = ground && ground.owner === unit.team && ground.connected ? this.modifiers[unit.team].reinforcementSpeed : 0;
+      let remaining = UNIT_STATS.speed * (1 + speedBonus) * dt;
       while (remaining > 0 && unit.path.length) {
         const next = unit.path[0], dx = next.x - unit.x, dy = next.y - unit.y, distance = Math.hypot(dx, dy);
         if (distance <= remaining + .001) { unit.x = next.x; unit.y = next.y; remaining -= distance; unit.path.shift(); }
@@ -512,6 +620,29 @@
         tile.owner = team;
       }
     }
+    _advanceMortars(dt, hits) {
+      const stats = BUILDING_STATS.mortar, flying = [];
+      // A launched shell is a committed physical action. Losing sight or losing
+      // the launcher does not cancel it; unseen impacts disclose no victim data.
+      for (const shell of this.shells) {
+        shell.remaining = Math.max(0, shell.remaining - dt);
+        if (shell.remaining > 1e-8) { flying.push(shell); continue; }
+        for (const unit of this.units) if (unit.hp > 0 && unit.team !== shell.team && sqrDistance(unit, shell) <= shell.radius ** 2) hits.push([unit, stats.unitDamage]);
+        for (const building of this.buildings) if (building.hp > 0 && building.team !== shell.team && sqrDistance(centre(building), shell) <= shell.radius ** 2) hits.push([building, stats.buildingDamage]);
+        this._event('mortar-impact', shell.team, { x: shell.x - .5, y: shell.y - .5, radius: shell.radius, sourceId: shell.sourceId, shellId: shell.id });
+      }
+      this.shells = flying;
+      for (const mortar of this.buildings) if (mortar.type === 'mortar' && mortar.hp > 0 && mortar.connected) {
+        mortar.attackCooldown = Math.max(0, mortar.attackCooldown - dt);
+        const target = mortar.mortarTarget;
+        if (!target || mortar.attackCooldown > 1e-8 || !this.previewMortarTarget(mortar.team, mortar.id, target.x, target.y).ok) continue;
+        const shell = { id: this._id++, team: mortar.team, sourceId: mortar.id, fromX: mortar.x + .5, fromY: mortar.y + .5,
+          x: target.x + .5, y: target.y + .5, remaining: stats.flightTime, total: stats.flightTime, radius: stats.blastRadius };
+        this.shells.push(shell);
+        mortar.attackCooldown = stats.interval;
+        this._event('mortar-shot', mortar.team, { x: target.x, y: target.y, radius: stats.blastRadius, sourceId: mortar.id, shellId: shell.id });
+      }
+    }
     _combat(dt) {
       const hits = [], motions = [];
       // Decide from the same beginning-of-step positions and vision for both camps.
@@ -539,6 +670,7 @@
         }
         if (target) { hits.push([target, stats.damage + (building.type === 'core' ? 2 * (building.level - 1) : 0)]); building.attackCooldown = stats.interval; }
       }
+      this._advanceMortars(dt, hits);
       for (const [unit, destination] of motions) this._move(unit, destination, dt);
       this._separateUnits(dt);
       this._paintUnderUnits();
@@ -586,6 +718,7 @@
     _finish(winner, reason) {
       if (this.winner !== null) return;
       this.winner = winner; this.winReason = reason;
+      this._accumulator = 0;
       this.spendingHeld[1] = false; this.spendingHeld[2] = false;
       this._event('victory', winner, { winner, message: reason });
     }
@@ -633,5 +766,5 @@
     }
   }
 
-  return { Game, CARDS, CONFIG, BUILDING_STATS, UNIT_STATS };
+  return { Game, CARDS, CONFIG, BUILDING_STATS, UNIT_STATS, DEFAULT_DECK, MAPS, MIXTURE, normalizeModifiers };
 });

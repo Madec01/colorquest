@@ -1,4 +1,4 @@
-/* V0.7.1 integration: classic isolation, ephemeral sessions, palette and PWA. */
+/* V0.8 regression: classic isolation, ephemeral free/tutorial sessions, palette and PWA. */
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -115,7 +115,7 @@ async function twoFrames(page) {
       await page.waitForTimeout(120);
       assert.equal(await page.evaluate(() => CQPaint.game.time), pausedTime);
       await page.evaluate(() => CQInstall.showHelp());
-      assert.match(await page.locator('#installDialog').innerText(), /prototype/i);
+      assert.match(await page.locator('#installDialog').innerText(), /combat libre.*peinture/i);
       assert.match(await page.locator('#installDialog').innerText(), /recharg|ferm/i);
       await page.locator('#installHelpDone').tap();
       assert.equal(await page.evaluate(() => CQPaint.paused), true, 'closing install help must preserve an existing player pause');
@@ -202,8 +202,8 @@ async function twoFrames(page) {
     await page.evaluate(() => CQInstall.showUpdate());
     assert.equal(await page.evaluate(() => CQPaint.paused), true);
     const warning = await page.locator('#installDialog').innerText();
-    assert.match(warning, /prototype/i);
-    assert.match(warning, /perd|effac|abandonn|recommenc/i, 'the update must clearly announce loss of an in-memory prototype');
+    assert.match(warning, /combat|peinture/i);
+    assert.match(warning, /perd|effac|abandonn|recommenc|termine/i, 'the update must clearly announce loss of an in-memory prototype');
     const pausedUpdateTime = await page.evaluate(() => CQPaint.game.time);
     await page.waitForTimeout(120);
     assert.equal(await page.evaluate(() => CQPaint.game.time), pausedUpdateTime);
@@ -211,7 +211,7 @@ async function twoFrames(page) {
     await page.waitForFunction(() => !CQPaint.paused);
     await assertClassicsUnchanged(page, classics, 'canceling an update keeps classical saves unchanged');
     await page.evaluate(() => {CQPaint.showMenu(); CQInstall.showUpdate();});
-    assert.match(await page.locator('#installDialog').innerText(), /prototype/i, 'a prototype left in memory at the menu also receives the reload-loss warning');
+    assert.match(await page.locator('#installDialog').innerText(), /combat|peinture/i, 'a prototype left in memory at the menu also receives the reload-loss warning');
     await Promise.all([page.waitForNavigation(), page.locator('#confirmGameUpdate').tap()]);
     await page.waitForFunction(() => CQInstall.offlineReady && window.CQPaint);
     assert.equal(await page.locator('meta[name="paint-test-release"]').getAttribute('content'), '2');
