@@ -1,5 +1,7 @@
 # Colorquest — règles de travail
 
+- Répartition confirmée par Martin le 01/10 : Claude Code dirige le gameplay et la direction artistique. Codex prend en charge l’implémentation, l’intégration et les tests ; il expose les réserves techniques et de cohérence dans la feuille de route, sans présenter ses variantes comme validées par Martin ou modifier unilatéralement la direction du jeu.
+
 - Jeu RTS HTML/CSS/JavaScript jouable en navigateur, interface française, contre IA.
 - Préserver le lancement autonome par index.html et éviter les dépendances réseau à l'exécution.
 - Direction : toile blanche, cyan contre corail par défaut, palettes contrastées au choix, minimalisme coloré, animations lisibles.
