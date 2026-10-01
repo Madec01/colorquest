@@ -1,6 +1,6 @@
 # Colorquest — feuille de route vivante
 
-Dernière mise à jour : 30 septembre 2026.
+Dernière mise à jour : 1er octobre 2026.
 
 ## Vision et décisions validées
 
@@ -37,6 +37,16 @@ V0.6 est implémentée. V0.7 et V0.8 désignent un ordre proposé, sans calendri
 - Précision de Martin le 30/09 : il envisage aussi de nouveaux bâtiments. Développer les choix de construction et l’organisation de la base fait donc partie des pistes demandées ; les bâtiments précis ci-dessous restent des propositions.
 - Précision suivante le 30/09 : Martin souhaite des niveaux débloquant progressivement les possibilités, les premières missions servant à apprendre les bases. Il signale explicitement que le jeu reste difficile à lire et à comprendre même après le tutoriel.
 - Autre direction demandée : plusieurs IA dans les niveaux élevés, alliances possibles et mélange des couleurs pour les zones de l’alliance. Conserver cette identité visuelle tout en distinguant les armées commandables des armées alliées.
+
+## Analyse du plaisir de jeu — 1er octobre 2026 (proposition, rien d’implémenté)
+
+- Demande de Martin : « on s’ennuie vite, le jeu ne donne pas envie d’y rester » ; il pense que le RTS seul ne suffit pas et demande des idées d’hybridation.
+- Constat (partie libre observée en 390 × 844, plus lecture du moteur) : il faut attendre longtemps avant la première vraie décision (2,6 pigments/s, relais à 45, propagation passive) ; la toile n’occupe qu’environ 60 % de l’écran, le reste étant pris par l’interface, une bulle d’aide et beaucoup de brouillard gris ; un ordre demande trois touchers (Toute l’armée → Donner un ordre → case) ; la victoire « 60 % pendant 45 s » est abstraite ; beaucoup de systèmes ne font que changer des valeurs (cinq unités, niveaux de bâtiments, trois spécialisations, escouades, postures) ; on ne gagne rien entre deux parties et aucune partie ne laisse de souvenir.
+- Points forts à garder : identité « toile qui se colore », coupure de réseau originale, priorité au téléphone, PWA hors ligne, IA qui ne triche pas, campagne progressive et base technique solide.
+- Direction recommandée : faire de **peindre** le geste central et ajouter une **méta-progression en séquences courtes (roguelite)**. (1) Tracer au doigt un trait d’encre qui étend le territoire et dépense du pigment ; (2) armée simplifiée façon Galcon/Auralux : les bâtiments produisent en continu et un glisser envoie un flux ; (3) séquence de combats de 3–5 minutes sur une carte de chapitres, avec un choix de pigment/carte entre deux combats ; (4) mélange des couleurs comme système de capacités ; (5) chaque partie produit un tableau gardé dans une galerie.
+- Pistes alternatives à comparer : RTS à cartes façon Clash Royale (déploiement uniquement sur son territoire), tower defense façon Thronefall/Kingdom Rush, puzzles de peinture à encre limitée, défi quotidien avec graine.
+- Simplifications proposées : niveaux d’amélioration hors Cœur, escouades, postures, remboursements partiels, ordre en deux étapes ; réduire l’interface permanente. À arbitrer avec Martin avant tout retrait.
+- Méthode proposée : prototyper d’abord le trait d’encre et l’envoi par glisser dans une mission isolée, les faire essayer par Martin, puis décider de la séquence roguelite. Ne plus ajouter de systèmes ou d’infrastructure de sauvegarde avant cette validation du plaisir.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -151,6 +161,10 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - La campagne et les premières missions passent en priorité. Personnalités d’IA, statistiques/historique visuel et musique d’ambiance restent des idées pour la suite. La progression ouvre des possibilités de jeu ; éviter l’accumulation de bonus permanents qui rend les anciennes oppositions triviales.
 
 ## Modifications réalisées
+
+### Discussion du 1er octobre 2026
+
+- Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation consignées ci-dessus. Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
 
 ### V0.6 — 30 septembre 2026
 
