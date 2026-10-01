@@ -115,6 +115,19 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 - **Plusieurs camps et alliances** : toujours souhaités, reportés après la validation de la nouvelle boucle ; le mélange de couleurs des cartes et celui des alliances devront rester distinguables.
 - **PWA** : tout nouveau module ou asset doit entrer dans le précache, et RELEASE doit changer dans sw.js.
 
+### Précisions de règles proposées (questions relues le 1er octobre, à valider par Martin)
+
+1. **Trait d’encre = pinceau permanent**, hors de la main de cartes : toujours disponible, payé case par case avec la jauge (longueur maximale bornée). Il part de son territoire connecté, ne traverse que des cases neutres et franchissables, et crée du territoire normal, non temporaire : l’adversaire le reprend avec ses unités ou le coupe. Il ne repeint pas directement le territoire ennemi. Des cartes peuvent modifier le pinceau (trait large, trait rapide).
+2. **Trois notions distinctes pour jouer une carte** : *origine* (où commence le geste : toujours son territoire connecté), *emplacement* (bâtiments et producteurs : uniquement sur son territoire connecté) et *cible* (pouvoirs : toute case visible à portée limitée de son territoire connecté, y compris en territoire ennemi).
+3. **Production automatique** : la carte producteur se paie une fois ; chaque unité prélève ensuite son coût dans la jauge au moment de sortir. Jauge insuffisante ou plafond de population atteint : le producteur attend sans rien prélever. Producteur coupé du réseau : production suspendue, comme la caserne V0.6.
+4. **Trois gestes de flux distincts** : glisser d’un producteur vers une cible y envoie toutes ses unités, celles déjà sorties comprises (remplace les escouades) ; toucher le producteur met sa production en pause, les unités gardent leur ordre ; glisser vers le producteur lui-même rappelle ses unités pour le défendre.
+5. **Aucune carte n’est indispensable** : le pinceau est permanent, la carte suivante est toujours visible et le deck reste petit (environ 8 cartes) pour que la main tourne vite.
+6. **Victoire mesurée et visible** : une barre en haut de l’écran montre la part de territoire *connecté* de chaque camp. Victoire en effaçant le Cœur adverse, ou en tenant 50 % de la toile connectée pendant 15 s avec un compte à rebours visible. À la limite de temps, le camp le plus étendu gagne ; dans la dernière minute, la jauge se recharge plus vite. Remplacer le nom « jauge de tableau » par « barre de domination ».
+7. **Deux noms** : *pigment* reste la ressource de combat ; les bonus passifs de course s’appellent des **vernis**.
+8. **Deux ateliers** : l’étape de course qui modifie le deck s’appelle le **chevalet**. L’ancien bâtiment « Atelier de pigments » (recherches) est retiré du catalogue : il contredit les simplifications validées.
+9. **Trois usages de la couleur, trois rendus** : l’aplat de territoire et la couleur des unités et bâtiments sont réservés au camp ; les couleurs de cartes et leurs mélanges apparaissent seulement sur la carte jouée et sous forme d’éclaboussures à motif (hachures, points, rayures) et d’icônes de forme, qui s’effacent après quelques secondes ; l’alliance utilise la teinte mélangée pour le sol, tandis que unités et bâtiments gardent la couleur de leur camp avec un signe d’alliance. Rien ne doit reposer sur la seule teinte.
+10. **Mode classique** : conservé tel quel pendant l’essai, gelé (corrections seulement, sauvegardes préservées). Recommandation : ne pas le convertir en tutoriel du nouveau mode, car ses commandes (sélection, ordres, améliorations) contredisent les simplifications ; écrire un tutoriel propre au nouveau mode, puis décider avec Martin du retrait ou de la conservation du classique.
+
 ### Ordre de réalisation proposé
 
 1. **Prototype V0.7 isolé** : un combat contre l’IA avec jauge, main de 4 cartes, trait d’encre, envoi par glisser, victoire courte et simplifications D. Martin y joue une dizaine de minutes et dit si c’est plus amusant.
@@ -275,6 +288,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ### Discussion du 1er octobre 2026
 
 - Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
+- Dix questions de règles relevées par une relecture externe : réponses proposées dans « Précisions de règles proposées », non validées.
 - AGENTS.md aligné sur ces validations (durées, direction, simplifications, alliances reportées).
 - Validations de Martin : roguelite de peinture mêlé à un jeu de cartes en temps réel, toutes les idées de rétention et d’ambiance, toutes les simplifications. Section « Nouvelle direction », vision et jalons réécrits en conséquence ; anciennes propositions V0.7/V0.8 réorientées ou reportées.
 - Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
