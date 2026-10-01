@@ -237,7 +237,11 @@
         const producer = this.game.buildings.find(b => b.id === this.barracksId);
         if (!producer) Object.assign(p, { title: 'Pose une caserne', hint: 'Glisse la carte Caserne sur le repère. Elle formera ton groupe.', allowedCards: ['barracks'], target: point(9, 20), gesture: 'card', cardId: 'barracks', phase: 'build' });
         else if (!this.paidSpawnSeen) Object.assign(p, { title: 'Regarde naître un renfort', hint: producer.productionPaused ? 'Touche la caserne, puis Reprendre : 1 unité / 5 s · 6 pigments à sa sortie.' : '1 unité / 5 s · 6 pigments à sa sortie. Observe le prélèvement dans la jauge.', target: point(producer.x, producer.y), phase: 'spawn' });
-        else Object.assign(p, { title: this.flowIssued ? 'Reprends le petit poste adverse' : 'Envoie ton groupe au poste', hint: producer.productionPaused ? 'La production est en pause. Tu peux la reprendre dans la fiche de la caserne.' : 'Glisse de la caserne vers le poste adverse. Les unités déjà sorties et les suivantes suivent cet ordre.', target: POST, from: point(producer.x, producer.y), path: [point(producer.x, producer.y), POST], gesture: 'flow', phase: this.flowIssued ? 'capture' : 'send' });
+        else {
+          const fighter = this.game.units.find(u => u.team === 1 && u.hp > 0 && u.producerId === producer.id);
+          const from = fighter ? point(fighter.x - .5, fighter.y - .5) : point(producer.x, producer.y);
+          Object.assign(p, { title: this.flowIssued ? 'Reprends le petit poste adverse' : 'Envoie ton groupe au poste', hint: producer.productionPaused ? 'La production est en pause. Tu peux la reprendre dans la fiche de la caserne.' : this.flowIssued ? 'Le groupe avance vers le poste. Ses prochains renforts le rejoindront.' : 'Touche un combattant, puis le petit poste adverse. Tout son groupe et les prochains renforts suivent cet ordre.', target: POST, from, path: this.flowIssued ? [] : [from, POST], gesture: this.flowIssued ? null : 'tap-flow', phase: this.flowIssued ? 'capture' : 'send' });
+        }
       } else if (this.step === 3) {
         p.camera = { zoom: 2.05, cx: 9.5, cy: 20 };
         if (!this.cutSeen) Object.assign(p, { title: 'Le réseau est menacé', hint: 'Une unité adverse traverse le trait : observe la caserne quand le lien est coupé.', target: CUT, phase: 'cut' });

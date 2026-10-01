@@ -2,6 +2,14 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
+## V0.8.1 — prendre le temps et commander simplement
+
+- **Début plus calme** : les premiers raids arrivent après 90 s sur la première toile, 75 s sur la deuxième et 60 s sur la dernière. Le combat libre laisse aussi 90 s de développement. Un compte à rebours annonce les raids ; l’adversaire défend sa base si vous l’attaquez. Les offensives montent ensuite progressivement, sans changer les prix ni les dégâts.
+- **Pinceau continu** : activez-le une fois, puis enchaînez vos traits. Les casernes produisent normalement entre les gestes. Touchez Vue ou de nouveau Pinceau pour quitter ; le pincement annule le tracé avant de zoomer.
+- **Combattants au toucher** : touchez une unité alliée ou sa pastille pour sélectionner son groupe, puis une destination pour l’envoyer. La sélection seule ne donne aucun ordre. Rappeler lance la retraite ; le glisser depuis une caserne reste disponible. La leçon d’attaque enseigne les deux touchers.
+
+Ce correctif répond au premier retour de difficulté sur la course V0.8. Le rythme utilise le temps de combat déjà joué dans les sauvegardes ; commencer une nouvelle course permet de bénéficier de toute l’ouverture. Son confort reste à confirmer en partie humaine.
+
 ## V0.8 — une course de trois combats
 
 La course enchaîne **trois duels**, chacun sur une toile différente et face à un adversaire au style annoncé. Entre les deux premiers combats, choisissez **une récompense parmi trois** : une nouvelle carte, une carte moins chère ou un **vernis**, un effet valable jusqu’à la fin de cette course. Les récompenses s’appliquent au combat suivant ; les pigments, les bâtiments et les unités repartent de leur état initial à chaque rencontre.
@@ -17,10 +25,10 @@ La course complète de cinq à sept combats, les embranchements, le chevalet, le
 
 **Apprendre à peindre** et **Combat libre** restent accessibles au menu à côté de la course. Chaque duel dure au plus quatre minutes, avec trente secondes de prolongation si les territoires connectés sont exactement égaux. La campagne et le mode libre classiques restent accessibles avec leurs sauvegardes.
 
-- **Peindre** : toucher Pinceau, tracer depuis sa couleur connectée sur le blanc visible, puis lever le doigt. Le chemin et son coût sont montrés avant l’achat. Une portion impossible apparaît en pointillés rouges ; seule la partie valide qui la précède est peinte et payée. Revenir au départ annule le trait. Après un trait, retour à la navigation ; un double toucher sur le bouton Pinceau le verrouille, un toucher le déverrouille.
+- **Peindre** : toucher Pinceau, tracer depuis sa couleur connectée sur le blanc visible, puis lever le doigt. Le chemin et son coût sont montrés avant l’achat. Une portion impossible apparaît en pointillés rouges ; seule la partie valide qui la précède est peinte et payée. Revenir au départ annule le trait. Le pinceau reste actif après chaque trait, réussi ou refusé. Touchez Vue ou de nouveau Pinceau pour quitter.
 - **Jouer une carte** : glisser depuis la main et lâcher sur une case valide ; revenir dans la main annule. On peut aussi toucher une carte puis son emplacement. Bâtiments sur son réseau, extracteurs sur une source, pouvoirs sur une cible visible à portée. La main conserve quatre cartes et annonce la suivante.
 - **Inspecter** : toucher un bâtiment ou une source affiche son rôle et son état. La pause d’une caserne passe par le bouton de sa fiche ; consulter la fiche ne modifie pas sa production.
-- **Commander** : glisser depuis une caserne ou le Cœur redirige son groupe. Glisser depuis le producteur puis revenir dessus rappelle ses unités ; le bouton Rappeler offre le même ordre. Elles rentrent sans riposter, restent vulnérables, puis défendent à l’arrivée. Un envoi normal combat sur le trajet.
+- **Commander** : toucher un combattant ou sa pastille sélectionne le groupe de son producteur ; toucher une destination l’envoie avec ses futurs renforts. Glisser depuis une caserne ou le Cœur reste possible. Glisser depuis le producteur puis revenir dessus rappelle ses unités ; le bouton Rappeler offre le même ordre. Elles rentrent sans riposter, restent vulnérables, puis défendent à l’arrivée. Un envoi normal combat sur le trajet.
 - **Comprendre les dépenses** : une caserne forme une goutte toutes les cinq secondes de production, pour six pigments prélevés à sa sortie. La jauge montre le revenu et la consommation prévue des producteurs actifs ; chaque sortie affiche son prélèvement. Les producteurs attendent pendant la visée, faute de pigment, hors réseau ou au plafond d’unités.
 - **Gagner** : effacer le Cœur adverse, tenir strictement plus de 50 % du territoire connecté avec une avance pendant 15 secondes, ou avoir le plus grand territoire à la fin du temps. En cas d’égalité à quatre minutes, prolongation de trente secondes : au terme, une seule case d’avance suffit ; égalité persistante = match nul. La dernière minute accélère la recharge des deux camps, y compris pendant la prolongation.
 - **Apprendre** : six situations introduisent rejoindre une source, poser l’extracteur, produire et attaquer, reconnecter par le terrain neutre, rappeler pour défendre, puis dominer. Un objectif à la fois, avec les commandes du combat. Le revenu de la source vient de l’extracteur ; une case ennemie ne peut pas être repeinte au pinceau.
@@ -108,6 +116,7 @@ node tests/barracks.test.cjs
 node tests/paint-engine.test.cjs
 node tests/paint-ai.test.cjs
 node tests/paint-balance.test.cjs
+node tests/paint-pacing.test.cjs
 node tests/paint-tutorial.test.cjs
 node tests/paint-renderer.test.cjs
 node tests/paint-course-engine.test.cjs

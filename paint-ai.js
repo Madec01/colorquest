@@ -12,19 +12,19 @@
   const STEP = .8;
   const BRUSH_DELAY = 2.4;
   const FLOW_DELAY = 2.4;
-  const OPENING = 42;
-  const CORE_PUSH = 170;
+  const OPENING = 90;
+  const CORE_PUSH = 210;
   // Profiles change legal choices and their cadence, never economy, vision,
   // combat statistics, available cards or the player's brush.
   const PROFILES = Object.freeze({
-    default: Object.freeze({ id: 'default', name: 'Classique', description: 'Se développe avant de pousser vers le Cœur.', step: STEP,
-      brushDelay: BRUSH_DELAY, flowDelay: FLOW_DELAY, opening: OPENING, corePush: CORE_PUSH, cutThreshold: .42, army: [5, 9, 13], secondProducer: 22 }),
-    rapid: Object.freeze({ id: 'rapid', name: 'Le Vif', description: 'Peint les côtés et envoie rapidement ses premières gouttes.', step: .8,
-      brushDelay: 2, flowDelay: 2, opening: 24, corePush: 120, cutThreshold: .32, army: [4, 8, 12], secondProducer: 55 }),
+    default: Object.freeze({ id: 'default', name: 'Classique', description: 'Vous laisse installer votre base, puis avance par petites vagues.', step: STEP,
+      brushDelay: BRUSH_DELAY, flowDelay: FLOW_DELAY, opening: OPENING, corePush: CORE_PUSH, cutThreshold: .42, army: [3, 5, 8], secondProducer: 125 }),
+    rapid: Object.freeze({ id: 'rapid', name: 'Le Vif', description: 'Peint les côtés, puis envoie une première petite vague après 90 s.', step: .8,
+      brushDelay: 2, flowDelay: 2, opening: 90, corePush: 210, cutThreshold: .42, army: [3, 5, 8], secondProducer: 125 }),
     builder: Object.freeze({ id: 'builder', name: 'Le Bâtisseur', description: 'Protège ses sources avec des bastions et avance par relais.', step: .8,
-      brushDelay: 2.8, flowDelay: 2.4, opening: 40, corePush: 145, cutThreshold: .36, army: [5, 9, 13], secondProducer: 65 }),
+      brushDelay: 2.8, flowDelay: 2.4, opening: 75, corePush: 195, cutThreshold: .42, army: [3, 5, 8], secondProducer: 110 }),
     eraser: Object.freeze({ id: 'eraser', name: 'L’Effaceur', description: 'Cherche les liaisons exposées et prépare des sièges au mortier.', step: .8,
-      brushDelay: 2.4, flowDelay: 1.6, opening: 24, corePush: 110, cutThreshold: .22, army: [5, 10, 16], secondProducer: 38 })
+      brushDelay: 2.4, flowDelay: 1.6, opening: 60, corePush: 180, cutThreshold: .36, army: [3, 5, 8], secondProducer: 95 })
   });
   const validTeam = team => team === 1 || team === 2;
   const profileFor = id => Object.hasOwn(PROFILES, id) ? PROFILES[id] : PROFILES.default;
@@ -62,6 +62,16 @@
     return true;
   }
 
+  // Derived solely from simulation time and the saved profile: a paused or
+  // restored course shows the same countdown without adding save fields.
+  function pacing(game, team = 2) {
+    if (!game || !validTeam(team)) return null;
+    const config = profileFor(state(game, team).profile);
+    const phase = game.time < config.opening ? 'development' : game.time < config.corePush ? 'raids' : 'assault';
+    const next = phase === 'development' ? config.opening : phase === 'raids' ? config.corePush : game.time;
+    return { phase, remaining: Math.max(0, Math.ceil(next - game.time - 1e-7)), opening: config.opening, corePush: config.corePush };
+  }
+
   function snapshot(game, team = 2) {
     if (!game || !validTeam(team)) return null;
     const s = state(game, team);
@@ -94,7 +104,7 @@
     return true;
   }
 
-  function observation(p) {
+  function observation(p, config) {
     const team = p.team;
     const ownBuildings = p.buildings.filter(b => b.team === team);
     const ownUnits = p.units.filter(u => u.team === team);
@@ -104,7 +114,7 @@
     const enemyStart = p.coreStarts[enemy];
     const direction = Math.sign(enemyStart.y - core.y) || 1;
     const occupied = new Set(p.buildings.map(b => key(b.x, b.y, p.width)));
-    return { p, team, enemy, core, enemyStart, direction, ownBuildings, ownUnits, occupied,
+    return { p, config, team, enemy, core, enemyStart, direction, ownBuildings, ownUnits, occupied,
       producers: ownBuildings.filter(b => b.type === 'barracks'),
       enemyBuildings: p.buildings.filter(b => b.team === enemy),
       enemyUnits: p.units.filter(u => u.team === enemy),
@@ -123,9 +133,34 @@
     for (const b of o.enemyBuildings) s.observations.set(b.id, { id: b.id, x: b.x, y: b.y, type: b.type, seenAt: o.p.time });
   }
 
+  // The opening is a real local defence, not an attack order aimed just short
+  // of the player's base. Attack orders otherwise chase targets autonomously.
+  function inHome(o, point) {
+    return (coordY(point) - o.core.y) * o.direction <= 8;
+  }
+
+  function attackAllowed(o, point) {
+    if (o.p.time < o.config.opening) return inHome(o, point);
+    return o.p.time >= o.config.corePush || near(point, o.enemyStart) >= 6;
+  }
+
+  function expansionAllowed(o, point) {
+    if (o.p.time < o.config.opening) return inHome(o, point);
+    return o.p.time >= o.config.corePush || near(point, o.enemyStart) >= 6;
+  }
+
+  function expansionBudget(o) {
+    if (o.p.time >= o.config.corePush) return Infinity;
+    const total = o.p.tiles.reduce((n, tile) => n + !tile.blocked, 0);
+    // A capped development area prevents winning by domination while a new
+    // player is still reading. Count disconnected own paint conservatively.
+    const owned = o.p.tiles.reduce((n, tile) => n + (tile.owner === o.team), 0);
+    return Math.max(0, Math.floor(total * (o.p.time < o.config.opening ? .35 : .42)) - owned);
+  }
+
   function closestThreat(o) {
     return o.enemyUnits.map(u => ({ u, d: Math.min(...o.ownBuildings.map(b => near(u, b))) }))
-      .filter(item => item.d < 5.5)
+      .filter(item => item.d < 5.5 && attackAllowed(o, item.u))
       .sort((a, b) => near(a.u, o.core) - near(b.u, o.core) || a.d - b.d || o.tie(a.u) - o.tie(b.u))[0]?.u;
   }
 
@@ -136,7 +171,7 @@
 
   function dominationTarget(o, config = PROFILES.default) {
     if (o.p.scores[o.enemy] < config.cutThreshold && o.p.hold[o.enemy] <= 0) return null;
-    const candidates = o.p.tiles.filter(t => t.visible && t.owner === o.enemy && !t.blocked &&
+    const candidates = o.p.tiles.filter(t => t.visible && t.owner === o.enemy && !t.blocked && attackAllowed(o, t) &&
       !o.occupied.has(key(t.x, t.y, o.p.width)));
     const scores = new Map();
     for (const t of candidates) {
@@ -154,32 +189,47 @@
   }
 
   function directFlows(game, o, s) {
-    const config = profileFor(s.profile);
+    const config = o.config;
+    const orphaned = o.ownUnits.some(u => u.producerId === o.core.id);
+    const producers = orphaned ? [o.core, ...o.producers] : o.producers;
+    const opening = o.p.time < config.opening;
+    const regroup = producer => {
+      if (producer.flowMode !== 'defend' || !producer.flow) {
+        const result = game.recall(o.team, producer.id);
+        if (result.ok) s.orders.set(producer.id, { x: producer.x, y: producer.y });
+      }
+    };
+    if (opening) {
+      for (const producer of producers) regroup(producer);
+      return;
+    }
     const underShell = o.producers.some(producer => mortarEscape(o, producer));
-    if (o.p.time - s.lastFlow < config.flowDelay && !underShell) return;
+    const tooClose = o.p.time < config.corePush && o.ownUnits.some(unit => !attackAllowed(o, unit));
+    if (o.p.time - s.lastFlow < config.flowDelay && !underShell && !tooClose) return;
     s.lastFlow = o.p.time;
     let target = closestThreat(o) || dominationTarget(o, config);
     if (!target) {
-      if (o.p.time < config.opening) {
-        // Development is immediate, but the first troops visibly assemble on
-        // their own half before attacking. An early invasion is still defended.
-        target = { x: o.core.x, y: o.core.y + o.direction * (o.p.time < 18 ? 4 : 7) };
-      } else {
-        const known = [...s.observations.values()].filter(b => b.type !== 'core' || o.p.time >= config.corePush);
-        known.sort((a, b) => distance(a, o.core) - distance(b, o.core) || o.tie(a) - o.tie(b));
-        const staging = o.p.time < 95 ? 10 : 14;
-        target = known[0] || (o.p.time < config.corePush ? { x: o.core.x, y: o.core.y + o.direction * staging } : o.enemyStart);
-      }
+      const known = [...s.observations.values()].filter(b =>
+        (b.type !== 'core' || o.p.time >= config.corePush) && attackAllowed(o, b));
+      known.sort((a, b) => distance(a, o.core) - distance(b, o.core) || o.tie(a) - o.tie(b));
+      const staging = o.p.time < config.opening + 35 ? 10 : 13;
+      target = known[0] || (o.p.time < config.corePush ? { x: o.core.x, y: o.core.y + o.direction * staging } : o.enemyStart);
     }
     const destination = exploredTarget(o, target);
     if (!destination) return;
-    const orphaned = o.ownUnits.some(u => u.producerId === o.core.id);
-    const producers = orphaned ? [o.core, ...o.producers] : o.producers;
+    const raider = o.producers.slice().sort((a, b) => a.id - b.id)[0];
     for (const producer of producers) {
+      const group = o.ownUnits.filter(unit => unit.producerId === producer.id);
+      if (o.p.time < config.corePush && (producer !== raider || group.some(unit => !attackAllowed(o, unit)))) {
+        regroup(producer);
+        continue;
+      }
+      // A recalled wave completes its return before being sent out again.
+      if (producer.flowMode === 'defend' && group.some(unit => unit.retreating)) continue;
       const escape = mortarEscape(o, producer);
       const next = escape || destination;
       const previous = s.orders.get(producer.id);
-      if (previous && distance(previous, next) < (escape ? 1 : 2) && producer.flow) continue;
+      if (previous && distance(previous, next) < (escape ? 1 : 2) && producer.flow && producer.flowMode !== 'defend') continue;
       const result = game.setFlow(o.team, producer.id, next.x, next.y);
       if (result.ok) s.orders.set(producer.id, { x: next.x, y: next.y });
     }
@@ -192,7 +242,7 @@
     const group = o.ownUnits.filter(unit => unit.producerId === producer.id);
     const threatened = group.find(unit => shells.some(shell => Math.hypot(unit.x - shell.x, unit.y - shell.y) <= shell.radius + .25));
     if (!threatened) return null;
-    const safe = o.p.tiles.filter(tile => tile.visible && !tile.blocked &&
+    const safe = o.p.tiles.filter(tile => tile.visible && !tile.blocked && attackAllowed(o, tile) &&
       shells.every(shell => Math.hypot(tile.x + .5 - shell.x, tile.y + .5 - shell.y) > shell.radius + .6));
     safe.sort((a, b) => near(a, threatened) - near(b, threatened) || distance(a, producer) - distance(b, producer) || o.tie(a) - o.tie(b));
     return safe[0] || null;
@@ -203,8 +253,12 @@
     const config = profileFor(s.profile), stats = Engine.BUILDING_STATS.mortar;
     if (!stats) return;
     for (const mortar of o.ownBuildings.filter(b => b.type === 'mortar' && b.connected)) {
+      if (o.p.time < config.opening) {
+        if (mortar.mortarTarget) game.setMortarTarget(o.team, mortar.id, null, null);
+        continue;
+      }
       const candidates = [...o.enemyBuildings.filter(b => b.type !== 'core' || o.p.time >= config.corePush), ...o.enemyUnits]
-        .filter(enemy => near(enemy, mortar) >= stats.minRange && near(enemy, mortar) <= stats.range);
+        .filter(enemy => attackAllowed(o, enemy) && near(enemy, mortar) >= stats.minRange && near(enemy, mortar) <= stats.range);
       function value(enemy) {
         const structure = enemy.type === 'bastion' || enemy.type === 'mortar' ? 5 : enemy.type !== 'droplet' ? 3 : 0;
         return structure + o.enemyUnits.filter(unit => near(unit, enemy) <= stats.blastRadius).length;
@@ -237,7 +291,12 @@
   function buildingSites(o, kind) {
     const source = kind === 'extractor';
     const sites = o.p.tiles.filter(t => t.owner === o.team && t.connected && !t.blocked &&
-      !!t.source === source && !o.occupied.has(key(t.x, t.y, o.p.width)));
+      !!t.source === source && !o.occupied.has(key(t.x, t.y, o.p.width)))
+      .filter(t => {
+        const footprint = o.p.tiles.filter(other => !other.blocked && near(other, t) <= Engine.CARDS[kind].radius);
+        return footprint.every(other => expansionAllowed(o, other)) &&
+          footprint.filter(other => other.owner !== o.team).length <= expansionBudget(o);
+      });
     const threat = closestThreat(o);
     function score(t) {
       const forward = (t.y - o.core.y) * o.direction;
@@ -272,7 +331,7 @@
   function tacticalCard(game, o, s) {
     const config = profileFor(s.profile);
     const threat = closestThreat(o);
-    const units = o.enemyUnits.slice().sort((a, b) => {
+    const units = o.enemyUnits.filter(unit => attackAllowed(o, unit)).sort((a, b) => {
       const clusterA = o.enemyUnits.filter(u => near(a, u) < 2.5).length;
       const clusterB = o.enemyUnits.filter(u => near(b, u) < 2.5).length;
       return clusterB - clusterA || distance(a, o.core) - distance(b, o.core) || o.tie(a) - o.tie(b);
@@ -283,9 +342,9 @@
     }
     // A known hostile building is a valid combat target; an unobserved building
     // in memory does not authorize a spell through fog.
-    if (o.p.time >= config.opening && play(game, o, s, 'splash', o.enemyBuildings.filter(b => b.type !== 'core' || o.p.time >= config.corePush))) return true;
+    if (o.p.time >= config.opening && play(game, o, s, 'splash', o.enemyBuildings.filter(b => attackAllowed(o, b) && (b.type !== 'core' || o.p.time >= config.corePush)))) return true;
     if (o.p.time >= config.opening && cardIndex(o, 'bleach') >= 0) {
-      const enemyPaint = o.p.tiles.filter(t => t.visible && t.owner === o.enemy && !t.blocked);
+      const enemyPaint = o.p.tiles.filter(t => t.visible && t.owner === o.enemy && !t.blocked && attackAllowed(o, t));
       const weights = new Map(enemyPaint.map(t => [t, enemyPaint.filter(n => near(n, t) < 2.5).length]));
       enemyPaint.sort((a, b) => {
         return weights.get(b) - weights.get(a) || distance(a, o.core) - distance(b, o.core) || o.tie(a) - o.tie(b);
@@ -297,7 +356,7 @@
 
   function healingMixture(game, o, s) {
     const last = o.p.mixtureLast;
-    if (!o.p.mixtures || !last || o.p.time - last.time > 4 || (last.color !== 'blue' && last.color !== 'yellow')) return false;
+    if (!o.p.mixtures || !last || !attackAllowed(o, last) || o.p.time - last.time > 4 || (last.color !== 'blue' && last.color !== 'yellow')) return false;
     const injured = o.ownUnits.filter(unit => unit.hp < unit.maxHp && near(unit, last) <= 3.5);
     if (injured.reduce((sum, unit) => sum + Math.min(12, unit.maxHp - unit.hp), 0) < 12) return false;
     const color = last.color === 'blue' ? 'yellow' : 'blue';
@@ -313,14 +372,14 @@
 
   function paintObjective(o) {
     const sources = o.p.tiles.filter(t => t.source && !t.blocked && t.owner !== o.enemy && !(t.owner === o.team && t.connected));
-    const safe = sources.filter(t => (t.y - o.core.y) * o.direction <= (o.p.time < 50 ? 11 : 19));
+    const safe = sources.filter(t => expansionAllowed(o, t));
     safe.sort((a, b) => distance(a, o.core) - distance(b, o.core) || o.tie(a) - o.tie(b));
     if (safe.length) return safe[0];
     return null;
   }
 
   function stroke(o, objective, budget) {
-    const cap = Math.min(o.p.brushLimit || Engine.CONFIG.brushLimit, Math.floor(budget / Engine.CONFIG.brushCost));
+    const cap = Math.min(o.p.brushLimit || Engine.CONFIG.brushLimit, Math.floor(budget / Engine.CONFIG.brushCost), expansionBudget(o));
     if (cap < 1) return null;
     const parents = new Int32Array(o.p.tiles.length).fill(-2);
     const depth = new Int32Array(o.p.tiles.length);
@@ -341,7 +400,7 @@
         const next = o.tile(t.x + dx, t.y + dy);
         // No ownership probes into fog. Public obstacles and source positions
         // can guide a route, but a paint action uses visible neutral ground only.
-        if (!next || next.blocked || !next.visible || next.owner === null || next.owner === o.enemy) continue;
+        if (!next || next.blocked || !next.visible || next.owner === null || next.owner === o.enemy || !expansionAllowed(o, next)) continue;
         const ni = key(next.x, next.y, o.p.width);
         if (parents[ni] !== -2) continue;
         parents[ni] = index;
@@ -395,7 +454,8 @@
     // than let several factories permanently consume every pigment as it arrives.
     const spendingRate = Engine.CONFIG.unitCost / Engine.CONFIG.unitInterval;
     const active = o.producers.filter(b => b.connected && !b.productionPaused);
-    const desiredArmy = o.p.time < config.opening ? config.army[0] : o.p.time < 95 ? config.army[1] : o.p.time < config.corePush ? config.army[2] : Engine.CONFIG.unitLimit;
+    const desiredArmy = o.p.time < config.opening + 35 ? config.army[0] : o.p.time < config.opening + 70 ? config.army[1] :
+      o.p.time < config.corePush ? config.army[2] : o.p.time < config.corePush + 30 ? 12 : Engine.CONFIG.unitLimit;
     if (o.ownUnits.length >= desiredArmy) {
       for (const b of active) if (game.toggleProduction(o.team, b.id).ok) s.pausedByAI.add(b.id);
       return;
@@ -415,9 +475,9 @@
   }
 
   function think(game, p, s) {
-    const o = observation(p);
-    if (!o) return;
     const config = profileFor(s.profile);
+    const o = observation(p, config);
+    if (!o) return;
     remember(o, s);
     directFlows(game, o, s);
     directMortars(game, o, s);
@@ -433,7 +493,7 @@
         o.ownBuildings.filter(b => b.type === 'mortar').length < 2) {
       const stats = Engine.BUILDING_STATS.mortar;
       const useful = stats && buildingSites(o, 'mortar').filter(site => o.enemyBuildings.some(enemy =>
-        (enemy.type !== 'core' || p.time >= config.corePush) && near(site, enemy) >= stats.minRange && near(site, enemy) <= stats.range));
+        attackAllowed(o, enemy) && (enemy.type !== 'core' || p.time >= config.corePush) && near(site, enemy) >= stats.minRange && near(site, enemy) <= stats.range));
       if (useful && play(game, o, s, 'mortar', useful)) return;
     }
     const relaySites = buildingSites(o, 'relay');
@@ -459,5 +519,5 @@
     think(game, p, s);
   }
 
-  return Object.freeze({ update, reset, configure, snapshot, restore, PROFILES, OPENING, CORE_PUSH });
+  return Object.freeze({ update, reset, configure, snapshot, restore, pacing, PROFILES, OPENING, CORE_PUSH });
 });

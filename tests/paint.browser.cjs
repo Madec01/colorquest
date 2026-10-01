@@ -1,4 +1,4 @@
-/* V0.7.1 real mobile controls. Only the simulation clock is controlled: every
+/* V0.8.1 real mobile controls. Only the simulation clock is controlled: every
  * territory, card, flow and retreat command below comes from touch input. */
 'use strict';
 const assert = require('node:assert/strict');
@@ -28,8 +28,7 @@ async function touchPath(page,points,beforeRelease,canceled=false) {
   }finally{await cdp.detach();}
 }
 async function stroke(page,coordinates,beforeRelease,canceled){
-  // Independent strokes deliberately wait past the button double-tap window.
-  if(await page.evaluate(()=>CQPaint.mode!=='brush')){await page.waitForTimeout(350);await page.locator('#paintBrush').tap();}
+  if(await page.evaluate(()=>CQPaint.mode!=='brush'))await page.locator('#paintBrush').tap();
   await touchPath(page,await Promise.all(coordinates.map(p=>point(page,...p))),beforeRelease,canceled);
 }
 async function cardButton(page,id){const i=await page.evaluate(id=>CQPaint.game.hands[1].indexOf(id),id);assert(i>=0,id+' must be in hand');return page.locator(`[data-paint-card="${i}"]`);}
@@ -41,6 +40,12 @@ async function step(page,seconds,withAI=false){
 }
 async function economy(page){return page.evaluate(()=>({money:CQPaint.game.pigment[1],tiles:CQPaint.game.tiles.map(t=>t.owner),hand:CQPaint.game.hands[1].slice(),deck:CQPaint.game.decks[1].slice(),buildings:CQPaint.game.buildings.map(b=>b.id)}));}
 async function building(page,id){return page.evaluate(id=>CQPaint.game.buildings.find(b=>b.id===id),id);}
+async function fighterPoint(page,producerId){return page.evaluate(id=>{
+  const u=CQPaint.game.units.find(u=>u.team===1&&u.producerId===id&&u.hp>0);if(!u)throw Error('Expected a real produced fighter');
+  const v=CQPaint.view,r=document.getElementById('paintCanvas').getBoundingClientRect();
+  return{x:r.x+v.x+u.x*v.cell,y:r.y+v.y+u.y*v.cell};
+},producerId);}
+async function orders(page){return page.evaluate(()=>({producers:CQPaint.game.getProducers(1).map(p=>({id:p.id,flow:p.flow,mode:p.flowMode,paused:p.productionPaused})),units:CQPaint.game.units.filter(u=>u.team===1).map(u=>({id:u.id,target:u.target,retreating:u.retreating})),flows:CQPaint.game.events.filter(e=>['flow','recall','pause'].includes(e.type))}));}
 
 (async()=>{
   const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||undefined,args:['--no-sandbox']});
@@ -68,22 +73,28 @@ async function building(page,id){return page.evaluate(id=>CQPaint.game.buildings
       assert.equal(await page.evaluate(()=>CQPaint.game.tile(9,18).owner),1);
       assert.equal(await page.evaluate(()=>CQPaint.game.tile(9,17).owner),0);
       assert.equal(await page.evaluate(()=>CQPaint.game.pigment[1]),first.money-price);
-      assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate','release restores navigation');
+      assert.equal(await page.evaluate(()=>CQPaint.mode),'brush','release keeps the brush ready for the next stroke');
       assert.equal(await page.evaluate(()=>CQPaint.game.spendingHeld[1]),false);
       assert.equal(await page.locator('#paintConfirm').count(),0,'no second confirmation');
+      await page.screenshot({path:`/tmp/colorquest-v081-brush-continuous-${viewport.width}.png`});
       const canceled=await economy(page);
       await stroke(page,[[9,18],[10,18],[9,18]]);assert.deepEqual(await economy(page),canceled,'return to start cancels');
       await stroke(page,[[0,0],[1,0]]);assert.deepEqual(await economy(page),canceled,'invalid stroke spends nothing');
       await stroke(page,[[9,18],[10,18]],null,true);assert.deepEqual(await economy(page),canceled,'pointer cancellation never paints');
       assert.equal(await page.evaluate(()=>CQPaint.game.spendingHeld[1]),false);
 
-      await page.waitForTimeout(350);await page.locator('#paintBrush').tap();await page.locator('#paintBrush').tap();
-      assert.equal(await page.evaluate(()=>CQPaint.brushLocked),true);
-      assert.match(await page.locator('#paintBrush').textContent(),/🔒|verrou/i);
+      // Several independent strokes use a single activation and pay only their new cells.
+      assert.equal(await page.evaluate(()=>CQPaint.mode),'brush','cancellation and invalid strokes keep the chosen brush');
+      const continuous=await economy(page);
       await touchPath(page,[await point(page,9,18),await point(page,10,18)]);
-      assert.equal(await page.evaluate(()=>CQPaint.game.tile(10,18).owner),1);
+      await touchPath(page,[await point(page,10,18),await point(page,11,18)]);
+      assert.equal(await page.evaluate(()=>CQPaint.game.tile(10,18).owner===1&&CQPaint.game.tile(11,18).owner===1),true);
+      assert.equal(await page.evaluate(()=>CQPaint.game.pigment[1]),continuous.money-2,'two strokes pay for exactly two new cells');
       assert.equal(await page.evaluate(()=>CQPaint.mode),'brush');
-      await page.locator('#paintBrush').tap();assert.equal(await page.evaluate(()=>CQPaint.brushLocked),false);assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate');
+      assert.equal(await page.evaluate(()=>CQPaint.game.spendingHeld[1]),false,'keeping brush selected never holds production between strokes');
+      await page.locator('#paintBrush').tap();assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate','touching the active brush exits');
+      await page.locator('#paintBrush').tap();assert.equal(await page.evaluate(()=>CQPaint.mode),'brush','one touch activates the continuous brush');
+      await page.locator('#paintNavigate').tap();assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate','Vue explicitly exits painting');
 
       // Card out-and-back cancels, drop pays/cycles once, tap+tile also works.
       const relay=await cardButton(page,'relay'),relayStart=await centre(relay),relayTarget=await point(page,9,18),beforeCard=await economy(page);
@@ -103,7 +114,14 @@ async function building(page,id){return page.evaluate(id=>CQPaint.game.buildings
       await step(page,5.1);assert.equal(await page.evaluate(()=>CQPaint.game.getUnitCount(1)),1,'one real paid spawn');
       await page.waitForSelector('.paint-payment',{timeout:1500});
       assert.equal(await page.locator('.paint-payment').first().textContent(),'−6','actual spawn has visible payment feedback');
-      await tapTile(page,8,19);assert.equal((await building(page,producerId)).productionPaused,false,'tap inspects without pause');
+      await stroke(page,[[9,18],[9,17]]);
+      const betweenStrokes=await page.evaluate(()=>CQPaint.game.getUnitCount(1));
+      await step(page,5.1);
+      assert.equal(await page.evaluate(()=>CQPaint.game.getUnitCount(1)),betweenStrokes+1,'a producer really spawns while brush remains selected between strokes');
+      assert.equal(await page.evaluate(()=>CQPaint.mode),'brush');
+      const beforeInspect=await economy(page);
+      await tapTile(page,8,19);assert.equal((await building(page,producerId)).productionPaused,false,'tap inspects without pause, even from brush mode');
+      assert.deepEqual(await economy(page),beforeInspect,'inspection from brush mode never paints or pays');
       assert.match(await page.locator('#paintContextMessage').textContent(),/5\s*s/);assert.match(await page.locator('#paintContextMessage').textContent(),/6\s*pigment/);
       assert.match(await page.locator('#paintOutflow').textContent(),/−1,2\/s prévu/,'automatic outflow is shown as a forecast');
       await page.locator('#paintProductionToggle').tap();assert.equal((await building(page,producerId)).productionPaused,true);
@@ -149,6 +167,68 @@ async function building(page,id){return page.evaluate(id=>CQPaint.game.buildings
       await(await cardButton(page,'extractor')).tap();await touchPath(page,[await point(page,10,22)],null,true);
       assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate');assert.equal(await page.evaluate(()=>CQPaint.game.spendingHeld[1]),false);
 
+      // Touching a real fighter selects its producer's group, and only a second
+      // destination touch issues a command. No units or resources are injected.
+      await fresh(page);await cardTap(page,'barracks',9,20);await step(page,5.1);
+      const touchProducer=await page.evaluate(()=>CQPaint.game.buildings.find(b=>b.team===1&&b.type==='barracks').id);
+      const untouchedOrders=await orders(page),beforeSelection=await economy(page);
+      let fighter=await fighterPoint(page,touchProducer);await page.touchscreen.tap(fighter.x,fighter.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true,'one fighter touch selects its group');
+      assert.equal(await page.evaluate(()=>CQPaint.selectedProducer),touchProducer);
+      assert.deepEqual(await orders(page),untouchedOrders,'selection alone never moves, recalls or pauses a unit');
+      assert.deepEqual(await economy(page),beforeSelection,'selection spends no pigment');
+      await page.locator('#paintBrush').tap();fighter=await fighterPoint(page,touchProducer);await page.touchscreen.tap(fighter.x,fighter.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true,'fighter touch also selects while painting is armed');
+      assert.equal(await page.evaluate(()=>CQPaint.mode),'navigate');
+      assert.deepEqual(await orders(page),untouchedOrders);assert.deepEqual(await economy(page),beforeSelection);
+      assert.equal(await page.evaluate(()=>CQPaint.game.spendingHeld[1]),false);
+      await tapTile(page,1,12);
+      assert.deepEqual(await orders(page),untouchedOrders,'an unexplored destination is refused without changing the order');
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true,'a refused target stays correctable');
+      await tapTile(page,9,17);
+      assert.deepEqual((await building(page,touchProducer)).flow,{x:9,y:17});
+      assert.equal(await page.evaluate(id=>CQPaint.game.units.filter(u=>u.producerId===id).every(u=>u.target.x===9&&u.target.y===17),touchProducer),true,'all current members receive the destination');
+      await step(page,10);
+      assert(await page.evaluate(()=>CQPaint.game.getUnitCount(1))>=3);
+      assert.equal(await page.evaluate(id=>CQPaint.game.units.filter(u=>u.producerId===id).every(u=>u.target.x===9&&u.target.y===17),touchProducer),true,'later paid reinforcements share the order');
+      await tapTile(page,9,20);assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),false,'the producer itself still opens inspection');
+      await page.locator('#paintProductionToggle').tap();assert.equal((await building(page,touchProducer)).productionPaused,true);
+      const pausedOrders=await orders(page);
+      const badgePoint=await page.evaluate(id=>{const u=CQPaint.game.units.find(u=>u.producerId===id),v=CQPaint.view,r=document.getElementById('paintCanvas').getBoundingClientRect(),g=CQPaintRenderer.pickGroup(CQPaint.game,v,{x:v.x+u.x*v.cell,y:v.y+u.y*v.cell});return{x:r.x+v.x+g.x*v.cell,y:r.y+v.y+g.y*v.cell,count:g.count};},touchProducer);
+      assert(badgePoint.count>=2,'the real army has a visible count badge');
+      await page.touchscreen.tap(badgePoint.x,badgePoint.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true);assert.deepEqual(await orders(page),pausedOrders,'selecting a count badge preserves an explicit production pause and the units’ target');
+      assert.match(await page.locator('#paintContextTitle').textContent(),/Groupe sélectionné.*3 combattants/);
+      assert.equal(await page.locator('#paintProductionToggle').isVisible(),false,'the army panel exposes movement, not an accidental production toggle');
+      await page.screenshot({path:`/tmp/colorquest-v081-group-selected-${viewport.width}.png`});
+      await touchPath(page,[await point(page,15,17),await point(page,13,17)]);
+      assert.deepEqual(await orders(page),pausedOrders,'panning with a selected group issues no movement command');
+      fighter=await fighterPoint(page,touchProducer);
+      await touchPath(page,[fighter,{x:fighter.x+48,y:fighter.y}]);
+      assert.deepEqual(await orders(page),pausedOrders,'dragging from a unit pans without issuing an order');
+      await page.locator('#paintBrush').tap();
+      const beforeAcross=await economy(page);
+      await touchPath(page,[await point(page,9,20),await point(page,9,16)]);
+      assert.equal(await page.evaluate(()=>CQPaint.game.tile(9,16).owner),1,'a real brush drag through fighters remains a stroke');
+      assert(await page.evaluate(()=>CQPaint.game.pigment[1])<beforeAcross.money,'crossing fighters pays for the new painted cell');
+      assert.equal(await page.evaluate(()=>CQPaint.mode),'brush');assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),false);
+      await page.locator('#paintNavigate').tap();
+      // Cycle the real small deck to place a second producer; never fabricate a group.
+      await cardTap(page,'relay',7,21);await step(page,10);await cardTap(page,'splash',9,20);await cardTap(page,'wave',9,20);await step(page,20);
+      await cardTap(page,'barracks',11,22);await step(page,5.1);
+      const secondProducer=await page.evaluate(id=>CQPaint.game.buildings.find(b=>b.team===1&&b.type==='barracks'&&b.id!==id).id,touchProducer);
+      const beforeSwitch=await orders(page);
+      fighter=await fighterPoint(page,touchProducer);await page.touchscreen.tap(fighter.x,fighter.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedProducer),touchProducer);
+      fighter=await fighterPoint(page,secondProducer);await page.touchscreen.tap(fighter.x,fighter.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedProducer),secondProducer,'touching another producer’s unit changes the selected group');
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true);assert.deepEqual(await orders(page),beforeSwitch,'switching groups sends neither group anywhere');
+      await tapTile(page,13,21);
+      assert.deepEqual((await building(page,secondProducer)).flow,{x:13,y:21});
+      assert.deepEqual((await building(page,touchProducer)).flow,{x:9,y:17},'the previous group retains its target');
+      assert.equal((await building(page,touchProducer)).productionPaused,true);
+      await page.screenshot({path:`/tmp/colorquest-v081-army-touch-${viewport.width}.png`});
+
       // Real clock: equal untouched camps get overtime, then a draw.
       await fresh(page);await step(page,240);assert.equal(await page.evaluate(()=>CQPaint.game.winner),null);
       assert.match(await page.locator('#paintHold').textContent(),/prolongation|écart/i);
@@ -157,7 +237,7 @@ async function building(page,id){return page.evaluate(id=>CQPaint.game.buildings
       // A real AI match also reaches terminal UI and replay, without a winner fixture.
       await fresh(page);await step(page,270,true);await page.waitForSelector('#paintAgain');assert.equal(await page.evaluate(()=>CQPaint.game.winner),2);
       await page.locator('#paintAgain').tap();assert.equal(await page.evaluate(()=>CQPaint.game.winner),null);assert.deepEqual(errors,[]);
-      console.log('PASS V0.7.1 touch release/partial/cancel/lock, cards, inspection/pause, flow/retreat, spending hold, pinch, keyboard/dedup, overtime and real-AI replay',viewport.width+'x'+viewport.height);
+      console.log('PASS V0.8.1 touch continuous brush/partial/cancel, cards, inspection/pause, unit selection/flow/retreat, spending hold, pinch, keyboard/dedup, overtime and real-AI replay',viewport.width+'x'+viewport.height);
       await page.close();
     }
   }finally{await browser.close();}

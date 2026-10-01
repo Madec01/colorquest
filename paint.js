@@ -10,7 +10,7 @@
   let course = null, storedCourse = null, courseSaveError = '', invalidCourseSave = false, savedAt = 0, lastCourseSaveAt = 0;
   let lastCourseRaw = null, courseStorageConflict = false;
   let mode = 'navigate', selectedCard = null, selectedProducer = null, selectedSource = null, preview = null, previewPoint = null, stroke = [], flowDrag = null;
-  let brushLocked = false, lastBrushTap = -Infinity, tutorial = null, tutorialView = null, tutorialCameraPhase = '';
+  let selectedArmy = false, tutorial = null, tutorialView = null, tutorialCameraPhase = '';
   let camera = {zoom:1, cx:9.5, cy:13.5}, view = {x:0,y:0,w:1,h:1,cell:1};
   let lastFrame = 0, lastHUD = -1, handSignature = '', toastUntil = 0, vibration = false;
   let gesture = null, pinch = null, suppressGesture = false, dialogKind = '', lastFocus = null, seenEvent = 0;
@@ -29,7 +29,7 @@
   const menuCard = document.createElement('section');
   menuCard.id = 'paintModeCard'; menuCard.className = 'paint-menu-card';
   menuCard.setAttribute('aria-labelledby', 'paintMenuTitle');
-  menuCard.innerHTML = '<div class="paint-menu-eyebrow"><span>NOUVEAU · V0.8</span><span>PORTRAIT · SOLO</span></div><h2 id="paintMenuTitle">Trois toiles.<br>Votre signature.</h2><p>Affrontez trois peintres. Choisissez vos récompenses. Faites évoluer votre façon de jouer.</p><div class="paint-menu-route" aria-hidden="true"><span>1 · ÉLAN</span><i></i><span>2 · DÉTOUR</span><i></i><span>3 · EMPREINTE</span></div><button id="paintCourseStart" class="primary">Commencer ma course <span aria-hidden="true">↗</span></button><p id="paintCourseSaveStatus" class="paint-course-save" role="status">3 combats · sauvegarde automatique sur cet appareil</p><button id="paintCourseNew" class="paint-menu-link" hidden>Nouvelle course</button><div class="paint-menu-practice"><button id="paintStart" class="paint-menu-free">Apprendre à peindre</button><button id="paintFreePlay" class="paint-menu-free">Combat libre · 4 min</button></div><button id="paintResume" class="paint-menu-resume" hidden>↻ Reprendre cette toile <small>En pause dans cette fenêtre</small></button><small class="paint-menu-note">Première visite ? Six petites situations vous apprennent les gestes. Le mode classique reste disponible ci-dessous.</small>';
+  menuCard.innerHTML = '<div class="paint-menu-eyebrow"><span>NOUVEAU · V0.8.1</span><span>PORTRAIT · SOLO</span></div><h2 id="paintMenuTitle">Trois toiles.<br>Votre signature.</h2><p>Affrontez trois peintres. Choisissez vos récompenses. Faites évoluer votre façon de jouer.</p><div class="paint-menu-route" aria-hidden="true"><span>1 · ÉLAN</span><i></i><span>2 · DÉTOUR</span><i></i><span>3 · EMPREINTE</span></div><button id="paintCourseStart" class="primary">Commencer ma course <span aria-hidden="true">↗</span></button><p id="paintCourseSaveStatus" class="paint-course-save" role="status">3 combats · sauvegarde automatique sur cet appareil</p><button id="paintCourseNew" class="paint-menu-link" hidden>Nouvelle course</button><div class="paint-menu-practice"><button id="paintStart" class="paint-menu-free">Apprendre à peindre</button><button id="paintFreePlay" class="paint-menu-free">Combat libre · 4 min</button></div><button id="paintResume" class="paint-menu-resume" hidden>↻ Reprendre cette toile <small>En pause dans cette fenêtre</small></button><small class="paint-menu-note">Première visite ? Six petites situations vous apprennent les gestes. Le mode classique reste disponible ci-dessous.</small>';
   (document.getElementById('campaignCard') || document.querySelector('.start-card'))?.before(menuCard);
   document.body.classList.add('paint-menu-ready');
 
@@ -43,7 +43,7 @@
       <div class="paint-score-track" aria-label="Territoire connecté des deux camps"><i id="paintPlayerBar"></i><b id="paintEnemyBar"></b><em></em></div>
     </header>
     <main id="paintCanvasWrap" class="paint-canvas-wrap">
-      <canvas id="paintCanvas" tabindex="0" aria-label="Toile interactive. En mode Vue, glissez pour déplacer la carte et pincez pour zoomer. En mode Pinceau, tracez depuis votre couleur. Relâchez pour peindre. Glissez une carte puis relâchez, ou touchez une carte puis son emplacement."></canvas>
+      <canvas id="paintCanvas" tabindex="0" aria-label="Toile interactive. En mode Vue, glissez pour déplacer la carte et pincez pour zoomer. En mode Pinceau, tracez depuis votre couleur. Relâchez puis continuez à tracer. Touchez un combattant puis sa destination pour guider son groupe. Glissez une carte puis relâchez, ou touchez une carte puis son emplacement."></canvas>
       <div id="paintCourseStatus" class="paint-course-status" role="status" hidden></div>
       <div id="paintMixtureHint" class="paint-mixture-hint" hidden></div>
       <div class="paint-zoom"><button id="paintZoomOut" aria-label="Dézoomer">−</button><button id="paintZoomIn" aria-label="Zoomer">+</button></div>
@@ -55,7 +55,7 @@
       <div id="paintContext" class="paint-context" hidden>
         <div class="paint-context-copy"><strong id="paintContextTitle"></strong><span id="paintContextMessage"></span></div>
         <div id="paintAimActions" class="paint-context-actions paint-aim-actions" hidden><button id="paintCancel" aria-label="Annuler le geste et revenir à la vue">×</button></div>
-        <div id="paintProducerActions" class="paint-context-actions" hidden><button id="paintProductionToggle">Pause</button><button id="paintRecall">Rappeler</button><button id="paintMortarTarget" hidden>Viser une cible</button><button id="paintMortarClear" hidden>Arrêter le tir</button><button id="paintUpgrade" hidden>Améliorer</button><button id="paintProducerClose" aria-label="Fermer les commandes du bâtiment">×</button></div>
+        <div id="paintProducerActions" class="paint-context-actions" hidden><button id="paintProductionToggle">Pause</button><button id="paintRecall">Rappeler</button><button id="paintMortarTarget" hidden>Viser une cible</button><button id="paintMortarClear" hidden>Arrêter le tir</button><button id="paintUpgrade" hidden>Améliorer</button><button id="paintProducerClose" aria-label="Fermer la sélection">×</button></div>
       </div>
     </main>
     <footer class="paint-footer">
@@ -180,6 +180,8 @@
     } else if (phase === 'briefing') {
       const mixture = course.encounterIndex > 0 ? '<div class="paint-course-mixture"><span aria-hidden="true">▥ BLEU + ⠿ JAUNE = ✚</span><p>Jouez ces deux couleurs de carte à 2 cases au maximum, en 4 s : vos unités proches récupèrent 12 points de vie. Les cartes gardent leur effet habituel.</p></div>' : '';
       action = '<div class="paint-course-opponent"><b>' + esc(encounter.opponent || 'Votre adversaire') + '</b><small>' + esc(({rapid:'Expansion rapide',builder:'Défenses installées',eraser:'Coupures et bombardements'})[encounter.profile] || 'Un nouveau duel') + '</small></div>' + (course.encounterIndex === 1 ? '' : '<p class="paint-course-tip"><b>Votre piste :</b> ' + esc(encounter.tip || 'Reliez les sources et protégez votre réseau.') + '</p>') + mixture + '<button id="paintCourseFight" class="paint-main-action paint-full-action">Peindre cette toile →</button>';
+      const opening = window.CQPaintAI?.PROFILES?.[encounter.profile]?.opening;
+      if (opening) description += ' Vous avez ' + opening + ' s pour vous développer avant ses premiers raids. Il défend sa base si vous l’attaquez.';
     } else if (phase === 'draw') {
       title = 'Cette toile reste partagée.'; description = 'Les territoires sont encore égaux après la prolongation. Rejouez ce combat avec vos récompenses actuelles.';
       action = '<button id="paintCourseRetry" class="paint-main-action paint-full-action">Rejouer ce combat →</button>';
@@ -262,7 +264,7 @@
     if (clearPointers) { pointers.clear(); suppressGesture = false; }
   }
   function cancel() {
-    clearGesture(); mode = 'navigate'; brushLocked = false; lastBrushTap = -Infinity; selectedCard = null; preview = null; previewPoint = null; stroke = [];
+    clearGesture(); mode = 'navigate'; selectedArmy = false; selectedCard = null; preview = null; previewPoint = null; stroke = [];
     match?.setSpendingHeld(1, false); updateHUD(true);
   }
   function setMode(next, index = null) {
@@ -271,18 +273,16 @@
     if (next === 'card' && tutorial && !tutorialView?.allowedCards?.includes(match.hands[1][index])) return false;
     if (next === 'mortar' && !currentMortar()) return false;
     clearGesture(); mode = ['brush','card','mortar'].includes(next) ? next : 'navigate';
-    brushLocked = false;
+    selectedArmy = false;
     selectedCard = mode === 'card' ? index : null; if (mode !== 'mortar') selectedProducer = null; selectedSource = null; stroke = []; preview = null; previewPoint = null;
     setHeld(); updateHUD(true); return true;
   }
   function brushButton() {
-    const now = performance.now(), doubleTap = now - lastBrushTap < 340;
-    if (brushLocked || (mode === 'brush' && !doubleTap)) { cancel(); return; }
-    if (mode === 'brush' && doubleTap) { brushLocked = true; lastBrushTap = -Infinity; toast('Pinceau verrouillé. Touchez son bouton pour revenir à la vue.'); updateHUD(true); return; }
-    if (setMode('brush')) { lastBrushTap = now; playSound(); }
+    if (mode === 'brush') { cancel(); return; }
+    if (setMode('brush')) playSound();
   }
   function clearAimForNavigation() {
-    stroke = []; preview = null; previewPoint = null; selectedCard = null; mode = 'navigate'; brushLocked = false; flowDrag = null;
+    stroke = []; preview = null; previewPoint = null; selectedCard = null; mode = 'navigate'; selectedArmy = false; flowDrag = null;
     match?.setSpendingHeld(1, false);
   }
 
@@ -339,7 +339,21 @@
       const d = Math.hypot(view.x + (object.x + .5) * view.cell - p.x, view.y + (object.y + .5) * view.cell - p.y);
       if (d < Math.max(22, view.cell * .85) && d < distance) { best = object; distance = d; }
     }
+    const group = window.CQPaintRenderer?.pickGroup?.(match, view, p);
+    if (group && group.distance < distance) best = {group, x:group.x - .5, y:group.y - .5};
     return best;
+  }
+  function selectArmy(group) {
+    const producer = match.getProducers(1).find(b => b.id === group?.producerId);
+    if (!producer) return;
+    clearAimForNavigation(); selectedProducer = producer.id; selectedSource = null; selectedArmy = true;
+    playSound('select_001'); updateHUD(true);
+  }
+  function sendArmy(target, id = selectedProducer) {
+    const result = match.setFlow(1, id, target.x, target.y);
+    afterAction('flow', result, {producerId:id,target});
+    toast(result?.message || (result?.ok ? 'Tout le groupe avance vers cette destination.' : 'Destination impossible.'));
+    if (result?.ok) { playSound('select_001'); buzz(); }
   }
   // Sampled strokes become contiguous orthogonal paths. Backtracking erases
   // the preview; returning to its first tile cancels without spending.
@@ -373,8 +387,7 @@
     toast(result?.message || (result?.ok ? 'Cible fixée : le mortier bombarde cette zone tant qu’elle est visible.' : 'Cible impossible.')); updateHUD(true); return !!result?.ok;
   }
   function finishBrush() {
-    const keepBrush = brushLocked;
-    clearGesture(); stroke = []; preview = null; previewPoint = null; selectedCard = null; mode = keepBrush ? 'brush' : 'navigate';
+    clearGesture(); stroke = []; preview = null; previewPoint = null; selectedCard = null; mode = 'brush';
     match?.setSpendingHeld(1, false); updateHUD(true);
   }
   function confirm() {
@@ -427,13 +440,14 @@
       pointers.set(event.pointerId, p);
       gesture = {id:event.pointerId, kind:'cardDrag', start:p, last:p, moved:false}; return;
     }
-    if (mode === 'brush') { stroke = []; appendStroke(tilePoint(p)); gesture = {id:event.pointerId, kind:'brush', start:p, last:p, moved:false}; return; }
+    if (mode === 'brush') { const object = pickObject(p); stroke = []; appendStroke(tilePoint(p)); gesture = {id:event.pointerId, kind:'brush', object, start:p, last:p, moved:false}; return; }
     if (mode === 'card') { aimCard(tilePoint(p)); gesture = {id:event.pointerId, kind:'cardAim', start:p, last:p, moved:false}; return; }
     if (mode === 'mortar') { aimMortar(tilePoint(p)); gesture = {id:event.pointerId, kind:'mortarAim', start:p, last:p, moved:false}; return; }
     const object = pickObject(p), producer = object?.building?.team === 1 && ['core','barracks'].includes(object.building.type) ? object.building : null;
     const mortar = object?.building?.team === 1 && object.building.type === 'mortar' ? object.building : null;
-    gesture = {id:event.pointerId, kind:producer ? 'producer' : mortar ? 'mortarDrag' : 'pan', producerId:producer?.id || mortar?.id, object, start:p, last:p, moved:false, leftHome:false, cx:camera.cx, cy:camera.cy};
-    if (object) { selectedProducer = object.building?.id ?? null; selectedSource = object.source ? {x:object.x,y:object.y} : null; }
+    const armyTarget = selectedArmy && !object?.group && object?.building?.team !== 1;
+    gesture = {id:event.pointerId, kind:armyTarget ? 'armyTarget' : object?.group ? 'unit' : producer ? 'producer' : mortar ? 'mortarDrag' : 'pan', producerId:producer?.id || mortar?.id, object, start:p, last:p, moved:false, leftHome:false, cx:camera.cx, cy:camera.cy};
+    if (object && !object.group && !armyTarget) { selectedArmy = false; selectedProducer = object.building?.id ?? null; selectedSource = object.source ? {x:object.x,y:object.y} : null; }
     updateHUD(true);
   }
   function pointerMove(event) {
@@ -458,8 +472,8 @@
       flowDrag = {producerId:gesture.producerId, x:t.x, y:t.y, recall:gesture.leftHome && distance < Math.max(20, view.cell * .75)};
       updateHUD(true); return;
     }
-    if (gesture.kind === 'pan' && gesture.moved) {
-      selectedProducer = null; selectedSource = null;
+    if (['pan','unit','armyTarget'].includes(gesture.kind) && gesture.moved) {
+      if (gesture.kind !== 'armyTarget') { selectedProducer = null; selectedSource = null; selectedArmy = false; }
       camera.cx = gesture.cx - (p.x - gesture.start.x) / view.cell; camera.cy = gesture.cy - (p.y - gesture.start.y) / view.cell; layout();
     }
   }
@@ -470,12 +484,21 @@
     if (!gesture || gesture.id !== event.pointerId) return;
     const finished = gesture; gesture = null;
     if (finished.kind === 'brush') {
-      if (!inside(p)) { finishBrush(); toast('Trait annulé hors de la toile.'); }
+      if (!finished.moved && inside(p) && finished.object?.group) { finishBrush(); selectArmy(finished.object.group); }
+      else if (!finished.moved && inside(p) && finished.object) {
+        finishBrush(); clearAimForNavigation(); selectedProducer = finished.object.building?.id ?? null;
+        selectedSource = finished.object.source ? {x:finished.object.x,y:finished.object.y} : null;
+      }
+      else if (!inside(p)) { finishBrush(); toast('Trait annulé hors de la toile.'); }
       else {
         appendStroke(tilePoint(p));
         if (stroke.length === 1) { finishBrush(); if (finished.moved) toast('Trait annulé.'); }
         else confirm();
       }
+    } else if (finished.kind === 'unit') {
+      if (!finished.moved && inside(p)) selectArmy(finished.object.group);
+    } else if (finished.kind === 'armyTarget') {
+      if (!finished.moved && inside(p) && currentProducer()) sendArmy(tilePoint(p));
     } else if (finished.kind === 'cardAim' || finished.kind === 'cardDrag') {
       if (inside(p)) { aimCard(tilePoint(p)); confirm(); }
       else if (finished.moved || finished.kind === 'cardAim') { cancel(); toast('Carte conservée dans la main.', 1.6); }
@@ -491,17 +514,14 @@
         const home = distance < Math.max(20, view.cell * .75);
         if (home && finished.leftHome) recallSelected(finished.producerId);
         else if (!home) {
-          const target = tilePoint(p), result = match.setFlow(1, finished.producerId, target.x, target.y);
-          afterAction('flow', result, {producerId:finished.producerId,target});
-          toast(result?.message || (result?.ok ? 'Tout le groupe avance vers cette destination.' : 'Destination impossible.'));
-          if (result?.ok) { playSound('select_001'); buzz(); }
+          sendArmy(tilePoint(p), finished.producerId);
         }
       }
       // A tap is inspection only; production changes only via its explicit button.
-    } else if (finished.kind === 'pan' && !finished.moved && !finished.object) { selectedProducer = null; selectedSource = null; }
+    } else if (finished.kind === 'pan' && !finished.moved && !finished.object) { selectedProducer = null; selectedSource = null; selectedArmy = false; }
     flowDrag = null; updateHUD(true);
   }
-  function pointerCancel(event) { if (pointers.has(event.pointerId)) cancel(); }
+  function pointerCancel(event) { if (pointers.has(event.pointerId)) { if (gesture?.kind === 'brush') finishBrush(); else cancel(); } }
   screen.addEventListener('pointerdown', pointerDown);
   screen.addEventListener('pointermove', pointerMove);
   screen.addEventListener('pointerup', pointerUp);
@@ -543,6 +563,7 @@
     screen.classList.toggle('paint-learning-basics', !!tutorial && !tutorialView?.showDomination);
     if (!tutorial) return;
     tutorialView = tutorial.presentation();
+    if (selectedArmy && tutorialView.gesture === 'tap-flow') tutorialView.hint = 'Groupe sélectionné. Touche maintenant le petit poste adverse pour l’y envoyer.';
     if (tutorialView.success) { $p('paintToast').hidden = true; toastUntil = 0; }
     $p('paintTutorialStep').textContent = 'APPRENDRE · ' + (tutorialView.step + 1) + ' / ' + tutorialView.total;
     $p('paintTutorialTitle').textContent = tutorialView.title || 'À vous de peindre';
@@ -571,11 +592,11 @@
       $p('paintContext').classList.toggle('paint-invalid', preview?.ok === false || !!preview?.partial);
     } else if (building || source) {
       $p('paintContext').classList.remove('paint-invalid');
-      $p('paintProductionToggle').hidden = building?.type !== 'barracks' || building.team !== 1;
+      $p('paintProductionToggle').hidden = selectedArmy || building?.type !== 'barracks' || building.team !== 1;
       $p('paintRecall').hidden = !producer;
       $p('paintMortarTarget').hidden = building?.type !== 'mortar' || building.team !== 1;
       $p('paintMortarClear').hidden = building?.type !== 'mortar' || building.team !== 1 || !building.mortarTarget;
-      $p('paintUpgrade').hidden = building?.type !== 'core' || building.team !== 1 || building.level >= 3 || !!tutorial;
+      $p('paintUpgrade').hidden = selectedArmy || building?.type !== 'core' || building.team !== 1 || building.level >= 3 || !!tutorial;
       if (source && !building) {
         const occupied = match.buildings.find(b => b.x === source.x && b.y === source.y && b.hp > 0 && b.type === 'extractor');
         $p('paintContextTitle').textContent = '◈ Source de pigment';
@@ -593,6 +614,10 @@
         const reason = building.productionReason || ({running:'Production active',paused:'Production en pause',isolated:'Réseau coupé',held:'Pigment réservé au geste',funds:'En attente de pigment',full:'Armée au complet',blocked:'Sortie bloquée'}[building.productionState] || '');
         const role = ({core:'Origine du réseau et refuge des unités sans caserne. Glissez pour les guider.',relay:'A étendu le territoire à sa pose. Il ouvre la vue autour de lui.',extractor:'Exploite la source : +0,85 pigment/s quand il est relié (3 bonus maximum).',bastion:'Tire sur les ennemis proches tant qu’il est relié.',mortar:'Portée 2,5–7 cases · 1 tir / 5 s. Glissez vers une zone visible ou touchez « Viser ». ' + (building.mortarTarget ? 'Cible fixée ; les tirs attendent si elle devient invisible.' : 'Aucune cible : le mortier attend.')})[building.type];
         $p('paintContextMessage').textContent = building.type === 'barracks' ? reason + ' · 1 unité / ' + (config().unitInterval ?? 5) + ' s · ' + (config().unitCost ?? 6) + ' pigments. Glissez pour envoyer ; revenez dessus pour rappeler.' : network + ' · ' + (role || '');
+        if (selectedArmy && producer) {
+          $p('paintContextTitle').textContent = 'Groupe sélectionné · ' + count + ' combattant' + (count > 1 ? 's' : '');
+          $p('paintContextMessage').textContent = 'Touchez une destination pour envoyer ce groupe et ses prochains renforts. Rappeler lance la retraite.';
+        }
         if (flowDrag?.recall) $p('paintContextMessage').textContent = 'Relâchez ici : retraite du groupe, sans riposte pendant le retour.';
         $p('paintProductionToggle').textContent = building.productionPaused ? '▶ Produire' : 'Ⅱ Pause';
         $p('paintUpgrade').textContent = 'Niv. ' + (building.level + 1) + ' · ' + (building.level === 1 ? 35 : 50) + ' ◉';
@@ -628,8 +653,13 @@
       $p('paint' + prefix + 'Bar').style.width = share + '%';
     }
     const holdingTeam = match.hold[1] > 0 ? 1 : match.hold[2] > 0 ? 2 : 0;
+    const pacing = !tutorial && match.winner == null ? window.CQPaintAI?.pacing?.(match, 2) : null;
     const delta = match.tiles.reduce((sum,tile) => sum + (tile.connected ? tile.owner === 1 ? 1 : tile.owner === 2 ? -1 : 0 : 0), 0);
     $p('paintHold').textContent = tutorial && !tutorialView.showDomination ? 'Un seul objectif à la fois' : match.overtime ? 'Prolongation · ' + (delta === 0 ? 'égalité' : delta > 0 ? '+' + delta + ' case' + (delta > 1 ? 's' : '') : '−' + -delta + ' case' + (delta < -1 ? 's' : '')) : holdingTeam ? (holdingTeam === 1 ? 'Vous' : 'IA') + ' · victoire dans ' + Math.max(0, Math.ceil(15 - match.hold[holdingTeam])) + ' s' : 'Domination · > 50 % / 15 s';
+    if (pacing && !holdingTeam && !match.overtime) {
+      if (pacing.phase === 'development') $p('paintHold').textContent = 'Raids dans ' + pacing.remaining + ' s';
+      else if (match.time < pacing.opening + 8) $p('paintHold').textContent = 'Premiers raids';
+    }
     $p('paintPigment').textContent = Math.floor(match.pigment[1]);
     $p('paintPigmentBar').style.width = Math.min(100, match.pigment[1]) + '%';
     $p('paintIncome').textContent = '+' + (match.income[1] || 0).toFixed(1).replace('.',',') + '/s';
@@ -637,8 +667,8 @@
     $p('paintOutflow').setAttribute('aria-label', 'Dépense automatique prévue : ' + (match.productionOutflow?.(1) || 0).toFixed(1) + ' pigment par seconde');
     $p('paintUnits').textContent = '■ ' + match.getUnitCount(1) + '/' + (config().unitLimit ?? 24);
     $p('paintBrush').setAttribute('aria-pressed', String(mode === 'brush'));
-    $p('paintBrush').setAttribute('aria-label', (brushLocked ? 'Pinceau verrouillé. Toucher pour revenir à la vue.' : 'Pinceau. Double toucher pour le garder actif.') + ' Jusqu’à ' + (match.getBrushLimit?.(1) || config().brushMax || 12) + ' nouvelles cases par trait.');
-    $p('paintBrush').innerHTML = '<span aria-hidden="true">' + (brushLocked ? '▣' : '╱') + '</span> Pinceau' + (brushLocked ? ' 🔒' : '');
+    $p('paintBrush').setAttribute('aria-label', 'Pinceau continu. Tracez plusieurs traits ; Vue ou un nouveau toucher sur Pinceau pour quitter. Jusqu’à ' + (match.getBrushLimit?.(1) || config().brushMax || 12) + ' nouvelles cases par trait.');
+    $p('paintBrush').innerHTML = '<span aria-hidden="true">╱</span> Pinceau' + (mode === 'brush' ? ' ✓' : '');
     $p('paintBrush').disabled = !!tutorial && (tutorialBlocked() || !tutorialView.allowedTools?.includes('brush'));
     $p('paintBrush').classList.toggle('paint-tutorial-cue', !!tutorial && !tutorialBlocked() && tutorialView.gesture === 'brush' && mode !== 'brush');
     $p('paintNavigate').setAttribute('aria-pressed', String(mode === 'navigate'));
@@ -651,7 +681,7 @@
   }
   function draw() {
     if (!active || !match) return;
-    window.CQPaintRenderer?.draw(context, match, view, {palette:window.CQPalette?.current, mode, selectedCard, selectedProducer, selectedSource, preview, previewPoint, target:previewPoint, stroke, flowDrag, mortarAim:mode === 'mortar' && previewPoint ? {producerId:selectedProducer,...previewPoint,ok:preview?.ok} : null, tutorial:tutorial && !tutorialBlocked() ? tutorialView : null, effects:[], reducedMotion:reducedMotion.matches}, match.time);
+    window.CQPaintRenderer?.draw(context, match, view, {palette:window.CQPalette?.current, mode, selectedCard, selectedProducer, selectedArmy, selectedSource, preview, previewPoint, target:previewPoint, stroke, flowDrag, mortarAim:mode === 'mortar' && previewPoint ? {producerId:selectedProducer,...previewPoint,ok:preview?.ok} : null, tutorial:tutorial && !tutorialBlocked() ? tutorialView : null, effects:[], reducedMotion:reducedMotion.matches}, match.time);
   }
   function spendParticle(event) {
     if (event.team !== 1 || !(event.cost > 0) || !active || paused) return;
@@ -703,7 +733,7 @@
   function help() {
     if (!active || !match) return;
     paused = true; cancel(); saveCourse(); announceState();
-    openDialog('help', '<div class="paint-dialog-eyebrow">PEINDRE · DÉPLOYER · GUIDER</div><h2 id="paintDialogTitle">Une couleur, un réseau.</h2><ol class="paint-help-steps"><li><b>Peignez le blanc.</b> Touchez Pinceau, tracez depuis votre territoire relié, puis relâchez. Seule la portion valide est payée. Revenez au départ pour annuler. Double touchez le bouton pour garder le pinceau.</li><li><b>Jouez une carte.</b> Glissez-la sur un emplacement valide puis relâchez, ou touchez la carte puis sa cible. Ramenez-la dans la main pour annuler.</li><li><b>Guidez l’armée.</b> Glissez de la caserne vers une cible. Pour rappeler, glissez à l’extérieur puis revenez sur elle. Toucher un bâtiment montre sa fiche ; Pause arrête explicitement la production.</li></ol><details class="paint-help-details"><summary>Pigment, réseau et victoire</summary><p>Une caserne paie ' + (config().unitCost ?? 6) + ' pigments à chaque sortie, toutes les ' + (config().unitInterval ?? 5) + ' s. La jauge indique le revenu et la dépense prévue. Vos casernes attendent pendant le tracé ou la visée d’une carte, hors réseau, sans pigment ou au plafond d’unités.</p><p>Le pinceau ne traverse pas la couleur ennemie : l’armée la conquiert. Contournez une coupure par du terrain blanc pour reconnecter les hachures. Relier une source permet d’y poser un extracteur ; lui seul fournit le bonus de la source.</p><p>Détruisez le Cœur adverse ou gardez plus de 50 % de la toile, avec une avance, pendant 15 s. À 4 minutes, le plus grand territoire relié gagne. Égalité : 30 s de prolongation, puis comparaison des territoires ; nul seulement s’ils restent égaux. Le pigment accélère pendant la dernière minute et la prolongation.</p><p>Vue permet de déplacer la carte. Deux doigts, ou + / −, règlent le zoom. La retraite ne riposte pas en chemin ; les unités défendent à leur arrivée.</p>' + (course ? '<p><b>Mortier :</b> posez-le sur votre réseau, puis glissez vers une cible visible à 2,5–7 cases, ou utilisez « Viser une cible ». Il bombarde toutes les 5 s sans nouveau coût en pigment. Trop près, il ne peut pas vous défendre.</p>' : '') + (match.mixtures ? '<p><b>Mélange soin :</b> carte bleue puis jaune, ou jaune puis bleue, à 2 cases au maximum en 4 s : +12 vie aux unités alliées proches. Les icônes ▥ et ⠿ identifient les cartes. Le terrain garde la couleur du camp.</p>' : '') + '</details><p id="paintSessionNotice" class="paint-session-note">' + esc(sessionNotice()) + '</p><button id="paintBegin" class="paint-main-action paint-full-action">Reprendre →</button>');
+    openDialog('help', '<div class="paint-dialog-eyebrow">PEINDRE · DÉPLOYER · GUIDER</div><h2 id="paintDialogTitle">Une couleur, un réseau.</h2><ol class="paint-help-steps"><li><b>Peignez le blanc.</b> Touchez Pinceau, tracez depuis votre territoire relié, puis relâchez. Seule la portion valide est payée. Revenez au départ pour annuler. Le pinceau reste actif entre les traits. Touchez Vue ou de nouveau Pinceau pour quitter.</li><li><b>Jouez une carte.</b> Glissez-la sur un emplacement valide puis relâchez, ou touchez la carte puis sa cible. Ramenez-la dans la main pour annuler.</li><li><b>Guidez l’armée.</b> Touchez un combattant ou sa pastille, puis touchez une destination : tout son groupe et les renforts s’y rendent. Vous pouvez aussi glisser depuis la caserne. Pour rappeler, glissez à l’extérieur puis revenez sur elle. Toucher un bâtiment montre sa fiche ; Pause arrête explicitement la production.</li></ol><details class="paint-help-details"><summary>Pigment, réseau et victoire</summary><p>Une caserne paie ' + (config().unitCost ?? 6) + ' pigments à chaque sortie, toutes les ' + (config().unitInterval ?? 5) + ' s. La jauge indique le revenu et la dépense prévue. Vos casernes attendent pendant le tracé ou la visée d’une carte, hors réseau, sans pigment ou au plafond d’unités.</p><p>Le pinceau ne traverse pas la couleur ennemie : l’armée la conquiert. Contournez une coupure par du terrain blanc pour reconnecter les hachures. Relier une source permet d’y poser un extracteur ; lui seul fournit le bonus de la source.</p><p>Détruisez le Cœur adverse ou gardez plus de 50 % de la toile, avec une avance, pendant 15 s. À 4 minutes, le plus grand territoire relié gagne. Égalité : 30 s de prolongation, puis comparaison des territoires ; nul seulement s’ils restent égaux. Le pigment accélère pendant la dernière minute et la prolongation.</p><p>Vue permet de déplacer la carte. Deux doigts, ou + / −, règlent le zoom. La retraite ne riposte pas en chemin ; les unités défendent à leur arrivée.</p>' + (course ? '<p><b>Mortier :</b> posez-le sur votre réseau, puis glissez vers une cible visible à 2,5–7 cases, ou utilisez « Viser une cible ». Il bombarde toutes les 5 s sans nouveau coût en pigment. Trop près, il ne peut pas vous défendre.</p>' : '') + (match.mixtures ? '<p><b>Mélange soin :</b> carte bleue puis jaune, ou jaune puis bleue, à 2 cases au maximum en 4 s : +12 vie aux unités alliées proches. Les icônes ▥ et ⠿ identifient les cartes. Le terrain garde la couleur du camp.</p>' : '') + '</details><p id="paintSessionNotice" class="paint-session-note">' + esc(sessionNotice()) + '</p><button id="paintBegin" class="paint-main-action paint-full-action">Reprendre →</button>');
     bindActionTap($p('paintBegin'), () => { if (courseStorageConflict) { showCourseConflict(); return; } closeDialog(); paused = false; lastFrame = performance.now(); updateHUD(true); announceState(); });
   }
   function pause(value = !paused) {
@@ -794,7 +824,7 @@
   bindActionTap($p('paintMortarClear'), () => { if (paused || !currentMortar()) return; const result = match.setMortarTarget?.(1, selectedProducer, null, null); toast(result?.ok ? 'Tir arrêté. Le mortier attend une nouvelle cible.' : result?.message || 'Action impossible.'); updateHUD(true); });
   bindActionTap($p('paintProductionToggle'), () => { if (paused || tutorialBlocked()) return; const producer = currentProducer(); if (producer) { const result = match.toggleProduction(1, producer.id); afterAction('pause', result, {producerId:producer.id}); } updateHUD(true); });
   bindActionTap($p('paintUpgrade'), () => { if (paused || tutorialBlocked()) return; const result = match.upgradeCore(1); toast(result.message || (result.ok ? 'Cœur amélioré.' : 'Amélioration impossible.')); if (result.ok) playSound('confirmation_001'); updateHUD(true); });
-  bindActionTap($p('paintProducerClose'), () => { selectedProducer = null; selectedSource = null; updateHUD(true); });
+  bindActionTap($p('paintProducerClose'), () => { selectedProducer = null; selectedSource = null; selectedArmy = false; updateHUD(true); });
   bindActionTap($p('paintZoomIn'), () => { cancel(); zoomAt(camera.zoom + .5); }); bindActionTap($p('paintZoomOut'), () => { cancel(); zoomAt(camera.zoom - .5); });
   bindActionTap($p('paintTutorialNext'), nextTutorial); bindActionTap($p('paintTutorialRetry'), retryTutorial); bindActionTap($p('paintTutorialSkip'), () => start({tutorial:false,replace:true}));
   $p('paintDialog').addEventListener('keydown', event => {
@@ -828,7 +858,7 @@
   window.CQPaint = Object.freeze({start,startCourse,resumeCourse,showMenu,pause,resize,help,cancel,confirm,setMode,updateHUD,draw,flushSave:saveCourse,
     get active(){return active;},get paused(){return paused;},get game(){return match;},get hasMatch(){return !!match && (!!tutorial || match.winner == null);},
     get course(){return course;},get run(){return course;},get savedCourse(){return storedCourse;},get sessionNotice(){return sessionNotice();},get saveStatus(){return {ok:!courseSaveError,error:courseSaveError,invalid:invalidCourseSave,conflict:courseStorageConflict,savedAt};},
-    get view(){return {...view};},get zoom(){return camera.zoom;},get mode(){return mode;},get preview(){return preview;},get tutorialStep(){return tutorialView?.step ?? -1;},get tutorial(){return tutorial;},get brushLocked(){return brushLocked;},get selectedProducer(){return selectedProducer;},get selectedSource(){return selectedSource && {...selectedSource};}});
+    get view(){return {...view};},get zoom(){return camera.zoom;},get mode(){return mode;},get preview(){return preview;},get tutorialStep(){return tutorialView?.step ?? -1;},get tutorial(){return tutorial;},get brushLocked(){return mode === 'brush';},get selectedArmy(){return selectedArmy;},get selectedProducer(){return selectedProducer;},get selectedSource(){return selectedSource && {...selectedSource};}});
   if (courseModule()) loadCourseSlot();
   requestAnimationFrame(frame);
 })();

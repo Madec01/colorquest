@@ -2,8 +2,9 @@
 const assert = require('node:assert/strict');
 const { Game, CARDS, CONFIG } = require('../paint-engine.js');
 const AI = require('../paint-ai.js');
-// The default profile's original canvas remains a regression baseline. Repeating
-// seeds checks deterministic setup, not a statistical human win rate.
+// Broad optional simulation matrix. V0.8.1's focused onset/novice safety checks
+// live in paint-pacing.test.cjs. Repeated seeds check deterministic setup, not
+// a statistical human win rate.
 const seeds = [7, 42];
 const measurements = [];
 
@@ -29,7 +30,7 @@ for (const seed of seeds) {
   assert.ok(firstProducer !== null && firstProducer < 8, 'Immediate paid development');
   assert.ok(firstSource !== null && firstSource < 55, 'Develops a real source economy');
   assert.ok(firstDamage === null || firstDamage >= AI.CORE_PUSH, `No idle-player core rush: ${firstDamage}`);
-  assert.ok(game.time >= 165, 'An idle onboarding player is not erased before learning the three gestures');
+  assert.ok(game.time >= AI.CORE_PUSH, 'An idle onboarding player is not erased before the late assault');
   assert.ok(peakArmy >= 4, 'Creates an actual army');
   assert.ok(painted >= 8 && played >= 4, 'Uses brush and multiple ordinary cards');
   measurements.push({ seed, time: +game.time.toFixed(1), reason: game.winReason,

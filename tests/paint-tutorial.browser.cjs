@@ -20,7 +20,7 @@ async function touchPath(page,points){
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   }finally{await cdp.detach();}
 }
-async function brush(page,path){await page.waitForTimeout(350);await page.locator('#paintBrush').tap();await touchPath(page,await Promise.all(path.map(p=>point(page,...p))));}
+async function brush(page,path){if(await page.evaluate(()=>CQPaint.mode!=='brush'))await page.locator('#paintBrush').tap();await touchPath(page,await Promise.all(path.map(p=>point(page,...p))));}
 async function tapTile(page,x,y){const p=await point(page,x,y);await page.touchscreen.tap(p.x,p.y);}
 async function card(page,id){const i=await page.evaluate(id=>CQPaint.game.hands[1].indexOf(id),id);assert(i>=0);return page.locator(`[data-paint-card="${i}"]`);}
 async function tick(page,seconds){await page.evaluate(s=>{paintLessonTick(s);CQPaint.updateHUD(true);},seconds);}
@@ -71,7 +71,11 @@ async function classics(page){return page.evaluate(keys=>Object.fromEntries(keys
       assert.equal((await status(page)).phase,'spawn');assert.equal(await page.evaluate(()=>CQPaint.game.getUnitCount(1)),0);
       await tick(page,5.1);assert.equal((await status(page)).paidSpawnSeen,true);
       assert.equal(await page.evaluate(()=>CQPaint.game.events.some(e=>e.type==='spawn'&&e.team===1&&e.cost===6)),true,'lesson observes a real paid spawn');
-      await touchPath(page,[await point(page,9,20),await point(page,9,15)]);
+      assert.equal((await status(page)).gesture,'tap-flow','the lesson teaches direct fighter selection');
+      const producedFighter=await page.evaluate(()=>{const u=CQPaint.game.units.find(u=>u.team===1&&u.hp>0),v=CQPaint.view,b=document.getElementById('paintCanvas').getBoundingClientRect();return{x:b.x+v.x+u.x*v.cell,y:b.y+v.y+u.y*v.cell};});
+      await page.touchscreen.tap(producedFighter.x,producedFighter.y);
+      assert.equal(await page.evaluate(()=>CQPaint.selectedArmy),true);assert.equal((await status(page)).flowIssued,false,'selection alone does not solve the order objective');
+      await tapTile(page,9,15);
       assert.equal((await status(page)).flowIssued,true);
       for(let i=0;i<60&&!(await status(page)).success;i++)await tick(page,1);
       await expectSuccess(page);

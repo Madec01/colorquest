@@ -3,7 +3,7 @@
  * is activated only after the player chooses to reload, or closes every tab.
  */
 'use strict';
-const RELEASE = 'COLORQUEST_V08_20261001_1';
+const RELEASE = 'COLORQUEST_V081_20261001_1';
 const CACHE_PREFIX = 'colorquest:' + new URL(self.registration.scope).pathname + ':';
 const CACHE_NAME = CACHE_PREFIX + RELEASE;
 const FILES = [

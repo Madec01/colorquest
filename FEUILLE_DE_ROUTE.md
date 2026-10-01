@@ -2,6 +2,16 @@
 
 Dernière mise à jour : 1er octobre 2026.
 
+## V0.8.1 — difficulté et gestes : correctif livré
+
+**Retour de Martin le 1er octobre à 21 h 53 :** l’IA vient tuer « en littéralement 30 secondes », sans laisser le temps de comprendre ; devoir sélectionner Pinceau à chaque trait fait perdre du temps ; toucher directement les combattants doit les sélectionner. Ce retour humain invalide l’idée que la difficulté actuelle convient au démarrage. Les victoires de scripts de V0.8 montraient une possibilité technique, pas une accessibilité pour un débutant.
+
+**Corrections implémentées et vérifiées à sa demande :** vraie ouverture de développement, raids graduels annoncés, pinceau continu par défaut et sélection d’un groupe en touchant un combattant ou sa pastille, puis sa destination. Le nouveau geste est enseigné dans l’apprentissage. La consigne antérieure de Claude sur le retour automatique en Vue est remplacée par cette demande directe de Martin ; aucune discussion ou validation de Claude n’est inventée.
+
+**Diagnostic dans le code :** les profils d’expansion et de coupure ouvraient l’offensive dès 24 s. Les priorités de réaction à une menace et à la domination adverse pouvaient passer avant la vérification du délai ; un simple recul de l’ordre d’attaque du Cœur ne suffisait donc pas. Les unités déjà envoyées pouvaient poursuivre le combat en route. Le correctif doit traiter ces chemins, les pouvoirs et l’expansion, pas seulement allonger une constante.
+
+**Périmètre :** ergonomie et rythme du mode peinture ; pas de nouveau bâtiment ni de système supplémentaire. Préserver coûts, règles de visibilité, sauvegardes, classique et hors ligne. Vérifications et mesures ci-dessous réalisées ; ne pas considérer le ressenti résolu avant un nouvel essai de Martin. Publication et commit annoncés après contrôle en ligne.
+
 ## V0.8 — première course de trois combats livrée
 
 **Go de Martin reçu le 1er octobre à 13 h 18**, en réponse à la suite proposée ci-dessous. Périmètre de cette première tranche : trois combats, choix de récompenses, sauvegarde/reprise sur cet appareil, variantes d’arène et d’adversaire, premier bâtiment à débloquer. Le mortier est retenu pour cette implémentation à partir de son rôle déjà décrit au catalogue ; le réservoir reste ultérieur. Le premier mélange bleu + jaune soigne les gouttes proches, sans changer la propriété du sol ; son introduction sera progressive dans la course.
@@ -60,6 +70,8 @@ Vérifications détaillées dans la section dédiée : 60 contrôles ciblés mot
 V0.6 reste accessible pendant l’essai. V0.7.1 et la première tranche V0.8 sont livrées après leurs Go respectifs ; les étapes suivantes restent prévues. Un test technique réussi ne ferme pas le problème de compréhension et de plaisir.
 
 ## Prochains jalons après cette première course
+
+**Priorité actuelle : V0.8.1.** Les trois corrections sont livrées à la suite du retour de Martin ; recueillir son nouvel essai avant d’enrichir le parcours. Les questions ci-dessous restent utiles pour le nouvel essai.
 
 1. **Retour de Martin sur une course réelle en portrait.** Peut-il expliquer sa défaite, choisir une récompense utile, viser au mortier et retrouver son combat après fermeture ? Observer d’abord le premier duel, puis la pression du dernier. Les profils IA ont évolué ; les coûts de base et la recharge n’ont pas été ralentis.
 2. **Réglages ciblés avec Claude.** Examiner les réseaux trop faciles à couper, le temps pour réagir aux bombardements et la place de Gomme puis pinceau. Le réservoir est un candidat pour amortir une coupure, pas une réponse automatiquement validée à une difficulté mal mesurée.
@@ -467,6 +479,16 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Modifications réalisées
 
+### V0.8.1 — 1er octobre 2026, après le retour de difficulté
+
+- **Ouverture IA corrigée dans tous les duels peinture.** 90 s de développement en libre et face à L’Esquisse, 75 s face à L’Architecte, 60 s face à L’Effaceur. Rappel et défense autour de ses producteurs pendant cette phase, expansion limitée à son côté et à 35 % du terrain ; pas d’offensive déclenchée indirectement par le score du joueur, un ordre ancien, un sort ou un mortier. Une intrusion volontaire dans sa base reste combattue. Les coûts, dégâts, revenus et règles de visibilité sont inchangés.
+- **Pression graduelle** : effectif visé de trois unités pour les premiers raids, puis cinq et huit par paliers de 35 s ; un seul producteur envoie ses unités à l’attaque avant l’assaut général. La poursuite vers le Cœur est interrompue avant l’assaut, qui commence à 210 s en libre/première toile, 195 s sur la deuxième, 180 s sur la dernière. L’IA ne stocke pas une armée entière pour la relâcher à la fin du compte à rebours.
+- **Rythme annoncé** dans la présentation de chaque combat et dans l’espace central existant de la barre de domination : « Raids dans … s », puis bref signal des premiers raids. Domination tenue et prolongation gardent la priorité. Aucune ligne permanente supplémentaire ne réduit la toile portrait.
+- **Pinceau continu par défaut.** Une activation suffit pour plusieurs traits, y compris après un refus, un retour au départ ou une interruption du trait. Seul le préfixe valide est payé au relâchement ; entre les traits les producteurs reprennent leurs dépenses normales. Vue, retoucher Pinceau ou choisir un autre outil quitte ce mode. Pincer annule avant de zoomer. Le double toucher et son cadenas ne sont plus nécessaires.
+- **Sélection directe des combattants.** Toucher une goutte alliée ou sa pastille sélectionne le groupe de son producteur, sans pause de production ni ordre immédiat. Toucher ensuite une destination valide envoie le groupe et ses prochains renforts ; Rappeler lance toujours une retraite. Groupe surligné et fiche avec nombre de combattants. Le test de toucher utilise la position réellement dessinée, y compris les pastilles regroupées et le zoom ; les combattants ennemis ne deviennent pas sélectionnables.
+- **Aide et leçon d’attaque actualisées** : deux cibles numérotées pour toucher un combattant, puis le poste adverse. Le glisser depuis une caserne reste disponible. Toucher un combattant depuis Pinceau sélectionne sans peindre ; un vrai glissement continue à tracer. Les déplacements de caméra et pincements ne donnent aucun ordre accidentel.
+- **Compatibilité** : même schéma de sauvegarde de course, rythme calculé d’après le profil et le temps de simulation sauvegardés. Une course déjà avancée ne revient pas artificiellement à zéro ; commencer une nouvelle course donne l’ouverture complète. Cache PWA incrémenté en V0.8.1, classique inchangé, tous les modules modifiés déjà précachés.
+
 ### V0.8 — 1er octobre 2026
 
 - **Course autonome de trois combats** dans `paint-course.js`, avec présentations et progression visibles. La toile ouverte affronte L’Esquisse (expansion), Les passages L’Architecte (installation défensive), Le tableau final L’Effaceur (coupures et mortier). Géométries symétriques, obstacles et sources fixes ; le paquet et les bonus du joueur persistent, chaque rencontre repart avec sa propre économie, ses unités et ses bâtiments initiaux.
@@ -615,6 +637,8 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Bugs trouvés non corrigés
 
+- **Retour humain V0.8 reçu :** pression initiale excessive, pinceau trop coûteux en gestes, sélection des combattants absente. Correctifs V0.8.1 implémentés et tests passants, sans défaut bloquant restant observé. Leur effet sur le confort et la difficulté doit encore être confirmé par son nouvel essai.
+
 - **V0.8 : aucun défaut bloquant restant observé dans les scénarios exécutés.** Le confort de la première course, sa difficulté et le plaisir ne sont pas considérés résolus par ces contrôles. Les risques précis sont suivis ci-dessous ; aucun bug connu n’est masqué par une récompense ou un résultat de test imposé.
 - **Compréhension et plaisir — retour humain attendu après V0.7.1 :** le défaut d’usage signalé sur V0.7 a motivé les nouveaux gestes, les repères et les six situations livrés. Aucun blocage restant observé dans les parcours exécutés ; le problème de compréhension ne sera déclaré résolu qu’après un nouvel essai de Martin.
 - V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Ces contrôles ne valident pas la compréhension : le premier retour de Martin ci-dessus signale un problème d’usage toujours ouvert.
@@ -623,11 +647,12 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Limites et risques à suivre
 
+- **V0.8.1 : nouvel essai humain attendu.** Le retour de Martin sur une mort trop rapide est pris en compte par les phases de développement et les vagues réduites. Observer maintenant si le joueur comprend et utilise le temps gagné, puis ajuster au besoin les premières vagues ; ne pas ajouter du contenu pour masquer ces difficultés.
 - **Difficulté V0.8 à mesurer humainement.** Sur neuf combinaisons profil/arène, le script spécialisé dans la peinture perd huit fois ; les scripts sommaires de pression et de défense perdent aussi. Une stratégie mixte utilisant les commandes ordinaires gagne réellement les trois rencontres de la course (158,1 s, 205,5 s, 92,8 s), sans prix réduits ni état de victoire imposé. Ces résultats montrent des issues possibles, pas un taux de victoire humain. Le dernier adversaire peut sanctionner un réseau fragile très vite ; premier duel et boss restent prioritaires à observer avec Martin.
 - **Variété V0.8 bornée** : trois cartes géométriques fixes, six récompenses possibles, un mélange et une famille d’unités. La graine varie les offres, pas la géométrie. Le parcours est linéaire, sans chevalet, événement, collection permanente ni alliance. La description initiale d’une course complète reste un objectif futur.
 - **Sauvegarde V0.8 locale seulement** : un emplacement de course par navigateur/application, sans synchronisation entre appareils. Une fermeture forcée peut perdre les secondes depuis la dernière écriture (cadence de 2,5 s) ; effacer les données du navigateur efface la course. Une erreur de stockage est signalée et ne doit pas être confondue avec une sauvegarde réussie. Les combats libres peinture et tutoriels restent temporaires.
 - V0.7.1 : les situations pédagogiques sont distinctes, avec opposition scénarisée et pause après réussite. Leurs durées de 30–60 s sont des cibles de découverte, pas des durées humaines mesurées ni des attentes imposées. La scène de défense reste perdable et peut être recommencée.
-- V0.7.1 : l’équilibrage économique et l’IA de combat libre n’ont pas changé. Le script de peinture efficace gagne toujours vers 78–81 s ; comprendre les commandes ne démontre pas encore l’équilibre peinture/armée ni l’envie de rejouer. Gomme puis pinceau reste une combinaison à examiner avec Claude dans ce bilan.
+- Historique V0.7.1–V0.8 : l’équilibrage économique et l’IA de combat libre n’avaient pas changé. V0.8.1 modifie maintenant les comportements et le rythme de cette IA à la demande de Martin. Le script de peinture efficace gagne toujours vers 78–81 s ; comprendre les commandes ne démontre pas encore l’équilibre peinture/armée ni l’envie de rejouer. Gomme puis pinceau reste une combinaison à examiner avec Claude dans ce bilan.
 - Le combat libre peinture garde l’arène ouverte, le paquet de départ de huit cartes et la reprise en mémoire de V0.7. La sauvegarde persistante V0.8 concerne la course. Plusieurs graines seules ne constituent pas une mesure de variété ou d’équilibrage du combat libre.
 - Quatre minutes est une limite maximale, pas une durée garantie : une destruction du Cœur ou une domination tenue peut conclure plus tôt. Une politique automatisée de peinture efficace gagne en environ 80 s ; sa place face au développement militaire et la facilité à couper ce réseau sont à éprouver avec Martin, sans ajouter de règle avant son retour. Les essais automatisés ne remplacent pas des parties humaines.
 - Les détails suivants concernent le mode classique lorsqu’ils citent ses missions, escouades, spécialistes, cartes ou sauvegardes.
@@ -663,6 +688,24 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.8.1 — 1er octobre 2026
+
+- **17 contrôles IA passants**, dont vision équitable, reprise déterministe, absence de contournement du délai par domination/mortier, compte à rebours sans avancer le temps et vraie défense contre une invasion de sa base.
+- **Huit matchs complets dans `tests/paint-pacing.test.cjs`** : joueur inactif et novice lent, pour le libre et les trois rencontres. Le novice trace trois petits chemins vers une source à 12/20/26 s, pose une caserne à 30 s, un extracteur à 45 s, puis avance et envoie timidement son groupe. Tous les achats et ordres sont légaux. Aucun dégât au Cœur ni perte de case du novice pendant le développement ; première vague limitée à trois unités, croissance initiale sans victoire de domination adverse. Résultats mesurés ci-dessous, sans extrapolation en taux de victoire humain.
+
+| Rencontre | Développement | Première perte de case du novice | Premier dégât au Cœur du novice | Défaite du novice très peu actif |
+| --- | ---: | ---: | ---: | ---: |
+| Libre | 90 s | 95,2 s | 220,8 s | 226,8 s |
+| Toile 1 — L’Esquisse | 90 s | 95,2 s | 224,3 s | 228,6 s |
+| Toile 2 — L’Architecte | 75 s | 90,5 s | 219,5 s | 228,8 s |
+| Toile 3 — L’Effaceur | 60 s | 65,6 s | 184,8 s | 195,5 s |
+
+- **Course complète réellement gagnée** par la stratégie mixte de régression, sans imposer de gagnant : 208,1 s, 236,3 s et 240 s. Les dix-huit tests du module de course passent. Deux sauvegardes authentiques produites avec le code V0.8 à 40 et 95 s sont restaurées exactement puis continuent avec les nouveaux délais ; aucun temps d’absence simulé et aucun changement de schéma.
+- **Quatre suites navigateur passantes en 360 × 640 et 390 × 844** : commandes, six leçons, course et intégration classique/PWA. Paiement de traits successifs sans réactivation, production entre les traits, sélection d’une goutte et d’une vraie pastille, deuxième toucher pour l’ordre, changement de groupe, cible invalide, zoom et annulations vérifiés. La leçon d’attaque est gagnée par les nouveaux touchers, avec capture réellement effectuée par l’armée.
+- **Reprises et stockage navigateur préservés** : cartes, mortier en vol, deux fenêtres, contenu illisible, quota, mise à jour conditionnée au succès d’écriture, fonctionnement hors ligne et `file://`. Les sauvegardes classiques restent inchangées dans les parcours exécutés.
+- **16 contrats de rendu et neuf tests moteur d’apprentissage passants**. Captures des deux portraits inspectées : pinceau actif, compte à rebours et groupe sélectionné lisibles. Une ligne de compte à rebours supplémentaire, qui faisait tomber la toile sous 60 % de hauteur en 360 × 640, a été retirée au profit de l’espace existant ; le seuil de 60 % est à nouveau respecté.
+- La matrice historique de 48 simulations n’a pas été relancée pour ce correctif ; les huit matchs ciblés et la course complète testent le défaut de démarrage observé. Le moteur de combat et ses coûts n’ont pas été modifiés. Essais Chromium émulés, sans téléphone physique. Le novice automatisé finit encore par perdre s’il reste presque inactif : le correctif donne du temps pour apprendre, sans promettre une victoire ni un plaisir validé.
 
 ### V0.8 — 1er octobre 2026
 

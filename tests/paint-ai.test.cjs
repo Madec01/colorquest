@@ -9,15 +9,18 @@ function advance(game, seconds, update = (g, dt) => AI.update(g, dt)) {
     game.update(.1); update(game, .1);
   }
 }
-const commands = ['paint', 'playCard', 'setFlow', 'toggleProduction', 'upgradeCore', 'setMortarTarget'];
+const commands = ['paint', 'playCard', 'setFlow', 'recall', 'toggleProduction', 'upgradeCore', 'setMortarTarget'];
 function record(game) {
   const calls = [];
   for (const name of commands) {
     const original = game[name];
     if (typeof original !== 'function') continue;
     game[name] = function (...args) {
+      const cardId = name === 'playCard' ? game.hands[args[0]][args[1]] : null;
       const result = original.apply(this, args);
-      calls.push({ name, args: structuredClone(args), ok: result.ok });
+      const call = { name, args: structuredClone(args), ok: result.ok };
+      if (cardId) call.cardId = cardId;
+      calls.push(call);
       return result;
     };
   }
@@ -91,6 +94,7 @@ test('A public domination threat redirects troops toward an actually visible con
   for (const tile of game.tiles) if (!tile.blocked && (tile.y >= 14 || (tile.x === 9 && tile.y >= 8))) tile.owner = 1;
   game.recompute();
   assert.ok(game.scores[1] > .42);
+  game.time = AI.OPENING + 1; // Cutting a visible line starts after development.
   const before = game.perception(2);
   assert.ok(before.units.some(unit => unit.team === 2));
   const calls = record(game);
@@ -141,6 +145,7 @@ test('Saving, serializing and restoring every profile continues the same choices
     const b = Object.assign(new Game({ seed: 79 }), savedWorld);
     assert.equal(AI.restore(b, data), true);
     assert.deepEqual(AI.snapshot(a), AI.snapshot(b));
+    assert.deepEqual(AI.pacing(a), AI.pacing(b), 'Countdown derives from the restored profile and simulation time');
     const callsA = record(a), callsB = record(b);
     advance(a, 52); advance(b, 52);
     assert.deepEqual(callsA, callsB, profile + ' decisions after loading');
@@ -222,7 +227,8 @@ test('A visible mortar warning prompts a legal escape order without exposing its
   game.shells.push(shell);
   const seen = game.perception(2).shells[0];
   assert.equal(seen.sourceId, undefined); assert.equal(seen.fromX, undefined);
-  AI.configure(game, 2, { profile: 'eraser' }); game.time = .8;
+  game.time = AI.PROFILES.eraser.opening + 1;
+  AI.configure(game, 2, { profile: 'eraser' }); game.time += .8;
   const calls = record(game); AI.update(game, .8);
   const order = calls.find(call => call.name === 'setFlow' && call.args[1] === producer.id && call.ok);
   assert.ok(order);
@@ -240,6 +246,59 @@ test('The AI can complete a paid blue/yellow mixture to heal nearby wounded unit
   assert.equal(wounded.hp, 22);
   assert.equal(game.pigment[2], pigment - game.getCard(2, 'bleach').cost);
   assert.ok(game.events.some(event => event.type === 'mixture' && event.team === 2 && event.healed === 12));
+});
+
+test('Development countdown has exact phase boundaries and cannot advance a paused simulation', () => {
+  for (const profile of Object.keys(AI.PROFILES)) {
+    const game = new Game({ seed: 7 }), config = AI.PROFILES[profile];
+    AI.configure(game, 2, { profile });
+    assert.deepEqual(AI.pacing(game), { phase:'development', remaining:config.opening, opening:config.opening, corePush:config.corePush });
+    const before = AI.snapshot(game);
+    for (let n = 0; n < 100; n++) AI.pacing(game);
+    assert.deepEqual(AI.snapshot(game), before);
+    game.time = config.opening;
+    assert.deepEqual(AI.pacing(game), { phase:'raids', remaining:config.corePush - config.opening, opening:config.opening, corePush:config.corePush });
+    game.time = config.corePush;
+    assert.deepEqual(AI.pacing(game), { phase:'assault', remaining:0, opening:config.opening, corePush:config.corePush });
+  }
+});
+
+test('Development defends its local base when invaded, without enabling a pursuit across the map', () => {
+  for (const profile of Object.keys(AI.PROFILES)) {
+    const game = new Game({ seed: 7 });
+    const producer = game._addBuilding(2, 'barracks', 9, 5);
+    game._addUnit(2, producer, { x: 9.5, y: 5.5 });
+    const invader = game._addUnit(1, game.getCore(1), { x: 9.5, y: 7.5 });
+    const hp = invader.hp; game.recompute();
+    AI.configure(game, 2, { profile });
+    advance(game, 6);
+    assert.ok(!game.units.includes(invader) || invader.hp < hp, 'A voluntary invasion is defended');
+    assert.equal(producer.flowMode, 'defend');
+    assert.deepEqual(producer.flow, { x: producer.x, y: producer.y });
+    assert.ok(game.units.filter(unit => unit.team === 2).every(unit => unit.y < 12));
+  }
+});
+
+test('An opening domination threat and visible outpost cannot bypass defence or start a mortar attack', () => {
+  const game = new Game({ seed: 7 });
+  const producer = game._addBuilding(2, 'barracks', 9, 5);
+  const mortar = game._addBuilding(2, 'mortar', 9, 8);
+  for (let y = 6; y <= 11; y++) game.tile(9, y).owner = 2;
+  for (const tile of game.tiles) if (!tile.blocked && tile.y >= 13) tile.owner = 1;
+  const post = game._addBuilding(1, 'bastion', 9, 13);
+  game._addUnit(2, producer, { x: 9.5, y: 8.5 });
+  game.recompute(); game.time = 30;
+  assert.ok(game.scores[1] >= .42);
+  assert.equal(game.setMortarTarget(2, mortar.id, 9, 13).ok, true);
+  AI.configure(game, 2, { profile:'eraser' }); game.time += .8;
+  const calls = record(game); AI.update(game, .8);
+  assert.equal(producer.flowMode, 'defend');
+  assert.equal(mortar.mortarTarget, null, 'A saved offensive target is cleared during development');
+  const offensive = calls.filter(call => call.ok && call.name === 'playCard' && ['splash','wave','bleach'].includes(call.cardId));
+  assert.equal(offensive.length, 0);
+  const hp = post.hp; advance(game, 5);
+  assert.equal(post.hp, hp, 'The visible opponent outpost is left alone during development');
+  assert.equal(game.shells.length, 0);
 });
 
 console.log(`Paint AI: ${checks} checks passed.`);

@@ -45,8 +45,7 @@ async function touchPath(page, points, beforeRelease) {
   } finally {await cdp.detach();}
 }
 async function stroke(page, cells) {
-  await page.waitForTimeout(350);
-  await page.locator('#paintBrush').tap();
+  if(await page.evaluate(()=>CQPaint.mode!=='brush'))await page.locator('#paintBrush').tap();
   await touchPath(page, await Promise.all(cells.map(p => point(page, ...p))));
 }
 async function tapTile(page,x,y) {const p=await point(page,x,y); await page.touchscreen.tap(p.x,p.y);}

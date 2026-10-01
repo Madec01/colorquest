@@ -340,6 +340,19 @@
     }
     return groups;
   }
+  // Use the displayed positions, including count badges, for touch selection.
+  function pickGroup(game, view, position) {
+    let best = null;
+    for (const group of unitGroups(game, view)) {
+      if (group.team !== 1) continue;
+      const x = group.x / group.count, y = group.y / group.count;
+      const p = point(view, x, y, false), distance = Math.hypot(p.x - position.x, p.y - position.y);
+      if (distance <= Math.max(22, view.cell * .42) && (!best || distance < best.distance)) {
+        best = {producerId:group.producerId, x, y, count:group.count, distance};
+      }
+    }
+    return best;
+  }
   function drawUnits(c, game, view, colors, ui) {
     const selected = ui.selectedProducer;
     for (const group of unitGroups(game, view)) {
@@ -694,6 +707,14 @@
     if (!drawing && path?.length) {
       const points = path.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y)).map(p => point(view, p.x, p.y));
       if (points.length) {
+        if (tutorial.gesture === 'tap-flow') {
+          points.forEach((p, index) => {
+            c.strokeStyle = GOLD; c.lineWidth = 1.7; c.beginPath(); c.arc(p.x, p.y, 13, 0, TAU); c.stroke();
+            label(c, view, String(index + 1), p.x + 18, p.y - 12, '#76531e', true);
+          });
+          const at = ui.selectedArmy || (!ui.reducedMotion && motion % 3.4 > 1.7) ? points.at(-1) : points[0];
+          drawHand(c, at.x, at.y, .9); c.restore(); return;
+        }
         c.strokeStyle = '#fffefae8'; c.lineWidth = 4; c.beginPath(); points.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.stroke();
         c.strokeStyle = GOLD; c.lineWidth = 1.4; c.setLineDash([3, 5]); c.stroke(); c.setLineDash([]);
         if (points.length > 1) arrow(c, points[points.length - 2], points[points.length - 1], 6);
@@ -755,5 +776,5 @@
     c.restore();
   }
 
-  return Object.freeze({ draw, teamColor });
+  return Object.freeze({ draw, teamColor, pickGroup });
 });

@@ -79,6 +79,34 @@ test('zooming in or approaching visible combat restores individual positions', (
   assert.equal(labels(render(game)).includes('3'), false);
 });
 
+test('touch picking matches the visible count badge and individual fighters without mutating them', () => {
+  const game = clustered(), before = JSON.stringify(game);
+  const badge = render(game).find(c => c[0] === 'fillText' && c[1] === '3');
+  assert(badge, 'there must be an actual rendered group count');
+  const picked = Renderer.pickGroup(game, view, { x: badge[2], y: badge[3] });
+  assert.equal(picked.producerId, 150); assert.equal(picked.count, 3, 'touching the count chooses all members of that producer');
+  const zoomed = { ...view, cell: 28 }, unit = game.units[2];
+  const individual = Renderer.pickGroup(game, zoomed, { x: unit.x * zoomed.cell, y: unit.y * zoomed.cell });
+  assert.equal(individual.producerId, 150); assert.equal(individual.count, 1, 'zoomed-in units are picked at their own displayed position');
+  assert.equal(Renderer.pickGroup(game, view, { x: 0, y: 0 }), null, 'empty canvas cannot select a distant army');
+  assert.equal(JSON.stringify(game), before);
+});
+
+test('touch picking distinguishes producers and never selects enemy or dead fighters', () => {
+  const game = clustered(); game.units[2].producerId = 151; game.units[2].x = 11.5;
+  assert.equal(Renderer.pickGroup(game, view, { x: 11.5 * view.cell, y: 21.4 * view.cell }).producerId, 151);
+  assert.equal(Renderer.pickGroup(game, view, { x: 7.3 * view.cell, y: 21.4 * view.cell }).producerId, 150);
+  game.units[2].hp = 0;
+  assert.equal(Renderer.pickGroup(game, view, { x: 11.5 * view.cell, y: 21.4 * view.cell }), null);
+  game.units.push({ id: 400, team: 2, x: 3.5, y: 20.5, hp: 32, maxHp: 32, producerId: 2 });
+  game.visibility[1][20 * game.width + 3] = true;
+  assert.equal(Renderer.pickGroup(game, view, { x: 3.5 * view.cell, y: 20.5 * view.cell }), null, 'visible hostile units are not player commands');
+  const hostile = { id: 401, team: 2, x: 5.5, y: 7.5 };
+  for (const key of ['hp', 'producerId', 'target', 'retreating']) Object.defineProperty(hostile, key, { get() { throw Error('hidden hostile picking field: ' + key); } });
+  game.units.push(hostile);
+  assert.equal(Renderer.pickGroup(game, view, { x: 5.5 * view.cell, y: 7.5 * view.cell }), null, 'hidden hostile private fields are never inspected');
+});
+
 test('a partial stroke displays its payable prefix and a separate red dotted refusal', () => {
   const game = new Engine.Game();
   const log = render(game, { mode: 'brush', preview: { ok: true, partial: true, cost: 2, path: [{ x: 9, y: 20 }, { x: 9, y: 19 }, { x: 9, y: 18 }], cells: [{ x: 9, y: 19 }, { x: 9, y: 18 }], rejectedPath: [{ x: 9, y: 17 }], reason: 'Hors de vue' } });
