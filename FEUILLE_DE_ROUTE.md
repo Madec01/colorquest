@@ -8,7 +8,8 @@ Dernière mise à jour : 1er octobre 2026.
 - Une ressource : le pigment. Réseau de territoire relié à un Cœur.
 - Exploration distincte de la possession ; couper les connexions est une tactique centrale.
 - Plateforme principale : téléphone en portrait. Carte verticale et commandes tactiles prioritaires ; PC secondaire.
-- Début progressif, parties complètes visées de 10–15 minutes, interface française ; premières missions de découverte plus courtes.
+- Début progressif, interface française. **Validé le 1er octobre :** combats courts de 3 à 5 minutes (les parties libres de 12 minutes sont abandonnées) ; une course complète de 5 à 7 combats peut être interrompue et reprise. Remplace l’ancienne cible de 10 à 15 minutes par partie.
+- **Validé le 1er octobre :** Colorquest devient un « roguelite de peinture » mêlé à un jeu de cartes en temps réel : on peint au doigt, l’armée se dirige par flux, on joue une main de cartes, et on progresse par courses de petits combats. Détail dans la section « Nouvelle direction » ci-dessous.
 - Direction demandée le 30/09 après V0.5 : progression par niveaux, déblocage graduel des possibilités et apprentissage des bases dans les premières missions.
 - Niveaux avancés : plusieurs IA, possibilité d’alliance et territoire affiché dans un mélange des couleurs des deux camps. Direction demandée ; fonctionnement détaillé encore proposé ci-dessous.
 - Première version autonome en HTML/CSS/JS, puis enrichissement à partir des retours de jeu.
@@ -24,10 +25,13 @@ Dernière mise à jour : 1er octobre 2026.
 - [x] J7 / V0.4 — Sauvegarde/reprise, six couleurs et rythme Détente progressif. Priorité confort mobile validée par « Go pour la suite » après V0.3.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
-- [ ] J10 / V0.7 — Proposition : poursuivre la campagne avec défenses, réservoir, siège et autres déblocages, un apport principal par niveau ; scénarios variés qui réutilisent les acquis.
-- [ ] J11 / V0.8 — Proposition : trois puis quatre camps, alliances et mélange de couleurs, missions de coopération et affrontements à deux contre deux.
+- [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
+- [ ] J11 / V0.7 — Prototype « combat à cartes » : un seul combat jouable avec jauge de pigment, main de cartes, trait d’encre au doigt, envoi par glisser et simplifications validées. Essai de Martin avant la suite.
+- [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de pigments entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
+- [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
+- [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
 
-V0.6 est implémentée. V0.7 et V0.8 désignent un ordre proposé, sans calendrier annoncé : les autres bâtiments et les alliances restent à développer.
+V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans calendrier annoncé : rien de la nouvelle direction n’est encore développé.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
@@ -38,15 +42,85 @@ V0.6 est implémentée. V0.7 et V0.8 désignent un ordre proposé, sans calendri
 - Précision suivante le 30/09 : Martin souhaite des niveaux débloquant progressivement les possibilités, les premières missions servant à apprendre les bases. Il signale explicitement que le jeu reste difficile à lire et à comprendre même après le tutoriel.
 - Autre direction demandée : plusieurs IA dans les niveaux élevés, alliances possibles et mélange des couleurs pour les zones de l’alliance. Conserver cette identité visuelle tout en distinguant les armées commandables des armées alliées.
 
-## Analyse du plaisir de jeu — 1er octobre 2026 (proposition, rien d’implémenté)
+## Nouvelle direction validée — 1er octobre 2026 (rien n’est encore implémenté)
 
-- Demande de Martin : « on s’ennuie vite, le jeu ne donne pas envie d’y rester » ; il pense que le RTS seul ne suffit pas et demande des idées d’hybridation.
-- Constat (partie libre observée en 390 × 844, plus lecture du moteur) : il faut attendre longtemps avant la première vraie décision (2,6 pigments/s, relais à 45, propagation passive) ; la toile n’occupe qu’environ 60 % de l’écran, le reste étant pris par l’interface, une bulle d’aide et beaucoup de brouillard gris ; un ordre demande trois touchers (Toute l’armée → Donner un ordre → case) ; la victoire « 60 % pendant 45 s » est abstraite ; beaucoup de systèmes ne font que changer des valeurs (cinq unités, niveaux de bâtiments, trois spécialisations, escouades, postures) ; on ne gagne rien entre deux parties et aucune partie ne laisse de souvenir.
-- Points forts à garder : identité « toile qui se colore », coupure de réseau originale, priorité au téléphone, PWA hors ligne, IA qui ne triche pas, campagne progressive et base technique solide.
-- Direction recommandée : faire de **peindre** le geste central et ajouter une **méta-progression en séquences courtes (roguelite)**. (1) Tracer au doigt un trait d’encre qui étend le territoire et dépense du pigment ; (2) armée simplifiée façon Galcon/Auralux : les bâtiments produisent en continu et un glisser envoie un flux ; (3) séquence de combats de 3–5 minutes sur une carte de chapitres, avec un choix de pigment/carte entre deux combats ; (4) mélange des couleurs comme système de capacités ; (5) chaque partie produit un tableau gardé dans une galerie.
-- Pistes alternatives à comparer : RTS à cartes façon Clash Royale (déploiement uniquement sur son territoire), tower defense façon Thronefall/Kingdom Rush, puzzles de peinture à encre limitée, défi quotidien avec graine.
-- Simplifications proposées : niveaux d’amélioration hors Cœur, escouades, postures, remboursements partiels, ordre en deux étapes ; réduire l’interface permanente. À arbitrer avec Martin avant tout retrait.
-- Méthode proposée : prototyper d’abord le trait d’encre et l’envoi par glisser dans une mission isolée, les faire essayer par Martin, puis décider de la séquence roguelite. Ne plus ajouter de systèmes ou d’infrastructure de sauvegarde avant cette validation du plaisir.
+### Constat qui motive le changement
+
+- Retour de Martin : « on s’ennuie vite, le jeu ne donne pas envie d’y rester » ; le RTS seul ne suffit pas.
+- Partie libre observée en 390 × 844 et lecture du moteur :
+  - il faut attendre avant d’agir (2,6 pigments/s, relais à 45, extension surtout passive) : sans action pendant 3 min, l’IA atteint 36,7 % contre 9,8 % ;
+  - le jeu parle de peinture, mais le joueur ne peint jamais : il pose des bâtiments qui peignent ;
+  - un ordre demande trois touchers (Toute l’armée → Donner un ordre → case) ;
+  - beaucoup de règles ne changent que des chiffres (cinq unités, trois niveaux par bâtiment, spécialisations, escouades, postures, remboursements partiels) ;
+  - victoire « 60 % pendant 45 s » abstraite et parties de 12 min longues sur téléphone ;
+  - peu de sensations, pas de musique, adversaire sans personnalité ;
+  - rien ne pousse à rejouer : aucune progression entre parties, aucun souvenir d’une partie ;
+  - la toile n’occupe qu’environ 60 % de l’écran (bulle d’aide sur la carte, brouillard gris, panneaux).
+- Points forts conservés : la toile qui se colore, la coupure de réseau, la priorité au téléphone portrait, l’IA qui ne triche pas, la palette de couleurs, le fonctionnement hors ligne et la sauvegarde.
+- Jeux de référence : Galcon / Auralux / State.io (envoi par glisser), Splatoon / paper.io (peindre comme geste), Clash Royale (main de cartes et jauge en temps réel), Slay the Spire / Against the Storm (courses de combats et choix entre eux), Mini Metro / Dorfromantik (résultat beau à regarder), Polytopia (adversaires à caractère, défis).
+
+### Validé par Martin
+
+- **Idée A — roguelite de peinture**, **mêlée à un jeu de cartes en temps réel**.
+- **Toutes les idées C** (rétention et ambiance).
+- **Toutes les simplifications D**.
+
+### Boucle d’un combat (3 à 5 minutes)
+
+1. **Jauge de pigment en temps réel.** Elle se recharge avec le territoire connecté et les sources ; elle remplace l’attente actuelle par des décisions fréquentes. Une seule ressource, comme aujourd’hui.
+2. **Main de 4 cartes** tirée d’un deck d’environ 8 à 12 cartes construit pendant la course. On glisse une carte sur la toile pour la jouer ; une carte jouée est remplacée par la suivante du deck.
+3. **Déploiement sur son territoire connecté uniquement.** Le territoire devient la zone où l’on peut agir ; couper le réseau adverse lui retire des zones de déploiement. La coupure de réseau reste au centre du jeu.
+4. **Types de cartes :**
+   - *Trait d’encre* : tracer au doigt depuis son territoire ; la longueur dépend du pigment dépensé. Étend le territoire ou recolle un réseau coupé ; l’adversaire peut le couper.
+   - *Bâtiments* : relais, extracteur, bastion, caserne, puis les candidats du catalogue (réservoir, mortier, observatoire, portails).
+   - *Producteurs d’unités* : une carte installe un producteur qui génère des unités en continu.
+   - *Pouvoirs* : vague, gomme, éclaboussure ; effets visibles et contre-jeu possible.
+5. **Armée en flux.** Les unités sortent seules des producteurs. Un glisser d’un bâtiment vers une cible envoie le flux ; un toucher sur le bâtiment l’arrête. Plus de sélection d’unités, d’escouades ni de postures.
+6. **Victoire claire et rapide** : effacer le Cœur adverse ou remplir sa « jauge de tableau ». Au-delà de la durée maximale, une mort subite accélère la fin. Les règles exactes restent à régler sur le prototype.
+7. **Le geste « peindre » ne doit jamais se confondre avec le déplacement de la caméra** : une carte tirée sur la toile passe en mode tracé, avec un aperçu et une annulation, comme la confirmation de construction de V0.6.
+
+### Course roguelite
+
+- Une course = 5 à 7 combats sur une carte de chapitre à embranchements : combat, combat d’élite, atelier, événement, boss. La course peut être interrompue et reprise, sans simuler le temps d’absence.
+- **Après chaque combat**, choisir une récompense parmi 3 : une nouvelle carte, l’amélioration d’une carte ou un **pigment** (effet passif pour la course, par exemple trait plus long, relais qui éclaboussent à leur destruction, unités qui laissent une traînée de couleur).
+- **Atelier** : retirer une carte du deck, améliorer, ou mélanger.
+- **Mélange des couleurs comme système.** Chaque carte porte une couleur primaire ; jouer deux couleurs différentes au même endroit en peu de temps crée un mélange avec un effet propre (exemple : bleu + jaune = vert qui régénère ; à équilibrer). Les couleurs de camp choisies dans le menu restent cosmétiques et distinctes des couleurs de cartes.
+- Une défaite termine la course ; les déblocages de collection et la galerie sont conservés. Éviter les bonus permanents de puissance qui rendraient les premières courses triviales.
+
+### Idées C validées (rétention et ambiance)
+
+- **Défi du jour** : même graine pour tous les joueurs ce jour-là, calculée localement à partir de la date ; classement local sur l’appareil. Pas de serveur ni de dépendance réseau.
+- **Adversaires à caractère** : nom, couleur, style de jeu (le Rapide, le Bâtisseur, la Gomme…) et quelques répliques. Leurs décisions respectent toujours la perception limitée.
+- **Histoire courte** : la toile menacée d’effacement par « la Gomme », racontée entre les combats en quelques lignes.
+- **Collection** : palettes, toiles, motifs et pinceaux à débloquer ; cosmétiques uniquement.
+- **Étoiles et objectifs bonus** par combat ou mission, records de temps.
+- **Événements de carte** : fontaine d’encre, tache de rouille, pluie qui délave ; annoncés avant d’agir, équitables entre camps.
+- **Sensations** : éclaboussures, coulures, vibration du téléphone quand l’appareil le permet (désactivable), musique qui s’intensifie, ralenti sur la victoire. Toute musique externe doit être documentée dans ASSETS.md avec sa licence.
+- **Chaque partie devient un tableau** conservé dans une galerie, avec rejeu accéléré de la coloration et quelques statistiques ; partage d’image si le navigateur le permet.
+
+### Simplifications D validées
+
+1. Supprimer les niveaux d’amélioration de tous les bâtiments sauf le Cœur.
+2. Supprimer escouades, postures et ordre en deux temps ; remplacés par l’envoi par glisser.
+3. Supprimer les remboursements partiels de recrutement.
+4. Abandonner les parties libres de 12 minutes : viser des combats de 3 à 5 minutes (au plus 4 à 6 minutes en mode libre).
+5. Retirer la bulle d’aide permanente posée sur la carte et réduire les panneaux affichés en permanence ; donner plus de place à la toile.
+6. Ne plus ajouter de règles ni d’outils de sauvegarde tant que le plaisir du prototype n’est pas validé.
+
+### Conséquences et questions à trancher
+
+- **Sauvegardes** : ces changements modifient l’état moteur persistant (deck, main, jauge, course, collection). Il faudra un nouveau schéma de snapshot, une migration ou une séparation claire des anciennes parties, et conserver les fixtures V0.4/V0.5 tant que les anciens modes restent jouables.
+- **Campagne V0.6 et mode libre actuels** : à décider avec Martin — les garder comme mode « classique », les convertir en tutoriel du nouveau mode, ou les retirer. Proposition : les garder accessibles tant que le prototype n’est pas validé.
+- **IA** : elle doit jouer avec les mêmes cartes, la même jauge et la même vision limitée ; garder les tests d’indépendance vis-à-vis des états cachés.
+- **Plusieurs camps et alliances** : toujours souhaités, reportés après la validation de la nouvelle boucle ; le mélange de couleurs des cartes et celui des alliances devront rester distinguables.
+- **PWA** : tout nouveau module ou asset doit entrer dans le précache, et RELEASE doit changer dans sw.js.
+
+### Ordre de réalisation proposé
+
+1. **Prototype V0.7 isolé** : un combat contre l’IA avec jauge, main de 4 cartes, trait d’encre, envoi par glisser, victoire courte et simplifications D. Martin y joue une dizaine de minutes et dit si c’est plus amusant.
+2. **Si oui, V0.8** : course de 3 combats avec choix de récompense, puis carte de chapitre complète, mélange des couleurs, adversaires et histoire.
+3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
+4. Ensuite seulement : plusieurs camps et alliances.
 
 ## V0.2 — comprendre et commander (réalisé)
 
@@ -114,13 +188,15 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Lors de la sélection d’un relais, rendre lisible sa connexion au réseau ; ne pas superposer en permanence toutes les liaisons sur toute la carte. Limiter les alertes simultanées et garder le front visible sur petit écran.
 - Critère de validation humaine : après une mission, le joueur peut expliquer son objectif, reconnaître ses unités, donner un ordre et comprendre pourquoi un bâtiment fonctionne ou s’arrête, sans devoir rouvrir une longue aide. Les tests techniques restent nécessaires mais ne suffisent pas à valider cette compréhension.
 
-### V0.7 — enrichir la campagne et les stratégies (proposition)
+### Ancienne proposition V0.7 — enrichir la campagne (réorientée le 1er octobre)
+
+- Remplacée par la nouvelle direction ci-dessus. Les bâtiments et situations listés restent des candidats de cartes et de combats.
 
 - Niveaux suivants, plage indicative 6–12 : introduire successivement les défenses, le réservoir, le siège, les pouvoirs et les spécialisations. L’ordre précis doit éviter deux mécaniques complexes apprises en même temps.
 - Varier les situations : défendre une source, rétablir une liaison, installer un avant-poste, percer une position ou contester un objectif temporaire. Réutiliser les mêmes règles pour donner des choix nouveaux.
 - Les bâtiments du catalogue ci-dessous restent des candidats de déblocage. Caserne conseillée au niveau 5, réservoir et mortier dans des missions dédiées ensuite ; atelier, observatoire et portails après validation de ces bases.
 
-### V0.8 — plusieurs camps et des alliances de couleurs (proposition)
+### Plusieurs camps et alliances de couleurs (proposition, reportée après la nouvelle boucle)
 
 - Progression envisagée dans les niveaux avancés : découvrir une carte à trois camps, jouer une mission avec allié clairement annoncé, puis choisir une alliance et évoluer vers quatre camps/deux contre deux. Limiter d’abord une alliance à deux camps pour garder la lecture des couleurs et des relations simple.
 - L’alliance doit se traduire dans le jeu : pas d’attaque entre partenaires, vision partagée et réseaux capables de se prolonger lorsque leurs territoires se rejoignent. Chacun conserve ses unités, ses bâtiments, sa production et son pigment ; le joueur ne commande que ses propres forces.
@@ -164,7 +240,9 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ### Discussion du 1er octobre 2026
 
-- Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation consignées ci-dessus. Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
+- Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
+- Validations de Martin : roguelite de peinture mêlé à un jeu de cartes en temps réel, toutes les idées de rétention et d’ambiance, toutes les simplifications. Section « Nouvelle direction », vision et jalons réécrits en conséquence ; anciennes propositions V0.7/V0.8 réorientées ou reportées.
+- Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
 
 ### V0.6 — 30 septembre 2026
 
@@ -268,7 +346,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 - Zoom limité à 1–4× ; minimap repliée par défaut sur téléphone. Confort à confirmer sur appareils réels.
 - Essais effectués en émulation Chromium, pas encore sur appareils Android/iPhone physiques.
 - Audio : effets et jingles, pas encore de musique d’ambiance longue.
-- La cible 10–15 min reste à valider en jeu actif : en V0.5, sans aucune action, défaite entre 6 min 09 et 7 min 32 en Détente et entre 3 min 01 et 3 min 10 en Stratégie (trois cartes × trois graines par mode). Une victoire territoriale peut précéder le seuil de 7 min des assauts du Cœur. Ces diagnostics ne prédisent pas la durée d’une partie jouée.
+- Ancienne cible 10–15 min, remplacée le 1er octobre par des combats de 3 à 5 min. Mesures historiques : en V0.5, sans aucune action, défaite entre 6 min 09 et 7 min 32 en Détente et entre 3 min 01 et 3 min 10 en Stratégie (trois cartes × trois graines par mode). Une victoire territoriale peut précéder le seuil de 7 min des assauts du Cœur. Ces diagnostics ne prédisent pas la durée d’une partie jouée.
 
 - L'équilibrage doit être confirmé par des parties humaines ; des simulations ne mesurent pas le plaisir.
 - Vérifier la capacité à reprendre l'avantage après une coupure et limiter l'effet boule de neige.
@@ -279,8 +357,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 - Variantes supplémentaires de spécialisations après validation des trois branches V0.3.
 - Autres propriétés du papier et points d’observation, après validation des terrains V0.5.
-- IA expansionniste, défensive ou orientée raids.
-- Statistiques de fin de partie et replay de la progression des couleurs.
+- Adversaires à caractère, statistiques de fin de partie et rejeu de la coloration : validés le 1er octobre, intégrés à la nouvelle direction.
 - Mode chronométré à points cumulés et mode domination.
 - Palettes adaptées aux troubles de la vision des couleurs.
 
