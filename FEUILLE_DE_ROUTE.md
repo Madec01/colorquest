@@ -26,12 +26,59 @@ Dernière mise à jour : 1er octobre 2026.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
-- [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité ; essai de Martin attendu avant la suite.
+- [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité réussies. Premier retour de Martin reçu : amélioration, mais compréhension et intuition encore insuffisantes ; validation humaine non acquise.
+- [ ] J11 bis / V0.7.1 — Jalon proposé à cadrer avec Claude : lisibilité, commandes et apprentissage du prototype. Faire valider la compréhension par Martin avant d’ajouter la course. Aucun changement de règle décidé dans cette relecture.
 - [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de vernis entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
 - [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
 - [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
 
 V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 livrée ici ; V0.8 et les étapes suivantes restent à réaliser après validation du plaisir et de la lisibilité.
+
+## Retour de Martin après V0.7 — arbitrages demandés à Claude
+
+**1er octobre 2026, après le premier essai.** Martin constate une amélioration, mais trouve encore le jeu peu compréhensible et peu intuitif. Il demande ce qui reste à faire et souhaite que Codex pose ses questions à Claude Code, directeur du gameplay et de la direction artistique.
+
+**Statut : questions préparées, réponses de Claude attendues.** Aucun canal direct vers Claude n’est disponible dans les capacités trouvées pour cette session ; consigner ce dossier dans GitHub ne signifie pas que Claude l’a reçu ou lu. Ce sont des constats et des propositions de Codex à arbitrer, pas de nouvelles règles validées. Relecture effectuée sur le prototype V0.7 du commit `c9720ae` ; Martin n’a pas détaillé les moments exacts où il se perd ni l’appareil utilisé.
+
+### Ce qui reste à faire, dans l’ordre proposé
+
+1. **Compréhension immédiate :** reconnaître son Cœur, les cases utiles, les sources, les bâtiments et les renforts ; savoir quelle action faire et pourquoi dès le départ. Décider avec Claude des informations visibles, du cadrage et du vocabulaire.
+2. **Commandes prévisibles :** séparer inspection, peinture, navigation, envoi et pause ; montrer la destination, l’affiliation des renforts et le résultat attendu avant l’action. Vérifier le coût en gestes du pinceau.
+3. **Apprentissage par petits objectifs :** faire comprendre la ressource, la source, la production, l’attaque et la coupure, avec une difficulté introduite à la fois. Le guidage actuel de trois gestes ne démontre pas ces relations.
+4. **Boucle et équilibre :** donner une raison lisible de choisir peinture, bâtiments ou armée ; rendre une victoire, une perte de réseau et une défaite explicables par le joueur. Valider avec Martin en partie réelle.
+5. **Ensuite V0.8 :** course, récompenses, vernis, chevalet, mélanges de cartes, adversaires et sauvegarde de course. **Puis V0.9 :** galerie, défi du jour, étoiles, collection, rejeu, musique et sensations. **Plus tard :** plusieurs IA et alliances. Ces fonctions prévues ne résolvent pas à elles seules le problème actuel de compréhension.
+
+### Dix questions adressées à Claude Code
+
+**Claude, peux-tu répondre à chacune avec une décision recommandée, ce qui change par rapport aux règles validées, et le comportement exact attendu sur téléphone portrait ? Nous attendons un cadrage, pas encore une nouvelle implémentation.**
+
+1. **Quelle décision le joueur doit-il comprendre en premier ?** Le prototype présente dès l’entrée pinceau, cartes, budget, producteurs, flux, réseau et trois conditions de victoire. Quelle action doit donner du plaisir et un résultat lisible dans les trente premières secondes ? Peindre vers un objectif, capturer une source ou lancer un premier groupe ? Quel objectif unique afficher au début, et quelles informations introduire ensuite ?
+
+2. **Quel coût en gestes pour peindre ?** Le pinceau demande un mode explicite, un tracé puis une confirmation ; il ne peut dépasser le terrain actuellement visible, même si la limite annoncée atteint douze nouvelles cases. Un long geste peut être refusé entièrement. Gardons-nous cette confirmation à chaque trait, ou proposes-tu une validation au relâchement avec annulation claire ? Comment montrer la limite et préserver la partie valide d’un geste sans révéler de terrain caché ni dépenser par surprise ? Préciser aussi comment revenir naturellement aux commandes d’armée après avoir peint.
+
+3. **Toucher une caserne doit-il vraiment arrêter sa production ?** C’est la règle actuellement validée et appliquée ; un joueur qui veut lire sa fiche change donc déjà son état. Faut-il désormais réserver le toucher à l’inspection, avec une commande explicite de pause, ou maintenir l’arrêt au toucher avec un autre accès évident aux informations ? Définir sans ambiguïté toucher, glisser, appui long, déplacement de caméra et rappel. Toute modification de la règle précédente doit être identifiée comme telle.
+
+4. **Que doit-on pouvoir inspecter et reconnaître sans mémoriser les symboles ?** Aujourd’hui, toucher le Cœur ou une caserne ouvre leurs commandes ; relais, extracteurs et bastions n’ont pas de fiche équivalente sur la toile. Les cartes donnent nom et prix, puis leur description cède la place au message de placement. Quelle silhouette, quel nom court et quelle fiche minimale faut-il à chaque bâtiment, source et groupe ? Comment relier visuellement une carte, le bâtiment posé et son effet ? Le relais peint une fois à la pose : faut-il l’expliquer autrement pour qu’on n’attende pas de lui une expansion permanente ?
+
+5. **Comment rendre l’économie et les arrêts de production évidents ?** La jauge montre le revenu entrant, alors que les casernes dépensent six pigments à chaque sortie. La production peut aussi s’arrêter pour pause, isolement, manque de pigment, plafond d’unités ou visée en cours. Quel retour unique et visible sur la caserne et la jauge doit expliquer ces situations ? Faut-il afficher le prochain prélèvement, la cadence, un revenu net estimé ou une courte animation de paiement ? Choisir le minimum qui explique, sans créer une nouvelle comptabilité à gérer.
+
+6. **Quelle grammaire visuelle pour la toile et le réseau ?** Comment distinguer immédiatement terrain neutre accessible, hors de vue, connecté, isolé et ennemi, sans se fier uniquement à la teinte ? Quelles cases faut-il mettre en évidence quand on choisit le pinceau, un bâtiment ou un pouvoir ? Comment montrer quelle coupure a désactivé une branche et où reconnecter, plutôt que laisser seulement un pourcentage baisser et des hachures apparaître ? Proposer un rendu précis des états, sans panneau permanent couvrant le front.
+
+7. **Comment le flux doit-il se comprendre et se comporter sous le feu ?** La ligne d’envoi apparaît lorsqu’un producteur est sélectionné ; les unités appartiennent à une caserne, puis au Cœur si elle disparaît. Elles attaquent automatiquement les ennemis proches, même lorsqu’une nouvelle destination ou un rappel a été donné. Quel signe montre en permanence juste ce qu’il faut du groupe, de son ordre et de son rattachement ? Un rappel doit-il donner priorité au retour ou accepter l’arrêt au combat ? Comment expliquer le choix retenu pour qu’un ordre ne semble pas ignoré ?
+
+8. **Quels vrais objectifs d’apprentissage remplacent les trois seuls gestes ?** Le guidage actuel valide tracer, poser une caserne et envoyer un flux ; il n’exige ni source exploitée, ni attaque comprise, ni coupure/reconnexion. Peut-on cadrer trois ou quatre petites situations progressives propres au nouveau mode, avec une seule nouveauté chacune ? Pour chaque situation, préciser objectif, outils visibles, comportement de l’IA, réussite réelle, aide après erreur et transition vers le combat libre. Confirmer comment garder les quatre cartes du combat normal tout en introduisant les possibilités progressivement pendant l’apprentissage.
+
+9. **Quelle place voulons-nous donner à la peinture face à l’armée ?** Dans les simulations livrées, un script de peinture efficace gagne vers 78–81 s ; les scripts de pression ou de défense se terminent plus tard. Ce n’est pas un test humain ni la preuve que toutes les stratégies sont déséquilibrées, mais c’est un signal. L’armée doit-elle être une voie de victoire autonome ou surtout l’outil qui coupe le réseau du peintre ? Quelle situation rend chaque choix utile et compréhensible ? Fixer le comportement à obtenir avant de changer coûts, seuils ou temporisations.
+
+10. **Quel périmètre minimal pour V0.7.1, et comment le valider ?** Parmi ces problèmes, quels sont les trois prioritaires, que retire-t-on de l’écran de départ et que garde-t-on pour plus tard ? Merci de proposer le déroulé de la première minute, un schéma ou une maquette portrait avec les états normal/placement/producteur/coupure, et des critères observables avec Martin : savoir quoi faire sans relire l’aide, expliquer une dépense et un arrêt, donner un ordre volontaire, identifier la cause d’une perte. Quels résultats permettront ensuite de lancer V0.8 ?
+
+### Appuis dans le code et limites de la relecture
+
+- `paint.js` : `lessons` / `teach` ne vérifient que les trois gestes ; `pickProducer` et le traitement tactile donnent accès au Cœur et aux casernes ; `updateContext` remplace la description de carte par le résultat du placement ; `updateHUD` montre l’entrée de pigment ; `processEvents` annonce la dernière minute, sans expliquer une coupure de réseau.
+- `paint-engine.js` : `previewPaint` impose la visibilité actuelle et peut refuser tout le tracé ; `updateVisibility` révèle notamment deux cases autour du réseau connecté ; `_claimNeutralDisk` réalise l’extension des bâtiments à la pose ; `_productionStatus` distingue plusieurs raisons d’arrêt ; `_unitTarget` / `_combat` donnent priorité au combat local sur la destination du flux.
+- `paint-renderer.js` : frontières, hachures et statuts existent déjà ; la question porte sur leur compréhension, pas leur seule présence. La ligne de flux dépend du producteur sélectionné ou en cours de glisser.
+- `tests/paint-balance.test.cjs` et mesures de livraison : scripts déterministes utiles pour repérer une tendance, sans valeur de validation humaine du plaisir ou de la difficulté.
+- Aucun changement de gameplay, de contrôle ou d’asset dans cette session de relecture. Aucun nouveau test de jeu exécuté pour cette mise à jour documentaire ; les validations techniques de la V0.7 restent celles consignées plus bas.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
@@ -298,6 +345,12 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Modifications réalisées
 
+### Retour après essai V0.7 — 1er octobre 2026
+
+- Retour de Martin consigné : amélioration perceptible, compréhension et intuition encore insuffisantes. Validation humaine du prototype non acquise.
+- Relecture ciblée du code et de la feuille de route ; dix questions préparées pour Claude, avec constats, choix à arbitrer et livrables attendus. Aucun échange direct avec Claude ni réponse obtenue dans cette session.
+- Jalon V0.7.1 de lisibilité/apprentissage proposé avant la course V0.8 ; aucune variante de gameplay mise en œuvre ni présentée comme validée.
+
 ### V0.7 — 1er octobre 2026
 
 - Nouveau mode « Prenez le pinceau » au menu. Moteur, IA, rendu et contrôles séparés du classique ; aucune migration des parties existantes.
@@ -402,7 +455,8 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Bugs trouvés non corrigés
 
-- V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Le retour de Martin sur la compréhension et le plaisir reste attendu ; ce n’est pas une garantie d’absence de bugs sur tous les appareils.
+- **V0.7 — problème de compréhension confirmé après essai :** Martin constate du mieux mais juge le jeu encore peu compréhensible et intuitif. Le guidage actuel et les retours d’état restent à revoir ; questions préparées pour Claude dans la section dédiée. Ce défaut d’usage reste ouvert malgré les tests techniques réussis.
+- V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Ces contrôles ne valident pas la compréhension : le premier retour de Martin ci-dessus signale un problème d’usage toujours ouvert.
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
 - Ergonomie signalée par Martin après V0.5 : première réponse livrée avec campagne, outils progressifs, aperçu et fiches clarifiées. Le problème ne sera considéré résolu qu’après son essai : les captures et parcours automatisés ne prouvent pas la compréhension sans aide.
 
