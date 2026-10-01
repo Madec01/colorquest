@@ -241,6 +241,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ### Discussion du 1er octobre 2026
 
 - Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
+- AGENTS.md aligné sur ces validations (durées, direction, simplifications, alliances reportées).
 - Validations de Martin : roguelite de peinture mêlé à un jeu de cartes en temps réel, toutes les idées de rétention et d’ambiance, toutes les simplifications. Section « Nouvelle direction », vision et jalons réécrits en conséquence ; anciennes propositions V0.7/V0.8 réorientées ou reportées.
 - Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
 
