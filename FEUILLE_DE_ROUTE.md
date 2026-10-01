@@ -155,6 +155,18 @@ Suite des dix précisions ; elles tiennent compte de l’avis technique ci-dessu
 14. **Dépenses automatiques visibles** : à chaque sortie d’unité, une pastille « −12 » part de la jauge vers le producteur ; la fiche affiche « 1 unité / 6 s · 12 pigments » ; à côté de la jauge, revenu brut et dépense des producteurs actifs (+4/s · −2/s) ; icône « en attente de pigment » sur un producteur bloqué. Une étape du tutoriel le montre la première fois.
 15. **Rôles séparés** : le pinceau étend et répare le réseau sur le neutre ; l’armée est le seul moyen de prendre le territoire ennemi et de défendre le sien ; les pouvoirs débloquent une situation ponctuelle. Peindre sans armée laisse un réseau sans défense ; une armée sans territoire n’a ni revenu ni place pour déployer. Cible d’équilibrage à mesurer : environ moitié du pigment dans la peinture et les bâtiments, moitié dans l’armée.
 
+16. **Apprentissage — trente premières secondes** : un seul objectif, « Peins jusqu’à la source ». Une source dorée pulse à 4–5 cases du territoire, une main animée montre le geste sur le bouton pinceau puis le long du chemin, sans texte long. Réussite visible : la toile se colore et le revenu affiché augmente. Ensuite, une petite situation de 30 à 60 s par nouveauté, toujours avec un seul objectif à l’écran : (a) poser la carte extracteur sur la source ; (b) poser un producteur et envoyer ses unités vers un petit poste adverse ; (c) l’adversaire coupe un trait : repeindre pour reconnecter la zone hachurée ; (d) une vague arrive : rappeler les unités pour défendre ; (e) remplir la barre de domination. Puis jeu libre. Ces situations peuvent reprendre les scènes pédagogiques existantes.
+17. **Lisibilité au premier regard**, jamais par la seule couleur :
+    - *bâtiments* : silhouette propre à chaque type (hexagone du Cœur, losange du relais, etc.), plus grands que les unités, couleur du camp et contour blanc ;
+    - *sources* : losange doré scintillant, couleur exclue des palettes de camp ; anneau autour quand elle est exploitée ;
+    - *groupes* : vu de loin, les unités d’un même producteur se regroupent en une pastille avec leur nombre et le symbole de leur producteur ; une fine ligne pointillée montre leur destination ;
+    - *territoire déconnecté* : hachures diagonales, couleur ternie, bord en tirets et icône de lien rompu avec le compte à rebours avant perte ;
+    - *inconnu / neutre / possédé* : gris texturé / blanc / aplat de couleur.
+18. **Trait partiellement impossible** : le trait s’arrête sur la dernière case valide ; la partie impossible s’affiche en pointillés rouges, avec la raison (obstacle, territoire ennemi, pigment épuisé). Au lever du doigt, seule la partie valide, depuis le départ jusqu’à la première case impossible, est peinte et payée. Si aucune case n’est valide, rien n’est dépensé.
+19. **Double toucher** : sur le bouton pinceau uniquement, jamais sur la toile (pour ne pas gêner le zoom ni la caméra). Le bouton affiche alors un cadenas et le mode reste actif ; un toucher sur le bouton en sort.
+20. **Économie** : les chiffres « 12 pigments, 1 unité toutes les 6 s » et « +4/s · −2/s » étaient des exemples de présentation, pas un nouvel équilibrage. Le prototype part des valeurs actuelles (combattant 35 pigments, 6 s de formation, revenu de base du Cœur 2,6/s), avec un seul changement de règle : le coût est payé à la sortie de l’unité et non à l’entrée en file. Les valeurs se règlent ensuite sur l’essai, en visant le rythme de décisions (point 15).
+21. **Prolongation** : le Cœur détruit reste une victoire immédiate à tout moment. Au terme des 30 s de prolongation, une avance stricte de surface connectée suffit, même d’une case, sans seuil de 50 % ; égalité exacte : match nul. La barre de domination montre l’écart en direct pendant la prolongation.
+
 ### Trois changements prioritaires proposés pour le prototype
 
 1. **Pinceau au doigt et jauge rapide** : supprime l’attente et donne le geste central.
@@ -323,6 +335,7 @@ Demandes implémentées ; vérifications décrites en bas du document :
 ### Discussion du 1er octobre 2026
 
 - Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
+- Cinq questions sur l’apprentissage, la lisibilité, les gestes, l’économie et la prolongation : réponses proposées aux points 16 à 21, non validées.
 - Avis technique de Codex intégré ; réponses de Claude Code sur l’ancrage, le budget, les gestes et l’égalité.
 - Six questions complémentaires (confirmation du trait, toucher, rappel, dépenses, rôle de l’armée, priorités) : réponses proposées aux points 11 à 15 et trois priorités, non validées.
 - Dix questions de règles relevées par une relecture externe : réponses proposées dans « Précisions de règles proposées », non validées.
