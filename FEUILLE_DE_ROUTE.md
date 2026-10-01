@@ -27,7 +27,7 @@ Dernière mise à jour : 1er octobre 2026.
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
 - [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité réussies. Premier retour de Martin reçu : amélioration, mais compréhension et intuition encore insuffisantes ; validation humaine non acquise.
-- [ ] J11 bis / V0.7.1 — Jalon proposé à cadrer avec Claude : lisibilité, commandes et apprentissage du prototype. Faire valider la compréhension par Martin avant d’ajouter la course. Aucun changement de règle décidé dans cette relecture.
+- [ ] J11 bis / V0.7.1 — Lisibilité, commandes et apprentissage du prototype : propositions de Claude reçues dans `4e81be7` et transmises par Martin, rapprochées de la V0.7 ci-dessous. Gestes, inspection, retraite et économie précisés ; première minute et grammaire visuelle encore à cadrer. Aucune implémentation de ces corrections dans cette session. Faire valider la compréhension par Martin avant d’ajouter la course.
 - [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de vernis entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
 - [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
 - [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
@@ -38,7 +38,7 @@ V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 l
 
 **1er octobre 2026, après le premier essai.** Martin constate une amélioration, mais trouve encore le jeu peu compréhensible et peu intuitif. Il demande ce qui reste à faire et souhaite que Codex pose ses questions à Claude Code, directeur du gameplay et de la direction artistique.
 
-**Statut : questions préparées, réponses de Claude attendues.** Aucun canal direct vers Claude n’est disponible dans les capacités trouvées pour cette session ; consigner ce dossier dans GitHub ne signifie pas que Claude l’a reçu ou lu. Ce sont des constats et des propositions de Codex à arbitrer, pas de nouvelles règles validées. Relecture effectuée sur le prototype V0.7 du commit `c9720ae` ; Martin n’a pas détaillé les moments exacts où il se perd ni l’appareil utilisé.
+**Statut : réponses de Claude reçues par l’intermédiaire de Martin et du commit `4e81be7`.** Elles couvrent les quatre remarques techniques antérieures et une partie des dix questions ci-dessous. Aucun échange direct avec Claude n’a eu lieu. Son commit part de `7793154`, avant la livraison V0.7 (`c9720ae`) et ce dossier de dix questions (`802082f`) : il ne faut donc pas interpréter son message comme une revue de la version livrée. Les corrections proposées et les points encore ouverts sont rapprochés du jeu actuel plus bas. Martin n’a pas détaillé les moments exacts où il se perd ni l’appareil utilisé.
 
 ### Ce qui reste à faire, dans l’ordre proposé
 
@@ -71,6 +71,40 @@ V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 l
 9. **Quelle place voulons-nous donner à la peinture face à l’armée ?** Dans les simulations livrées, un script de peinture efficace gagne vers 78–81 s ; les scripts de pression ou de défense se terminent plus tard. Ce n’est pas un test humain ni la preuve que toutes les stratégies sont déséquilibrées, mais c’est un signal. L’armée doit-elle être une voie de victoire autonome ou surtout l’outil qui coupe le réseau du peintre ? Quelle situation rend chaque choix utile et compréhensible ? Fixer le comportement à obtenir avant de changer coûts, seuils ou temporisations.
 
 10. **Quel périmètre minimal pour V0.7.1, et comment le valider ?** Parmi ces problèmes, quels sont les trois prioritaires, que retire-t-on de l’écran de départ et que garde-t-on pour plus tard ? Merci de proposer le déroulé de la première minute, un schéma ou une maquette portrait avec les états normal/placement/producteur/coupure, et des critères observables avec Martin : savoir quoi faire sans relire l’aide, expliquer une dépense et un arrêt, donner un ordre volontaire, identifier la cause d’une perte. Quels résultats permettront ensuite de lancer V0.8 ?
+
+### Réponses de Claude reçues — cadrage de V0.7.1, non implémenté
+
+Source : `4e81be7`, « docs: answer stroke, inspection, recall, spending and priority questions », et message transmis par Martin le 1er octobre. Claude conserve la direction gameplay et artistique. Son document indique « à valider » et son message précise qu’il ne lance pas le prototype : cette session intègre son travail documentaire sans présenter ses propositions comme déjà livrées ou nouvellement approuvées par Martin.
+
+**Décalage de version à corriger :** le pinceau, la jauge, l’armée en flux, le combat de quatre minutes, la barre de domination et la main de quatre cartes existent déjà dans V0.7. Les trois priorités de Claude deviennent des corrections de cette boucle ; la main n’est ni à recréer ni à retirer. La compréhension reste insuffisante après le premier essai de Martin.
+
+| Sujet | V0.7 livrée | Proposition de Claude pour la suite |
+| --- | --- | --- |
+| Pinceau | Mode explicite, aperçu puis bouton de confirmation ; le mode reste actif. | Aperçu du chemin et du coût pendant le geste, parties impossibles en rouge ; lâcher valide, revenir au départ annule. Retour automatique à la navigation après le trait ; double toucher pour conserver le pinceau. |
+| Cartes | Glisser depuis la main, ou choisir puis toucher une case, puis confirmer. | Glisser depuis la main et lâcher sur une case valide pour jouer ; ramener dans la main pour annuler. La confirmation en deux temps reste dans le classique. |
+| Inspection | Toucher une caserne change immédiatement sa production ; fiches limitées au Cœur et aux casernes. | Toucher un bâtiment ouvre seulement sa fiche : état, coût/cadence lorsqu’il produit, bouton Pause explicite pour le producteur. Aucun effet de jeu au toucher. |
+| Flux et rappel | Le glisser change la destination de toutes les unités du producteur et des suivantes. Appui long ou bouton pour rappeler ; les unités continuent à combattre en route. | Glisser-retour vers le producteur pour une vraie retraite : arrêt du combat, retour sans riposte mais en restant vulnérable, puis défense locale à l’arrivée. L’envoi normal combat sur son trajet. Appui long seulement en solution de rechange si le glisser-retour est ambigu à l’essai. |
+| Économie visible | Revenu brut affiché ; 6 pigments par unité toutes les 5 s. La fiche mentionne le coût ; pas d’animation de prélèvement ni de débit moyen affiché. | Pastille de dépense de la jauge vers le producteur, coût et cadence sur la fiche, entrées et sorties près de la jauge, icône d’attente de pigment et étape d’apprentissage. Les exemples de Claude utilisent 12 pigments / 6 s et « +4/s · −2/s » ; leur statut de valeurs d’équilibrage reste à préciser. |
+| Victoire | Au moins 50 % de territoire connecté, avec avance stricte, tenus 15 s ; à quatre minutes, meilleur score ou match nul immédiat. | Strictement plus de 50 % et plus que l’adversaire, tenus 15 s. Égalité exacte à quatre minutes : prolongation de 30 s, puis match nul. La destruction du Cœur reste une victoire ; l’accélération finale, annoncée et identique, ne s’appelle pas « mort subite ». |
+| Rôle des outils | Pinceau sur neutre ; unités capables de prendre le territoire adverse ; pouvoirs dont Gomme, qui neutralise une zone adverse. | Pinceau pour étendre et réparer le réseau ; armée pour prendre le territoire ennemi et défendre le sien ; pouvoirs pour débloquer une situation. Cible à mesurer : environ moitié du pigment pour peinture/bâtiments et moitié pour l’armée, sans quota imposé au joueur. |
+
+**Réponses techniques déjà compatibles avec le jeu :** une carte part physiquement de la main et se lâche sur un emplacement connecté pour un bâtiment, visible et à portée pour un pouvoir ; les producteurs ne dépensent rien pendant la visée ; les survivants d’un producteur détruit sont rattachés au Cœur et restent commandables, sans téléportation. Ce sont des comportements à préserver, pas de nouvelles fonctions à annoncer.
+
+**Priorités de Claude conservées :** (1) pinceau au doigt et recharge rapide, (2) armée en flux, (3) combat court avec victoire visible, puis variété des cartes. Pour V0.7.1, cela signifie améliorer les gestes, la compréhension des flux et des dépenses, et les règles de fin de combat déjà présentes. Aucune nouvelle vitesse de recharge n’est chiffrée dans cette réponse.
+
+### Ce que Claude doit encore préciser à partir de la V0.7
+
+Les questions initiales restent conservées au-dessus. Le toucher inspecteur et le comportement de retraite sont tranchés dans sa proposition ; le fonctionnement du pinceau et la visibilité des dépenses sont largement précisés. Cela ne répond pas encore entièrement à la première minute, à la reconnaissance des objets/états ni aux situations d’apprentissage.
+
+1. **Première minute et apprentissage :** quel objectif unique voit-on au départ, puis quelles trois ou quatre situations enseignent source/revenu, production/envoi et coupure/reconnexion ? Pour chacune : outils visibles, comportement de l’IA, réussite vérifiable et aide après erreur. La réponse sur les trois priorités ne fournit pas encore ce déroulé ni les critères de compréhension.
+2. **Direction artistique de la toile :** fournir un schéma portrait normal/placement/producteur/coupure, avec les signes du neutre, du hors-vue, du réseau connecté/isolé et de l’ennemi, les silhouettes et fiches minimales des sources/bâtiments, et l’affiliation/destination des groupes. Une icône d’attente de pigment répond à un état, pas à l’ensemble de cette grammaire.
+3. **Deux détails des nouveaux gestes :** le double toucher qui conserve le pinceau vise-t-il son bouton ? Quand une portion du trait est impossible ou hors de vue, refuse-t-on tout le trait ou ne joue-t-on que sa partie valide montrée avant le lâcher ? Proposition technique de Codex : double toucher sur le bouton, indication visible du mode retenu ; conserver l’annulation sans dépense lors d’un pincement ou d’une interruption du geste. À arbitrer avec Claude, ainsi que l’éventuelle alternative au glisser pour jouer une carte.
+4. **Chiffres de production et affichage du débit :** « 12 pigments / 6 s » remplace-t-il réellement « 6 / 5 s », ou illustre-t-il seulement la fiche ? Cela fait passer la consommation théorique d’une caserne de 1,2 à 2 pigments/s : ce n’est pas une simple retouche de texte. Le débit affiché représente-t-il la cadence prévue des producteurs actifs ou les prélèvements récents ? Il doit rester cohérent avec pause, isolement, plafond, manque de pigment et suspension pendant la visée.
+5. **Prolongation :** après l’égalité à quatre minutes, quelles victoires interrompent les 30 s supplémentaires ? Au terme, le score départage-t-il les camps, avec match nul seulement s’il reste égal, ou faut-il gagner par Cœur/domination avant un match nul automatique ? Le texte reçu ne permet pas de choisir entre ces deux lectures. Préciser aussi la continuité du compte à rebours de domination et de la recharge accélérée.
+
+**Avis de Codex, soumis à Claude :** la suppression des confirmations et la séparation inspection/pause corrigent de vraies frictions. La priorité de compréhension reste une action utile et un résultat visible, puis une nouveauté à la fois. Piste de déroulé : peindre jusqu’à une cible repérée ; relier une source et constater le revenu ; voir un prélèvement puis envoyer les renforts ; reconnecter une branche coupée dans une situation contrôlée. Ne pas transformer cela en nouveau long texte de tutoriel. Martin devrait pouvoir expliquer ce qu’il vient de gagner, pourquoi sa jauge baisse et pourquoi un producteur s’arrête, avant la course V0.8.
+
+**Point d’équilibrage à examiner avec Claude :** Gomme rend du territoire ennemi neutre, puis le pinceau peut le reprendre. Ce n’est pas une capture directe par le pinceau, mais cette combinaison contourne l’armée ; vérifier qu’elle reste compatible avec son rôle de seul outil de conquête. Le partage 50/50 des dépenses reste un indicateur d’essai, pas une contrainte à coder. Le signal des victoires automatisées par peinture vers 80 s reste ouvert jusqu’à un nouvel équilibrage et des parties humaines.
 
 ### Appuis dans le code et limites de la relecture
 
@@ -112,7 +146,9 @@ V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 l
 - **Toutes les idées C** (rétention et ambiance).
 - **Toutes les simplifications D**.
 
-### Boucle du prototype V0.7 (quatre minutes maximum)
+### Boucle livrée du prototype V0.7 (quatre minutes maximum)
+
+Cette section décrit le jeu disponible. Les propositions reçues ensuite de Claude pour V0.7.1 sont consignées dans le tableau plus haut et ne sont pas encore appliquées.
 
 1. **Jauge de pigment en temps réel.** Le Cœur garantit une recharge ; le réseau et les extracteurs l’augmentent. La production d’unités partage cette jauge avec les cartes et le pinceau.
 2. **Pinceau permanent, hors de la main.** Choisir Pinceau, tracer depuis son réseau sur des cases neutres visibles et praticables, puis confirmer le coût. Le territoire créé est durable. On peut reconnecter une branche ; on ne repeint pas directement une case ennemie.
@@ -160,7 +196,7 @@ V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 l
 
 ### Dix précisions de règles (validées pour le prototype par le Go du 1er octobre)
 
-Les réponses de Claude du commit `d3d9176` sont la base du prototype. Les adaptations pratiques précisées après la liste règlent les gestes, l’équité et les égalités.
+Les réponses de Claude du commit `d3d9176` sont la base historique du prototype. Les adaptations pratiques précisées après la liste décrivent les choix livrés. Les nouvelles propositions du commit `4e81be7`, intégrées dans le tableau V0.7.1 plus haut, corrigent notamment le point 4 (toucher = inspection, pause explicite) et précisent le point 6 (> 50 %, prolongation) ; elles ne sont pas encore implémentées.
 
 1. **Trait d’encre = pinceau permanent**, hors de la main de cartes : toujours disponible, payé case par case avec la jauge (longueur maximale bornée). Il part de son territoire connecté, ne traverse que des cases neutres et franchissables, et crée du territoire normal, non temporaire : l’adversaire le reprend avec ses unités ou le coupe. Il ne repeint pas directement le territoire ennemi. Des cartes peuvent modifier le pinceau (trait large, trait rapide).
 2. **Trois notions distinctes pour jouer une carte** : *origine* (où commence le geste : toujours son territoire connecté), *emplacement* (bâtiments et producteurs : uniquement sur son territoire connecté) et *cible* (pouvoirs : toute case visible à portée limitée de son territoire connecté, y compris en territoire ennemi).
@@ -187,7 +223,7 @@ Les réponses de Claude du commit `d3d9176` sont la base du prototype. Les adapt
 
 ### Ordre de réalisation proposé
 
-1. **Prototype V0.7 isolé** : un combat contre l’IA avec jauge, main de 4 cartes, trait d’encre, envoi par glisser, victoire courte et simplifications D. Martin y joue une dizaine de minutes et dit si c’est plus amusant.
+1. **Prototype V0.7 isolé livré, puis corrections V0.7.1 à cadrer** : jauge, quatre cartes, pinceau, flux et victoire courte sont présents. Les réponses de Claude précisent les corrections des gestes, de l’inspection, de la retraite et des dépenses ; compléter la lisibilité et l’apprentissage avant un nouvel essai avec Martin. Son ordre initial « trois priorités puis quatre cartes » s’appuie sur un état antérieur à cette livraison ; il ne demande pas de supprimer la main existante.
 2. **Si oui, V0.8** : course de 3 combats avec choix de récompense, puis carte de chapitre complète, mélange des couleurs, adversaires et histoire.
 3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
 4. Ensuite seulement : plusieurs camps et alliances.
@@ -345,6 +381,12 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Modifications réalisées
 
+### Intégration des réponses de Claude — 1er octobre 2026
+
+- Commit documentaire de Claude `4e81be7` intégré avec les travaux déjà livrés sur `main`, sans remplacer la V0.7 ni son dossier de dix questions. Ses réponses aux quatre remarques techniques, ses précisions sur les gestes/inspection/retraite/économie/rôles et ses priorités sont reprises dans le cadrage V0.7.1.
+- Écarts entre règles livrées et propositions reçues explicités ; questions de première minute, direction artistique, détails tactiles, valeurs économiques et prolongation conservées ouvertes. AGENTS.md distingue désormais la version livrée de ce cadrage.
+- Documentation seulement : aucune modification du jeu, des sauvegardes, des assets ou du cache PWA ; aucun nouveau test de gameplay. Relecture des deux historiques Git, des valeurs et règles pertinentes du code, puis contrôle du diff documentaire.
+
 ### Retour après essai V0.7 — 1er octobre 2026
 
 - Retour de Martin consigné : amélioration perceptible, compréhension et intuition encore insuffisantes. Validation humaine du prototype non acquise.
@@ -455,7 +497,7 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Bugs trouvés non corrigés
 
-- **V0.7 — problème de compréhension confirmé après essai :** Martin constate du mieux mais juge le jeu encore peu compréhensible et intuitif. Le guidage actuel et les retours d’état restent à revoir ; questions préparées pour Claude dans la section dédiée. Ce défaut d’usage reste ouvert malgré les tests techniques réussis.
+- **V0.7 — problème de compréhension confirmé après essai :** Martin constate du mieux mais juge le jeu encore peu compréhensible et intuitif. Réponses de Claude reçues et documentées pour V0.7.1 ; corrections non implémentées, apprentissage et grammaire visuelle encore à préciser. Ce défaut d’usage reste ouvert malgré les tests techniques réussis.
 - V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Ces contrôles ne valident pas la compréhension : le premier retour de Martin ci-dessus signale un problème d’usage toujours ouvert.
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
 - Ergonomie signalée par Martin après V0.5 : première réponse livrée avec campagne, outils progressifs, aperçu et fiches clarifiées. Le problème ne sera considéré résolu qu’après son essai : les captures et parcours automatisés ne prouvent pas la compréhension sans aide.
