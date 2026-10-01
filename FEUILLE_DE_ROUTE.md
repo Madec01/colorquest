@@ -2,6 +2,20 @@
 
 Dernière mise à jour : 1er octobre 2026.
 
+## V0.7.1 — commandes au doigt et apprentissage livrés
+
+**Statut : implémentée et vérifiée après le Go de Martin du 1er octobre à 11 h 25.** Les propositions de Claude et les quatre corrections techniques de la réponse précédente constituent le périmètre de cette livraison. Les sections de discussion plus bas conservent leur statut historique ; leurs mentions « non implémenté / à valider » ne décrivent pas le jeu désormais livré. Le nouvel essai de compréhension et de plaisir par Martin reste attendu.
+
+- Pinceau et cartes joués au relâchement, aperçu/coût en direct, partie valide du trait conservée, annulation explicite et verrouillage du pinceau sur son bouton.
+- Inspection des bâtiments sans effet de jeu, pause explicite, envoi du flux et rappel comme retraite sans riposte jusqu’au retour.
+- Prélèvements visibles, coût/cadence et raisons d’arrêt ; maintien des chiffres du moteur peinture (6 pigments par unité / 5 s).
+- Apprentissage propre en six situations progressives : rejoindre une source, exploiter, produire/attaquer, reconnecter par le neutre, rappeler/défendre, dominer ; mêmes commandes que le combat libre.
+- Repères visuels de la toile, sources, bâtiments, groupes et réseau isolé ; aucun délai de disparition ajouté.
+- Victoire à plus de 50 % connectés avec avance pendant 15 s ; égalité à quatre minutes suivie de 30 s de prolongation, puis score ou nul. Domination et Cœur restent actifs pendant la prolongation, compteur continu et recharge finale conservée.
+- Préserver le classique, ses sauvegardes, le lancement autonome et la PWA. Courses, nouvelles cartes, alliances et sauvegarde du nouveau mode restent aux jalons suivants.
+
+Vérifications détaillées dans la section dédiée : 60 contrôles ciblés moteur/IA/apprentissage/rendu, 12 simulations, parcours tactiles complets en 360 × 640 et 390 × 844, compatibilité classique et fonctionnement hors ligne. Essais en Chromium émulé ; pas de nouvelle validation sur téléphone physique ni de validation humaine du plaisir.
+
 ## Vision et décisions validées
 
 - RTS minimaliste et coloré sur une toile blanche, joueur contre ordinateur.
@@ -27,7 +41,7 @@ Dernière mise à jour : 1er octobre 2026.
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
 - [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité réussies. Premier retour de Martin reçu : amélioration, mais compréhension et intuition encore insuffisantes ; validation humaine non acquise.
-- [ ] J11 bis / V0.7.1 — Lisibilité, commandes et apprentissage du prototype : propositions de Claude reçues dans `4e81be7` puis `e76aa80`, transmises par Martin et rapprochées de la V0.7 ci-dessous. Parcours d’apprentissage, repères visuels, trait partiel, verrouillage du pinceau et résultat de prolongation maintenant décrits. Avis technique favorable avec corrections de cohérence sur les valeurs du mode peinture, la source, la coupure et l’éventuelle perte du territoire isolé. Aucune implémentation de ces corrections dans cette session. Faire valider la compréhension par Martin avant d’ajouter la course.
+- [x] J11 bis / V0.7.1 — Commandes au relâchement, inspection, retraite, économie visible, repères graphiques, six situations d’apprentissage et prolongation livrés après le Go. Corrections sources/reconnexion/isolement appliquées, économie peinture conservée. Contrôles techniques et parcours tactiles réussis ; faire confirmer la compréhension et le plaisir par Martin avant d’ajouter la course.
 - [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de vernis entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
 - [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
 - [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
@@ -72,7 +86,7 @@ V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 l
 
 10. **Quel périmètre minimal pour V0.7.1, et comment le valider ?** Parmi ces problèmes, quels sont les trois prioritaires, que retire-t-on de l’écran de départ et que garde-t-on pour plus tard ? Merci de proposer le déroulé de la première minute, un schéma ou une maquette portrait avec les états normal/placement/producteur/coupure, et des critères observables avec Martin : savoir quoi faire sans relire l’aide, expliquer une dépense et un arrêt, donner un ordre volontaire, identifier la cause d’une perte. Quels résultats permettront ensuite de lancer V0.8 ?
 
-### Réponses de Claude reçues — cadrage de V0.7.1, non implémenté
+### Réponses de Claude reçues — historique du cadrage avant le Go V0.7.1
 
 Sources : `4e81be7`, complété par `e76aa80`, et messages transmis par Martin le 1er octobre. Claude conserve la direction gameplay et artistique. Ses documents indiquent « à valider » : le tableau courant intègre ses précisions sans présenter ces propositions comme déjà livrées ou nouvellement approuvées par Martin.
 
@@ -106,7 +120,7 @@ Cette demande historique est conservée pour relier les réponses ci-dessous à 
 
 **Point d’équilibrage à examiner avec Claude :** Gomme rend du territoire ennemi neutre, puis le pinceau peut le reprendre. Ce n’est pas une capture directe par le pinceau, mais cette combinaison contourne l’armée ; vérifier qu’elle reste compatible avec son rôle de seul outil de conquête. Le partage 50/50 des dépenses reste un indicateur d’essai, pas une contrainte à coder. Le signal des victoires automatisées par peinture vers 80 s reste ouvert jusqu’à un nouvel équilibrage et des parties humaines.
 
-### Points 16 à 21 de Claude — propositions reçues, non implémentées
+### Points 16 à 21 de Claude — propositions reçues avant le Go V0.7.1
 
 Source : commit `e76aa80`, transmis par Martin. Les points ci-dessous sont conservés tels que proposés par Claude ; l’avis technique immédiatement après signale les écarts avec le mode peinture livré. Ils ne valent pas validation humaine du jeu ni lancement d’une nouvelle implémentation.
 
@@ -423,6 +437,20 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Modifications réalisées
 
+### V0.7.1 — 1er octobre 2026
+
+- Menu : « Apprendre à peindre », « Combat libre » et reprise de la toile en cours. Six situations indépendantes enseignent une nouveauté à la fois, avec commandes filtrées et restrictions aussi vérifiées par le moteur pédagogique. Le combat libre conserve ses quatre cartes.
+- Pinceau : coût et portion valide visibles pendant le geste, relâchement pour payer/peindre, retour au départ pour annuler, refus de la suite en pointillés rouges ; verrouillage par double toucher sur le bouton, cadenas visible, déverrouillage par un toucher. La dépense ne peut pas s’étendre à une portion refusée seulement parce que la jauge a remonté entre-temps.
+- Cartes : dépôt direct sur un emplacement valide, retour à la main pour annuler, alternative carte puis cible. Pincement, interruption, sortie de zone et clics de compatibilité ne doivent pas créer d’achat parasite ; pause et arrière-plan abandonnent la visée.
+- Inspection : toucher les bâtiments alliés, sources et bâtiments ennemis actuellement visibles ouvre une fiche. Pause explicite de la caserne ; aucune divulgation d’état économique ennemi caché. Le rôle, le réseau, le coût/cadence et la raison d’arrêt expliquent les objets.
+- Flux : envoi depuis le producteur, rappel par glisser-retour ou bouton. Retraite sans riposte, unités toujours vulnérables, défense ancrée autour du producteur à l’arrivée ; un nouvel envoi rétablit l’attaque en route. Les survivants d’un producteur détruit prennent les ordres du Cœur ; les unités en retraite y rentrent.
+- Économie : conservation de 6 pigments / 5 s. Débit nominal des producteurs actifs explicitement marqué « prévu » ; pastille de prélèvement réel de la jauge au producteur. Production suspendue pendant une visée et états d’attente visibles. Relier une source et l’exploiter sont deux succès distincts.
+- Lisibilité : silhouettes et contours distincts, source dorée avec goutte permanente et anneau d’exploitation, terrain inconnu texturé, isolement hachuré et lien rompu sans compteur. Groupes proches d’un même producteur numérotés à faible zoom, positions individuelles réaffichées près des combats ; lignes de destination et rappel distincts. Les effets et la main pédagogique respectent le mouvement réduit.
+- Apprentissage : première source entièrement visible ; prise d’un vrai poste avec unités payées ; coupure produite par une unité adverse puis contournement neutre ; rappel face à une vague laissant six secondes de lecture ; dépassement de 50 % puis tenue réelle de 15 s. Objectifs réussis figés avant Continuer, aide après erreur, nouvel essai et passage au combat libre. Réussir ne dépend ni d’un clic de validation fictif ni d’une attente qui jouerait à la place du joueur.
+- Victoire : seuil strictement supérieur à 50 %, avance stricte, tenue de 15 s ; égalité à quatre minutes → 30 s supplémentaires, puis plus grand territoire connecté ou nul si égalité. Domination, Cœur et recharge accélérée continuent pendant la prolongation. Une décimale autour du seuil distingue visuellement 49,9 % de 50,1 %.
+- Corrections observées aux essais : bouton Continuer initialement caché quand une fiche restait ouverte ; ancien message d’erreur conservé après réussite ; cible trop proche du panneau pédagogique en 360 × 640 ; touche Espace sur un bouton interférant avec la pause globale. Reprise du cadrage sous les panneaux, score masqué avant son enseignement et erreurs obsolètes effacées.
+- PWA : modules `paint-tutorial.js` / `paint-tutorial.css` précachés, release `COLORQUEST_V071_20261001_1`. Aucun nouvel asset externe ni dépendance réseau. Classique, sauvegardes v3 et progression de campagne préservés ; la nouvelle toile reste éphémère.
+
 ### Deuxième réponse de Claude et cohérence avec V0.7 — 1er octobre 2026
 
 - Commit `e76aa80` intégré à la suite de `4df811a`, en conservant la V0.7 et les réponses précédentes. Points 16 à 21 reproduits, réponses sur les gestes et le résultat de prolongation reportées dans le cadrage courant.
@@ -545,13 +573,15 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 
 ## Bugs trouvés non corrigés
 
-- **V0.7 — problème de compréhension confirmé après essai :** Martin constate du mieux mais juge le jeu encore peu compréhensible et intuitif. Réponses de Claude reçues jusqu’à `e76aa80` : apprentissage et repères visuels proposés, avis technique et corrections de cohérence documentés ; aucune correction V0.7.1 encore implémentée. Ce défaut d’usage reste ouvert malgré les tests techniques réussis.
+- **Compréhension et plaisir — retour humain attendu après V0.7.1 :** le défaut d’usage signalé sur V0.7 a motivé les nouveaux gestes, les repères et les six situations livrés. Aucun blocage restant observé dans les parcours exécutés ; le problème de compréhension ne sera déclaré résolu qu’après un nouvel essai de Martin.
 - V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Ces contrôles ne valident pas la compréhension : le premier retour de Martin ci-dessus signale un problème d’usage toujours ouvert.
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
 - Ergonomie signalée par Martin après V0.5 : première réponse livrée avec campagne, outils progressifs, aperçu et fiches clarifiées. Le problème ne sera considéré résolu qu’après son essai : les captures et parcours automatisés ne prouvent pas la compréhension sans aide.
 
 ## Limites et risques à suivre
 
+- V0.7.1 : les situations pédagogiques sont distinctes, avec opposition scénarisée et pause après réussite. Leurs durées de 30–60 s sont des cibles de découverte, pas des durées humaines mesurées ni des attentes imposées. La scène de défense reste perdable et peut être recommencée.
+- V0.7.1 : l’équilibrage économique et l’IA de combat libre n’ont pas changé. Le script de peinture efficace gagne toujours vers 78–81 s ; comprendre les commandes ne démontre pas encore l’équilibre peinture/armée ni l’envie de rejouer. Gomme puis pinceau reste une combinaison à examiner avec Claude dans ce bilan.
 - V0.7 est un combat d’essai séparé : sa pause/reprise reste en mémoire dans la page. Une fermeture, un rechargement ou une mise à jour perd ce combat ; les modes classiques gardent leurs sauvegardes. Une vraie sauvegarde de course appartient à V0.8, après validation.
 - Le prototype utilise une seule arène fixe symétrique, un paquet fixe de huit cartes et une seule famille de gouttes. La graine ne change pas encore la disposition ni le comportement initial : plusieurs graines seules ne constituent pas une mesure de variété ou d’équilibrage.
 - Quatre minutes est une limite maximale, pas une durée garantie : une destruction du Cœur ou une domination tenue peut conclure plus tôt. Une politique automatisée de peinture efficace gagne en environ 80 s ; sa place face au développement militaire et la facilité à couper ce réseau sont à éprouver avec Martin, sans ajouter de règle avant son retour. Les essais automatisés ne remplacent pas des parties humaines.
@@ -586,6 +616,20 @@ Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adapt
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.7.1 — 1er octobre 2026
+
+- `tests/paint-engine.test.cjs` : 38 contrôles passants. Préfixe valide seul payé, longueur/budget/obstacle/visibilité, refus sans fuite cachée ; retrait vulnérable et sans riposte, fin de poursuite à la limite de défense, nouvel envoi et orphelins ; dépenses, protection de visée, seuil strict, prolongation 270 s, score, Cœur et compteurs continus.
+- `tests/paint-ai.test.cjs` : six contrôles passants ; perception limitée et absence de lecture de l’état ennemi caché conservées. Aucune retouche de l’IA pour compenser les nouvelles commandes.
+- `tests/paint-tutorial.test.cjs` : neuf contrôles passants avec vraies actions moteur, paiements, capture, coupure, détour, retraite/défense, échec/retry et domination. Attendre 60 s ne valide aucune situation ni ne crée une victoire ordinaire hors objectif.
+- `tests/paint-renderer.test.cjs` : sept contrôles passants ; rendu sans mutation, indépendance aux données ennemies cachées, regroupement local correct, distinction du trait refusé, mode de mouvement réduit.
+- `tests/paint-balance.test.cjs` : 12 simulations, résultats de référence inchangés. Inactif : défaite à 178,8 s, premier dégât au Cœur à 170,5 s ; peinture efficace : victoires 78,1–80,8 s ; pression : 159,1–168,7 s ; défense : 157,5–204,2 s ; duel miroir 173,4 s et résultat tourné identique. Ces scripts ne constituent pas des parties humaines.
+- `tests/paint.browser.cjs` : réussi en 360 × 640 et 390 × 844, entrées tactiles CDP réelles. Relâchement, trait partiel et annulation, verrouillage, cartes/dépôt/retour/toucher, inspections sans pause, pause explicite, rappel au glisser-retour, blocage des achats pendant la visée, zoom/pincement/annulation, absence de double action, clavier, vrai prélèvement animé et débit prévu, prolongation et rejeu.
+- `tests/paint-tutorial.browser.cjs` : les six étapes jouées entièrement avec les commandes normales dans les deux portraits ; temps de simulation accéléré pour les attentes, sans injection des drapeaux de réussite, territoires ou gagnants. Erreur puis récupération, Continuer, reconnexion réelle, vague battue, tenue de 15 s, affichage 49,7 % → 50,1 %, absence de débordement et transition au combat libre.
+- `tests/paint-integration.browser.cjs` : réussi dans les deux portraits. Slots/progression classiques inchangés, palette, pause sans rattrapage, reprise éphémère, installation/mise à jour, tous les modules dont le CSS pédagogique disponibles hors ligne, lancement `file://`.
+- Contrôles classiques réexécutés : moteur (huit), snapshots/migrations/continuation (18), missions (12), tous passants. Les fichiers du moteur et des sauvegardes classiques n’ont pas été modifiés.
+- Relecture indépendante et captures inspectées : menus, cadrage des cibles, trait/coût pendant le geste, reconnexion, domination et combat libre. Premier tracé et extracteur rejoués au toucher dans les deux portraits par l’intégrateur ; aucune erreur JavaScript et cible dégagée du panneau pédagogique. Syntaxe et `git diff --check` propres.
+- Limites : Chromium en émulation tactile, pas d’iPhone/Android physique. Aucun nouveau retour humain de compréhension, confort ou plaisir n’est déduit de ces tests. Le commit et l’état de publication sont annoncés à Martin à la livraison.
 
 ### V0.7 — 1er octobre 2026
 

@@ -1,4 +1,4 @@
-/* V0.7 integration only: classic isolation, ephemeral sessions, palette and PWA. */
+/* V0.7.1 integration: classic isolation, ephemeral sessions, palette and PWA. */
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -55,8 +55,7 @@ async function makeClassicCheckpoints(page) {
 }
 
 async function enterPrototype(page) {
-  await page.locator('#paintStart').tap();
-  if (await page.locator('#paintBegin').isVisible()) await page.locator('#paintBegin').tap();
+  await page.locator('#paintFreePlay').tap();
   await page.waitForFunction(() => CQPaint.active && !CQPaint.paused && CQPaint.game);
 }
 
@@ -220,7 +219,8 @@ async function twoFrames(page) {
     await assertClassicsUnchanged(page, classics, 'the accepted update preserves both existing classic slots and progression');
     await context.setOffline(true);
     await page.goto(url + '?paint-offline=1');
-    await page.waitForFunction(() => CQInstall.offlineReady && window.CQPaintEngine && window.CQPaintAI && window.CQPaintRenderer && window.CQPaint);
+    await page.waitForFunction(() => CQInstall.offlineReady && window.CQPaintEngine && window.CQPaintAI && window.CQPaintRenderer && window.CQPaintTutorial && window.CQPaint);
+    assert.equal(await page.evaluate(async () => (await fetch('paint-tutorial.css')).status), 200, 'the new tutorial stylesheet is available offline too');
     await enterPrototype(page);
     const offlineTime = await page.evaluate(() => CQPaint.game.time);
     await page.waitForFunction(t => CQPaint.game.time > t, offlineTime);

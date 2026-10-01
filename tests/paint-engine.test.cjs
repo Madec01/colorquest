@@ -37,29 +37,61 @@ test('paint preview is read-only and payment creates permanent connected paint',
 
 test('connected ink opens the next visible frontier without exposing hidden ownership', () => {
   const g = new Game(); const far = [{ x: 9, y: 20 }, { x: 9, y: 19 }, { x: 9, y: 18 }, { x: 9, y: 17 }];
-  assert.equal(g.previewPaint(1, far).message, 'Zone hors de vue.');
+  const preview = g.previewPaint(1, far);
+  assert.equal(preview.reason, 'Zone hors de vue.'); assert.equal(preview.ok, true); assert.equal(preview.partial, true);
+  assert.deepEqual(preview.path, far.slice(0, 3)); assert.deepEqual(preview.rejectedPath, far.slice(3)); assert.equal(preview.cost, 2);
   g.tile(9, 17).owner = 2; // Deliberately do not recompute visibility: hidden state alone is changed.
-  assert.equal(g.previewPaint(1, far).message, 'Zone hors de vue.');
+  assert.deepEqual(g.previewPaint(1, far), preview);
+  g.tile(9, 17).blocked = true; assert.deepEqual(g.previewPaint(1, far), preview);
+  g.tile(9, 17).blocked = false;
   g.tile(9, 17).owner = 0;
-  assert.equal(g.paint(1, far.slice(0, 3)).ok, true);
+  assert.deepEqual(g.paint(1, far), preview); assert.equal(g.pigment[1], 63); assert.equal(g.tile(9, 17).owner, 0);
   assert.equal(g.isVisible(1, 9, 17), true);
   assert.equal(g.paint(1, far.slice(2)).ok, true);
 });
 
-test('brush refuses enemy paint, obstacles, jumps, excess length and unaffordable strokes atomically', () => {
-  const g = new Game();
-  for (const change of ['enemy', 'blocked', 'jump', 'funds']) {
+test('brush paints and charges only the prefix before the first obstacle, enemy, budget or length limit', () => {
+  for (const change of ['enemy', 'blocked', 'funds']) {
     const a = new Game(); let path = [{ x: 9, y: 20 }, { x: 9, y: 19 }, { x: 9, y: 18 }];
-    if (change === 'enemy') a.tile(9, 19).owner = 2;
-    if (change === 'blocked') a.tile(9, 19).blocked = true;
-    if (change === 'jump') path = [path[0], path[2]];
+    if (change === 'enemy') a.tile(9, 18).owner = 2;
+    if (change === 'blocked') a.tile(9, 18).blocked = true;
     if (change === 'funds') a.pigment[1] = 1;
-    const before = snapshot(a); assert.equal(a.paint(1, path).ok, false, change); assert.equal(snapshot(a), before, change);
+    const before = snapshot(a), pigment = a.pigment[1], preview = a.previewPaint(1, path);
+    assert.equal(snapshot(a), before, change); assert.equal(preview.ok, true, change); assert.equal(preview.partial, true, change);
+    assert.equal(preview.cost, 1, change); assert.deepEqual(preview.path, path.slice(0, 2)); assert.deepEqual(preview.rejectedPath, path.slice(2));
+    assert.deepEqual(a.paint(1, path), preview); assert.equal(a.pigment[1], pigment - 1); assert.equal(a.tile(9, 19).owner, 1); assert.notEqual(a.tile(9, 18).owner, 1);
   }
+  const g = new Game();
   g.visibility[1].fill(true);
   const long = Array.from({ length: 14 }, (_, i) => ({ x: 9, y: 20 - i }));
-  const before = snapshot(g); assert.equal(g.paint(1, long).ok, false); assert.equal(snapshot(g), before);
-  assert.match(g.previewPaint(1, long).message, /Maximum 12/);
+  const result = g.paint(1, long); assert.equal(result.ok, true); assert.equal(result.cost, 12); assert.equal(g.pigment[1], 53);
+  assert.match(result.reason, /Maximum 12/); assert.deepEqual(result.path, long.slice(0, 13)); assert.deepEqual(result.rejectedPath, long.slice(13));
+  assert.equal(g.tile(9, 7).owner, 0);
+});
+
+test('a rejected suffix never resumes after an obstacle, even when later cells are valid', () => {
+  const g = new Game(); g.tile(10, 19).blocked = true;
+  const path = [{ x: 9, y: 20 }, { x: 9, y: 19 }, { x: 10, y: 19 }, { x: 10, y: 18 }, { x: 9, y: 18 }];
+  const result = g.paint(1, path);
+  assert.equal(result.cost, 1); assert.deepEqual(result.rejectedPath, path.slice(2)); assert.equal(g.tile(9, 18).owner, 0); assert.equal(g.tile(10, 18).owner, 0);
+});
+
+test('malformed paths and strokes without any affordable valid cell never mutate the game', () => {
+  const normal = [{ x: 9, y: 20 }, { x: 9, y: 19 }, { x: 9, y: 18 }];
+  for (const change of ['enemy', 'blocked', 'jump', 'lateJump', 'invalidPoint', 'tooMany', 'funds', 'start', 'isolated']) {
+    const g = new Game(); let path = normal;
+    if (change === 'enemy') g.tile(9, 19).owner = 2;
+    if (change === 'blocked') g.tile(9, 19).blocked = true;
+    if (change === 'jump') path = [normal[0], normal[2]];
+    if (change === 'lateJump') path = [...normal, { x: 10, y: 17 }];
+    if (change === 'invalidPoint') path = [...normal, { x: NaN, y: 17 }];
+    if (change === 'tooMany') path = Array(1027).fill(normal[0]);
+    if (change === 'funds') g.pigment[1] = .9;
+    if (change === 'start') path = normal.slice(1);
+    if (change === 'isolated') { g.tile(9, 19).owner = 1; g.tile(9, 20).owner = 0; g.recompute(); path = normal.slice(1); }
+    const before = snapshot(g), result = g.paint(1, path);
+    assert.equal(result.ok, false, change); assert.equal(result.cost, 0, change); assert.equal(snapshot(g), before, change);
+  }
 });
 
 test('backtracking does not double-charge; neutral bridge reconnects permanent isolated land', () => {
@@ -96,10 +128,14 @@ test('only a connected extractor contributes its bounded source income', () => {
 
 test('producer pays each unit at its actual exit and never before', () => {
   const g = new Game(), b = barracks(g);
+  assert.equal(g.productionOutflow(1), CONFIG.unitCost / CONFIG.unitInterval); assert.equal(g.perception(1).outflow, 1.2);
   const start = g.pigment[1]; g.update(4.9); assert.equal(g.units.length, 0);
   assert.ok(g.pigment[1] > start); const beforeExit = g.pigment[1]; g.update(.1);
   assert.equal(g.units.length, 1); assert.ok(g.pigment[1] < beforeExit - 5);
   assert.equal(g.units[0].producerId, b.id);
+  const spawn = g.events.filter(e => e.type === 'spawn'); assert.equal(spawn.length, 1); assert.equal(spawn[0].producerId, b.id); assert.equal(spawn[0].cost, 6);
+  const paidBalance = g.pigment[1]; makeUnit(g, 1, 9, 22, b);
+  assert.equal(g.events.at(-1).cost, 0); assert.equal(g.pigment[1], paidBalance, 'Fixture creation is not a paid expense');
 });
 
 test('aim hold, manual pause, cutoff, lack of funds and cap never debit units', () => {
@@ -110,6 +146,7 @@ test('aim hold, manual pause, cutoff, lack of funds and cap never debit units', 
     if (cause === 'isolated') { for (const t of g.tiles) if (t.owner === 1) t.owner = 0; g.tile(b.x, b.y).owner = 1; g.tile(9, 23).owner = 1; g.recompute(); }
     if (cause === 'funds') g.pigment[1] = 0;
     if (cause === 'full') for (let i = 0; i < CONFIG.unitLimit; i++) makeUnit(g, 1, 9, 22, b);
+    assert.equal(g.productionOutflow(1), 0, cause);
     const count = g.getUnitCount(1), pigment = g.pigment[1]; g.update(.2);
     assert.equal(g.getUnitCount(1), count, cause); assert.ok(g.pigment[1] >= pigment, cause);
     assert.equal(b.productionState, cause);
@@ -141,11 +178,55 @@ test('flow reroutes existing and future affiliated units; pause preserves their 
   assert.equal(g.recall(1, b.id).ok, true); for (const unit of g.units) assert.deepEqual(unit.target, { x: b.x, y: b.y });
 });
 
-test('destroyed producers reattach survivors to the Cœur without teleport or lost orders', () => {
+test('destroyed producers reattach survivors and adopt the current Cœur order without teleport', () => {
   const g = new Game(), b = barracks(g); g.update(5.1); g.setFlow(1, b.id, 9, 18);
+  g.setFlow(1, g.getCore(1).id, 10, 23);
   const unit = g.units[0], before = { x: unit.x, y: unit.y }; b.hp = 0; g._removeDead();
-  assert.equal(unit.producerId, g.getCore(1).id); assert.deepEqual({ x: unit.x, y: unit.y }, before); assert.deepEqual(unit.target, { x: 9, y: 18 });
-  assert.equal(g.setFlow(1, g.getCore(1).id, 10, 23).ok, true); assert.deepEqual(unit.target, { x: 10, y: 23 });
+  assert.equal(unit.producerId, g.getCore(1).id); assert.deepEqual({ x: unit.x, y: unit.y }, before); assert.deepEqual(unit.target, { x: 10, y: 23 });
+  assert.equal(g.setFlow(1, g.getCore(1).id, 8, 23).ok, true); assert.deepEqual(unit.target, { x: 8, y: 23 });
+});
+
+test('an orphan with no Cœur order returns to defend its Cœur', () => {
+  const g = new Game(), b = barracks(g), unit = makeUnit(g, 1, 9, 18, b);
+  g.setFlow(1, b.id, 9, 17); b.hp = 0; g._removeDead();
+  assert.equal(unit.producerId, g.getCore(1).id); assert.deepEqual(unit.target, { x: 9, y: 23 });
+});
+
+test('recall retreats without retaliation while vulnerable, then defends on arrival', () => {
+  const g = new Game(), b = barracks(g), unit = makeUnit(g, 1, 9, 17, b), enemy = makeUnit(g, 2, 9, 16);
+  unit.attackCooldown = enemy.attackCooldown = 0; g.recompute();
+  const y = unit.y; assert.equal(g.recall(1, b.id).ok, true); assert.equal(unit.retreating, true); assert.equal(b.flowMode, 'defend');
+  assert.equal(g.perception(1).units.find(u => u.id === unit.id).retreating, true);
+  g.update(.04);
+  assert.ok(unit.y > y, 'Retreat continues despite adjacent enemy'); assert.equal(unit.hp, UNIT_STATS.hp - UNIT_STATS.damage); assert.equal(enemy.hp, UNIT_STATS.hp, 'No retaliatory damage');
+  enemy.hp = 0; g._removeDead(); g.update(3);
+  assert.equal(unit.retreating, false); assert.ok(Math.hypot(unit.x - b.x - .5, unit.y - b.y - .5) < .61);
+  const invader = makeUnit(g, 2, 9, 20); g.getCore(1).attackCooldown = 100; g.recompute(); g.update(.04);
+  assert.ok(invader.hp < UNIT_STATS.hp, 'Arrived unit resumes defense');
+});
+
+test('a normal flow immediately cancels retreat and resumes combat en route', () => {
+  const g = new Game(), b = barracks(g), unit = makeUnit(g, 1, 9, 17, b), enemy = makeUnit(g, 2, 9, 16);
+  unit.attackCooldown = enemy.attackCooldown = 0; g.recompute(); g.recall(1, b.id); assert.equal(unit.retreating, true);
+  assert.equal(g.setFlow(1, b.id, 9, 15).ok, true); assert.equal(unit.retreating, false); assert.equal(b.flowMode, 'attack');
+  g.update(.04); assert.equal(enemy.hp, UNIT_STATS.hp - UNIT_STATS.damage);
+});
+
+test('recalled defenders give up a chase outside their producer area and return home', () => {
+  const g = new Game(), b = barracks(g), unit = makeUnit(g, 1, 9, 21, b), enemy = makeUnit(g, 2, 9, 19);
+  g.recompute(); g.recall(1, b.id); g.getCore(1).attackCooldown = 100;
+  g.update(.5); assert.ok(unit.y < b.y + .5, 'Defends against a local threat');
+  enemy.y = 18.1; g.recall(2, g.getCore(2).id); g.recompute();
+  assert.ok(Math.abs(enemy.y - unit.y) < UNIT_STATS.aggro, 'Enemy is still within this unit’s ordinary aggro distance');
+  assert.equal(g._unitTarget(unit), null, 'The producer boundary stops an endless chase');
+  const beforeY = unit.y; g.update(.3); assert.ok(unit.y > beforeY); assert.ok(Math.hypot(unit.x - b.x - .5, unit.y - b.y - .5) < .1);
+});
+
+test('retreat survivors retarget a destroyed producer to their Cœur even if it has an attack flow', () => {
+  const g = new Game(), b = barracks(g), unit = makeUnit(g, 1, 9, 17, b), position = { x: unit.x, y: unit.y };
+  g.recompute(); g.recall(1, b.id); g.setFlow(1, g.getCore(1).id, 9, 15);
+  b.hp = 0; g._removeDead();
+  assert.equal(unit.producerId, g.getCore(1).id); assert.equal(unit.retreating, true); assert.deepEqual(unit.target, { x: 9, y: 23 }); assert.deepEqual({ x: unit.x, y: unit.y }, position);
 });
 
 test('flow refuses unobserved positions but accepts the public enemy starting Cœur', () => {
@@ -199,11 +280,35 @@ test('paid units actually move, claim enemy paint and attack a visible building'
   g.update(20); assert.ok(post.hp < post.maxHp); assert.equal(g.tile(9, 19).owner, 1); assert.equal(g.getUnitCount(1), 4);
 });
 
-test('symmetric final-minute acceleration and a finite 240-second draw', () => {
+test('a 240-second tie enters one 30-second overtime with accelerated income, then draws', () => {
   const g = new Game(); g.update(179.9); const income = g.income[1]; assert.equal(g.accelerated, false);
   g.update(.1); assert.equal(g.accelerated, true); assert.ok(Math.abs(g.income[1] - income * 1.5) < 1e-9); assert.equal(g.income[1], g.income[2]);
-  assert.equal(g.events.filter(e => e.type === 'acceleration').length, 1); g.update(61);
-  assert.equal(g.time, 240); assert.equal(g.winner, 0); const before = snapshot(g); g.update(100); assert.equal(snapshot(g), before);
+  assert.equal(g.events.filter(e => e.type === 'acceleration').length, 1); g.update(60);
+  assert.equal(g.time, 240); assert.equal(g.winner, null); assert.equal(g.overtime, true); assert.equal(g.duration, 240); assert.equal(g.timeLimit, 270);
+  assert.equal(g.perception(1).remaining, 30); assert.equal(g.perception(1).overtime, true); assert.equal(g.events.filter(e => e.type === 'overtime').length, 1);
+  g.update(29.9); assert.equal(g.winner, null); assert.ok(Math.abs(g.income[1] - income * 1.5) < 1e-9);
+  g.update(.1); assert.equal(g.time, 270); assert.equal(g.winner, 0); assert.match(g.winReason, /prolongation/);
+  assert.equal(g.productionOutflow(1), 0); const before = snapshot(g); g.update(100); assert.equal(snapshot(g), before);
+});
+
+test('one extra connected cell wins at regulation or overtime end without a 50% threshold', () => {
+  for (const overtime of [false, true]) {
+    const g = new Game();
+    if (overtime) g.update(240);
+    g.tile(9, 19).owner = 1; g.recompute();
+    assert.ok(g.scores[1] > g.scores[2] && g.scores[1] < .5);
+    g.update(overtime ? 30 : 240);
+    assert.equal(g.time, overtime ? 270 : 240); assert.equal(g.winner, 1); assert.equal(g.overtime, overtime);
+  }
+});
+
+test('Cœur destruction and 15-second domination remain immediate victories during overtime', () => {
+  const core = new Game(); core.update(240); core.getCore(2).hp = 0; core.update(.04);
+  assert.equal(core.winner, 1); assert.ok(core.time < 241); assert.match(core.winReason, /Cœur adverse/);
+  const domination = new Game(); domination.update(240);
+  for (const tile of domination.tiles) if (!tile.blocked) tile.owner = tile.y >= 12 ? 1 : 2;
+  domination.recompute(); domination.update(14.9); assert.equal(domination.winner, null); assert.ok(domination.hold[1] > 14.8);
+  domination.update(.1); assert.equal(domination.winner, 1); assert.ok(Math.abs(domination.time - 255) < 1e-7); assert.match(domination.winReason, /15 secondes/);
 });
 
 test('domination counts connected walkable cells and requires 15 continuous seconds of strict lead', () => {
@@ -219,6 +324,7 @@ test('isolated paint is excluded; exactly equal half-territories cannot both cla
   const g = new Game(); neutralise(g);
   g.tile(1, 1).owner = 1; g.recompute(); assert.equal(g.scores[1], 1 / 505);
   g.scores[1] = g.scores[2] = .5; g._checkVictory(15); assert.equal(g.winner, null); assert.equal(g.hold[1], 0); assert.equal(g.hold[2], 0);
+  g.scores[2] = .4; g._checkVictory(15); assert.equal(g.winner, null); assert.equal(g.hold[1], 0, 'Exactly 50% is not enough even with a lead');
 });
 
 test('both erased Cœurs draw; a surviving Cœur wins, with no instant loss from Gomme', () => {
@@ -236,13 +342,13 @@ test('fixed simulation steps give identical continuations across frame slicing',
 });
 
 
-test('mirrored paid armies fight for four minutes without a camp or insertion-order advantage', () => {
+test('mirrored paid armies stay symmetric through regulation and overtime regardless of insertion order', () => {
   const games = [new Game(), new Game()];
   for (const g of games) {
     const a = barracks(g), b = barracks(g, 9, 5, 2);
     g.setFlow(1, a.id, 9, 3); g.setFlow(2, b.id, 9, 23);
   }
-  for (let i = 0; i < 2400; i++) {
+  for (let i = 0; i < 2700; i++) {
     games[0].update(.1);
     games[1].units.sort((a, b) => b.team - a.team || a.ordinal - b.ordinal);
     games[1].buildings.sort((a, b) => b.team - a.team || a.id - b.id);

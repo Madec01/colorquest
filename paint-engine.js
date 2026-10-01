@@ -1,4 +1,4 @@
-/* Colorquest V0.7: isolated, deterministic paint-and-cards simulation.
+/* Colorquest V0.7.1: isolated, deterministic paint-and-cards simulation.
  * No DOM, storage, audio, AI, or dependency on the classic game.
  * Tile positions are integers; unit positions are continuous cell centres.
  */
@@ -11,7 +11,7 @@
   'use strict';
 
   const CONFIG = Object.freeze({
-    width: 19, height: 27, duration: 240, step: 1 / 30,
+    width: 19, height: 27, duration: 240, overtimeDuration: 30, step: 1 / 30,
     initialPigment: 65, pigmentCap: 100, brushCost: 1, brushLimit: 12,
     unitCost: 6, unitInterval: 5, unitLimit: 24, productionReserve: 0,
     baseIncome: 1.6, territoryIncomeCap: 1.2, sourceIncome: .85, sourceLimit: 3,
@@ -50,6 +50,8 @@
       this.seed = (Number.isFinite(options.seed) ? options.seed : 71001) >>> 0;
       this.time = 0;
       this.duration = Number.isFinite(options.duration) && options.duration > 0 ? options.duration : CONFIG.duration;
+      this.overtime = false;
+      this.overtimeDuration = CONFIG.overtimeDuration;
       this.winner = null;
       this.winReason = '';
       this.accelerated = false;
@@ -90,6 +92,7 @@
       if (!point(x, y) || x < 0 || y < 0 || x >= this.width || y >= this.height) return null;
       return this.tiles[y * this.width + x];
     }
+    get timeLimit() { return this.duration + (this.overtime ? this.overtimeDuration : 0); }
     getCore(team) { return this.buildings.find(b => b.team === team && b.type === 'core' && b.hp > 0) || null; }
     getProducers(team) { return this.buildings.filter(b => b.team === team && b.hp > 0 && (b.type === 'core' || b.type === 'barracks')); }
     getUnitCount(team) { return this.units.filter(u => u.team === team && u.hp > 0).length; }
@@ -111,19 +114,19 @@
         id: this._id++, team, type, x, y, hp: stats.hp, maxHp: stats.hp,
         connected: false, level: 1, productionPaused: false, productionProgress: 0,
         productionState: type === 'barracks' ? 'running' : 'none', productionReason: '',
-        flow: null, attackCooldown: 0
+        flow: null, flowMode: 'attack', attackCooldown: 0
       };
       this.buildings.push(building);
       return building;
     }
-    _addUnit(team, producer, position) {
+    _addUnit(team, producer, position, paidCost = 0) {
       const unit = {
         id: this._id++, ordinal: ++this._unitSequence[team], team, type: 'droplet', producerId: producer.id,
         x: position.x, y: position.y, hp: UNIT_STATS.hp, maxHp: UNIT_STATS.hp,
-        target: copyPoint(producer.flow), attackCooldown: .3, path: [], pathTarget: null
+        target: copyPoint(producer.flow), retreating: false, attackCooldown: .3, path: [], pathTarget: null
       };
       this.units.push(unit);
-      this._event('spawn', team, { x: unit.x, y: unit.y, producerId: producer.id, unitId: unit.id });
+      this._event('spawn', team, { x: unit.x, y: unit.y, producerId: producer.id, unitId: unit.id, cost: paidCost });
       return unit;
     }
 
@@ -201,11 +204,12 @@
         id: b.id, team: b.team, type: b.type, x: b.x, y: b.y, hp: b.hp, maxHp: b.maxHp, level: b.level, connected: null
       });
       const units = this.units.filter(u => u.hp > 0 && visible(u)).map(u => u.team === team ? {
-        id: u.id, team: u.team, type: u.type, producerId: u.producerId, x: u.x, y: u.y, hp: u.hp, maxHp: u.maxHp, target: copyPoint(u.target)
+        id: u.id, team: u.team, type: u.type, producerId: u.producerId, x: u.x, y: u.y, hp: u.hp, maxHp: u.maxHp, target: copyPoint(u.target), retreating: u.retreating
       } : { id: u.id, team: u.team, type: u.type, x: u.x, y: u.y, hp: u.hp, maxHp: u.maxHp });
       return {
         team, width: this.width, height: this.height, time: this.time, duration: this.duration,
-        accelerated: this.accelerated, winner: this.winner, pigment: this.pigment[team], income: this.income[team],
+        overtime: this.overtime, overtimeDuration: this.overtimeDuration, timeLimit: this.timeLimit, remaining: Math.max(0, this.timeLimit - this.time),
+        accelerated: this.accelerated, winner: this.winner, pigment: this.pigment[team], income: this.income[team], outflow: this.productionOutflow(team),
         hand: this.hands[team].slice(), deck: this.decks[team].slice(), scores: this.scores.slice(), hold: this.hold.slice(),
         coreStarts: CONFIG.coreStarts.map(copyPoint), buildings, units,
         tiles: this.tiles.map((tile, index) => ({
@@ -218,36 +222,44 @@
     }
 
     previewPaint(team, suppliedPath) {
-      const result = { ok: false, message: '', cost: 0, cells: [], path: [] };
-      const fail = message => Object.assign(result, { message });
+      const result = { ok: false, message: '', reason: '', cost: 0, cells: [], path: [], rejectedPath: [], partial: false };
+      const fail = message => Object.assign(result, { message, reason: message });
       if (!validTeam(team) || this.winner !== null) return fail('Le combat est terminé.');
       if (!Array.isArray(suppliedPath) || !suppliedPath.length || suppliedPath.length > this.tiles.length * 2) return fail('Commencez sur votre territoire relié.');
-      const seen = new Set();
+      // Structural errors never become partially paid actions. Validate the whole
+      // supplied path before looking at terrain; a hidden tile cannot leak its owner.
+      const path = [], seen = new Set();
       for (const p of suppliedPath) {
         if (!p || !point(p.x, p.y)) return fail('Tracé invalide.');
-        const last = result.path[result.path.length - 1];
+        const last = path[path.length - 1];
         if (last && p.x === last.x && p.y === last.y) continue;
-        result.path.push({ x: p.x, y: p.y });
+        if (last && Math.abs(p.x - last.x) + Math.abs(p.y - last.y) !== 1) return fail('Tracez des cases voisines, sans saut.');
+        path.push({ x: p.x, y: p.y });
       }
-      const first = result.path[0], start = first && this.tile(first.x, first.y);
-      if (!start || !this.isVisible(team, first.x, first.y)) return fail('Zone hors de vue.');
-      if (start.owner !== team || !start.connected) return fail('Commencez sur votre territoire relié.');
-      for (let i = 0; i < result.path.length; i++) {
-        const p = result.path[i], tile = this.tile(p.x, p.y);
-        if (i && Math.abs(p.x - result.path[i - 1].x) + Math.abs(p.y - result.path[i - 1].y) !== 1) return fail('Tracez des cases voisines, sans saut.');
-        if (!tile) return fail('Restez sur la toile.');
-        // Visibility is checked BEFORE ownership, including in previews.
-        if (!this.isVisible(team, p.x, p.y)) return fail('Zone hors de vue.');
-        if (tile.blocked) return fail('Un obstacle coupe le tracé.');
-        if (tile.owner && tile.owner !== team) return fail('Les unités et les pouvoirs attaquent la couleur ennemie.');
+      for (let i = 0; i < path.length; i++) {
+        const p = path[i], tile = this.tile(p.x, p.y);
+        let reason = '';
+        // Stop at the first refusal, so later points cannot skip an obstacle or
+        // reveal information beyond the current visible frontier.
+        if (!tile) reason = 'Restez sur la toile.';
+        else if (!this.isVisible(team, p.x, p.y)) reason = 'Zone hors de vue.';
+        else if (tile.blocked) reason = 'Un obstacle coupe le tracé.';
+        else if (!i && (tile.owner !== team || !tile.connected)) reason = 'Commencez sur votre territoire relié.';
+        else if (tile.owner && tile.owner !== team) reason = 'Les unités et les pouvoirs attaquent la couleur ennemie.';
         const key = p.y * this.width + p.x;
-        if (!tile.owner && !seen.has(key)) { seen.add(key); result.cells.push({ x: p.x, y: p.y }); result.cost = result.cells.length * CONFIG.brushCost; }
+        const newCell = tile && !tile.owner && !seen.has(key);
+        if (!reason && newCell && result.cells.length >= CONFIG.brushLimit) reason = 'Maximum ' + CONFIG.brushLimit + ' nouvelles cases par tracé.';
+        if (!reason && newCell && !this.canSpend(team, (result.cells.length + 1) * CONFIG.brushCost)) reason = 'Pigment insuffisant pour prolonger ce tracé.';
+        if (reason) { result.reason = reason; result.rejectedPath = path.slice(i); break; }
+        result.path.push(copyPoint(p));
+        if (newCell) { seen.add(key); result.cells.push(copyPoint(p)); }
       }
       result.cost = result.cells.length * CONFIG.brushCost;
-      if (!result.cells.length) return fail('Prolongez le trait sur des cases blanches.');
-      if (result.cells.length > CONFIG.brushLimit) return fail('Maximum ' + CONFIG.brushLimit + ' nouvelles cases par tracé.');
-      if (!this.canSpend(team, result.cost)) return fail('Pigment insuffisant pour ce tracé.');
-      return Object.assign(result, { ok: true, message: result.cells.length + ' case' + (result.cells.length > 1 ? 's' : '') + ' · ' + result.cost + ' pigment' + (result.cost > 1 ? 's' : '') });
+      if (!result.cells.length) return fail(result.reason || 'Prolongez le trait sur des cases blanches.');
+      result.ok = true;
+      result.partial = result.rejectedPath.length > 0;
+      result.message = result.cells.length + ' case' + (result.cells.length > 1 ? 's' : '') + ' · ' + result.cost + ' pigment' + (result.cost > 1 ? 's' : '') + (result.partial ? ' · ' + result.reason : '');
+      return result;
     }
     paint(team, path) {
       const result = this.previewPaint(team, path);
@@ -342,7 +354,8 @@
       if (!this.explored[team][y * this.width + x] && !knownStart) return { ok: false, message: 'Explorez cette zone avant de diriger le flux.' };
       if (!this._findPath(producer.x, producer.y, x, y).length && (producer.x !== x || producer.y !== y)) return { ok: false, message: 'Aucun passage vers cette case.' };
       producer.flow = { x, y };
-      for (const unit of this.units) if (unit.team === team && unit.producerId === producer.id && unit.hp > 0) { unit.target = { x, y }; unit.path = []; unit.pathTarget = null; }
+      producer.flowMode = 'attack';
+      for (const unit of this.units) if (unit.team === team && unit.producerId === producer.id && unit.hp > 0) { unit.target = { x, y }; unit.retreating = false; unit.path = []; unit.pathTarget = null; }
       this._event('flow', team, { x, y, producerId });
       return { ok: true, message: 'Le groupe rejoint cette destination.', x, y, producerId };
     }
@@ -358,7 +371,12 @@
       const producer = this.getProducers(team).find(b => b.id === producerId);
       if (!producer) return { ok: false, message: 'Ce producteur n’existe plus.' };
       const result = this.setFlow(team, producerId, producer.x, producer.y);
-      if (result.ok) { result.message = 'Le groupe revient défendre ce bâtiment.'; this._event('recall', team, { x: producer.x, y: producer.y, producerId }); }
+      if (result.ok) {
+        producer.flowMode = 'defend';
+        for (const unit of this.units) if (unit.team === team && unit.producerId === producerId && unit.hp > 0) unit.retreating = sqrDistance(unit, centre(producer)) > .6 ** 2;
+        result.message = 'Le groupe rentre sans riposter, puis défend ce bâtiment.';
+        this._event('recall', team, { x: producer.x, y: producer.y, producerId });
+      }
       return result;
     }
     upgradeCore(team) {
@@ -385,6 +403,12 @@
     _refreshProductionStates() {
       for (const b of this.buildings) if (b.type === 'barracks') [b.productionState, b.productionReason] = this._productionStatus(b);
     }
+    productionOutflow(team) {
+      if (!validTeam(team) || this.winner !== null) return 0;
+      // A nominal rate for the HUD, never a continuous debit or a promise that
+      // the next spawn is affordable. Actual costs are carried by spawn events.
+      return this.buildings.filter(b => b.team === team && b.type === 'barracks' && b.hp > 0 && this._productionStatus(b)[0] === 'running' && this._spawnPosition(b)).length * CONFIG.unitCost / CONFIG.unitInterval;
+    }
     _produce(dt) {
       for (let team = 1; team <= 2; team++) {
         const producers = this.buildings.filter(b => b.team === team && b.type === 'barracks' && b.hp > 0);
@@ -402,7 +426,7 @@
           if (!this.canSpend(team, CONFIG.unitCost) || this.getUnitCount(team) >= CONFIG.unitLimit) continue;
           this.pigment[team] = Math.max(0, this.pigment[team] - CONFIG.unitCost);
           producer.productionProgress = 0;
-          this._addUnit(team, producer, spawn);
+          this._addUnit(team, producer, spawn, CONFIG.unitCost);
           this._productionCursor[team] = (index + 1) % producers.length;
         }
       }
@@ -456,13 +480,17 @@
       }
     }
     _unitTarget(unit) {
+      if (unit.retreating) return null;
+      const producer = this.buildings.find(b => b.id === unit.producerId && b.team === unit.team && b.hp > 0);
+      const anchor = producer && producer.flowMode === 'defend' ? centre(producer) : null;
+      const inDefenseArea = enemy => !anchor || sqrDistance(anchor, centre(enemy)) <= UNIT_STATS.aggro ** 2;
       let best = null, bestDistance = UNIT_STATS.aggro ** 2;
-      for (const enemy of this.units) if (enemy.team !== unit.team && enemy.hp > 0 && this.isVisible(unit.team, enemy.x, enemy.y)) {
+      for (const enemy of this.units) if (enemy.team !== unit.team && enemy.hp > 0 && this.isVisible(unit.team, enemy.x, enemy.y) && inDefenseArea(enemy)) {
         const d = sqrDistance(unit, enemy);
         if (d < bestDistance) { best = enemy; bestDistance = d; }
       }
       if (best) return best;
-      for (const enemy of this.buildings) if (enemy.team !== unit.team && enemy.hp > 0 && this.isVisible(unit.team, enemy.x, enemy.y)) {
+      for (const enemy of this.buildings) if (enemy.team !== unit.team && enemy.hp > 0 && this.isVisible(unit.team, enemy.x, enemy.y) && inDefenseArea(enemy)) {
         const d = sqrDistance(unit, centre(enemy));
         if (d < bestDistance) { best = enemy; bestDistance = d; }
       }
@@ -489,6 +517,7 @@
       // Decide from the same beginning-of-step positions and vision for both camps.
       for (const unit of this.units) if (unit.hp > 0) {
         unit.attackCooldown = Math.max(0, unit.attackCooldown - dt);
+        if (unit.retreating && unit.target && sqrDistance(unit, { x: unit.target.x + .5, y: unit.target.y + .5 }) <= .6 ** 2) unit.retreating = false;
         const enemy = this._unitTarget(unit);
         if (enemy) {
           const enemyCentre = centre(enemy);
@@ -546,7 +575,11 @@
       this.units = this.units.filter(u => u.hp > 0);
       for (const unit of this.units) if (!this.buildings.some(b => b.id === unit.producerId && b.team === unit.team && b.hp > 0)) {
         const core = this.getCore(unit.team);
-        if (core) unit.producerId = core.id;
+        if (core) {
+          unit.producerId = core.id;
+          unit.target = unit.retreating ? { x: core.x, y: core.y } : copyPoint(core.flow) || { x: core.x, y: core.y };
+          unit.path = []; unit.pathTarget = null;
+        }
       }
     }
 
@@ -561,20 +594,23 @@
       const core1 = this.getCore(1), core2 = this.getCore(2);
       if (!core1 || !core2) { this._finish(!core1 && !core2 ? 0 : core1 ? 1 : 2, !core1 && !core2 ? 'Les deux Cœurs ont été effacés.' : core1 ? 'Le Cœur adverse a été effacé.' : 'Votre Cœur a été effacé.'); return; }
       for (let team = 1; team <= 2; team++) {
-        const dominates = this.scores[team] >= CONFIG.domination && this.scores[team] > this.scores[3 - team] + 1e-9;
+        const dominates = this.scores[team] > CONFIG.domination && this.scores[team] > this.scores[3 - team];
         this.hold[team] = dominates ? this.hold[team] + dt : 0;
-        if (dominates && !this._holdActive[team]) this._event('domination', team, { message: '50 % de la toile : tenez 15 secondes.' });
+        if (dominates && !this._holdActive[team]) this._event('domination', team, { message: 'Plus de 50 % de la toile : tenez 15 secondes.' });
         this._holdActive[team] = dominates;
-        if (this.hold[team] + 1e-8 >= CONFIG.holdDuration) { this.hold[team] = CONFIG.holdDuration; this._finish(team, '50 % de territoire relié tenus pendant 15 secondes.'); return; }
+        if (this.hold[team] + 1e-8 >= CONFIG.holdDuration) { this.hold[team] = CONFIG.holdDuration; this._finish(team, 'Plus de 50 % de territoire relié tenus pendant 15 secondes.'); return; }
       }
-      if (this.time + 1e-8 >= this.duration) {
-        this.time = this.duration;
+      if (this.time + 1e-8 >= this.timeLimit) {
+        this.time = this.timeLimit;
         const diff = this.scores[1] - this.scores[2];
-        this._finish(Math.abs(diff) < 1e-9 ? 0 : diff > 0 ? 1 : 2, Math.abs(diff) < 1e-9 ? 'Égalité de territoire à la fin du temps.' : 'Le plus grand territoire relié à la fin du temps.');
+        if (!this.overtime && diff === 0) {
+          this.overtime = true;
+          this._event('overtime', 0, { duration: this.overtimeDuration, timeLimit: this.timeLimit, message: 'Égalité : 30 secondes de prolongation. Chaque case reliée compte.' });
+        } else this._finish(diff === 0 ? 0 : diff > 0 ? 1 : 2, diff === 0 ? 'Égalité de territoire après la prolongation.' : this.overtime ? 'Le plus grand territoire relié après la prolongation.' : 'Le plus grand territoire relié à la fin du temps.');
       }
     }
     _step(dt) {
-      this.time = Math.min(this.duration, this.time + dt);
+      this.time = Math.min(this.timeLimit, this.time + dt);
       if (!this.accelerated && this.time + 1e-8 >= Math.max(0, this.duration - 60)) {
         this.accelerated = true;
         this._event('acceleration', 0, { message: 'Dernière minute : pigment ×1,5 pour les deux camps.' });
@@ -591,7 +627,7 @@
       this._accumulator += dt;
       while (this._accumulator + 1e-9 >= CONFIG.step && this.winner === null) {
         this._accumulator -= CONFIG.step;
-        this._step(Math.min(CONFIG.step, this.duration - this.time));
+        this._step(Math.min(CONFIG.step, this.timeLimit - this.time));
       }
       if (this.winner !== null) this._accumulator = 0;
     }

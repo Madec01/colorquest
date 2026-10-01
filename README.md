@@ -2,15 +2,18 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
-## V0.7 — peindre et jouer des cartes
+## V0.7.1 — apprendre à peindre et commander au doigt
 
-**Combat à cartes** est le nouveau prototype, accessible en tête du menu : un duel de quatre minutes maximum, pensé pour téléphone en portrait. La campagne et le mode libre V0.6 restent accessibles avec leurs sauvegardes.
+Le nouveau mode est accessible en tête du menu, avec **Apprendre à peindre** et **Combat libre**. Le duel dure au plus quatre minutes, avec trente secondes de prolongation si les territoires connectés sont exactement égaux. La campagne et le mode libre classiques restent accessibles avec leurs sauvegardes.
 
-- **Peindre** : choisir le pinceau, tracer depuis sa couleur sur le terrain neutre visible, puis confirmer. Chaque nouvelle case coûte du pigment ; le pinceau reste toujours disponible, indépendamment des cartes.
-- **Construire** : glisser une des quatre cartes sur son territoire connecté, ou la choisir puis toucher la toile. La carte suivante est annoncée. L’extracteur se pose sur une source ; les pouvoirs peuvent atteindre une cible visible à portée, y compris ennemie.
-- **Commander** : glisser depuis une caserne pour envoyer toutes ses unités et les suivantes. Toucher la caserne suspend sa production ; maintenir le doigt rappelle ses unités. Les unités sont payées à leur sortie, avec la même jauge que les cartes. Les achats automatiques attendent pendant la visée d’un tracé ou d’une carte.
-- **Gagner** : effacer le Cœur adverse, tenir 50 % du terrain connecté avec une avance pendant 15 secondes, ou avoir le plus grand territoire à la fin. La dernière minute accélère la recharge des deux camps. Une égalité finale donne un match nul.
-- **Apprendre et se déplacer** : l’apprentissage accompagne trois actions réelles — peindre, déployer une caserne et envoyer son flux. Le mode navigation et le pincement permettent de déplacer et zoomer la carte.
+- **Peindre** : toucher Pinceau, tracer depuis sa couleur connectée sur le blanc visible, puis lever le doigt. Le chemin et son coût sont montrés avant l’achat. Une portion impossible apparaît en pointillés rouges ; seule la partie valide qui la précède est peinte et payée. Revenir au départ annule le trait. Après un trait, retour à la navigation ; un double toucher sur le bouton Pinceau le verrouille, un toucher le déverrouille.
+- **Jouer une carte** : glisser depuis la main et lâcher sur une case valide ; revenir dans la main annule. On peut aussi toucher une carte puis son emplacement. Bâtiments sur son réseau, extracteurs sur une source, pouvoirs sur une cible visible à portée. La main conserve quatre cartes et annonce la suivante.
+- **Inspecter** : toucher un bâtiment ou une source affiche son rôle et son état. La pause d’une caserne passe par le bouton de sa fiche ; consulter la fiche ne modifie pas sa production.
+- **Commander** : glisser depuis une caserne ou le Cœur redirige son groupe. Glisser depuis le producteur puis revenir dessus rappelle ses unités ; le bouton Rappeler offre le même ordre. Elles rentrent sans riposter, restent vulnérables, puis défendent à l’arrivée. Un envoi normal combat sur le trajet.
+- **Comprendre les dépenses** : une caserne forme une goutte toutes les cinq secondes de production, pour six pigments prélevés à sa sortie. La jauge montre le revenu et la consommation prévue des producteurs actifs ; chaque sortie affiche son prélèvement. Les producteurs attendent pendant la visée, faute de pigment, hors réseau ou au plafond d’unités.
+- **Gagner** : effacer le Cœur adverse, tenir strictement plus de 50 % du territoire connecté avec une avance pendant 15 secondes, ou avoir le plus grand territoire à la fin du temps. En cas d’égalité à quatre minutes, prolongation de trente secondes : au terme, une seule case d’avance suffit ; égalité persistante = match nul. La dernière minute accélère la recharge des deux camps, y compris pendant la prolongation.
+- **Apprendre** : six situations introduisent rejoindre une source, poser l’extracteur, produire et attaquer, reconnecter par le terrain neutre, rappeler pour défendre, puis dominer. Un objectif à la fois, avec les commandes du combat. Le revenu de la source vient de l’extracteur ; une case ennemie ne peut pas être repeinte au pinceau.
+- **Se repérer** : silhouettes distinctes, sources dorées, groupes et destinations visibles, hachures et lien rompu sur un secteur isolé. L’isolement arrête la production et retire ce territoire du score connecté ; aucun compte à rebours de disparition. Le pincement et les boutons +/− permettent de zoomer, le mode Vue de déplacer la toile.
 
 Le prototype se met en pause et se reprend **tant que cette page reste ouverte**. Fermer ou recharger la page recommence ce combat ; les sauvegardes classiques restent conservées. Le passage en arrière-plan ne fait pas avancer la simulation.
 
@@ -96,9 +99,11 @@ node tests/barracks.test.cjs
 node tests/paint-engine.test.cjs
 node tests/paint-ai.test.cjs
 node tests/paint-balance.test.cjs
+node tests/paint-tutorial.test.cjs
+node tests/paint-renderer.test.cjs
 ```
 
-Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs`, `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs`, `tests/readability.browser.cjs`, `tests/paint.browser.cjs` et `tests/paint-integration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs`, `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs`, `tests/readability.browser.cjs`, `tests/paint.browser.cjs`, `tests/paint-tutorial.browser.cjs` et `tests/paint-integration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
 ## Principe du mode classique
 
@@ -110,10 +115,11 @@ Les contrôles et les prix sont indiqués dans le jeu. Commencez par la campagne
 
 ## Fichiers
 
-- `paint-engine.js` : règles, cartes, pinceau, réseau, production et combat V0.7.
+- `paint-engine.js` : règles, cartes, pinceau, réseau, production et combat V0.7.1.
 - `paint-ai.js` : décisions du nouvel adversaire depuis sa perception limitée.
 - `paint-renderer.js` : rendu de la toile, des camps, des flux et des effets.
-- `paint.js` / `paint.css` : interface tactile, caméra, apprentissage et reprise en mémoire du prototype.
+- `paint.js` / `paint.css` : interface tactile, caméra, inspection et reprise en mémoire du prototype.
+- `paint-tutorial.js` / `paint-tutorial.css` : six situations d’apprentissage avec objectifs, guidage et progression propres au mode peinture.
 - `engine.js` : simulation, économie, déplacements, combats, IA et conditions de victoire.
 - `missions.js` : cinq scénarios, restrictions, objectifs et opposition de campagne.
 - `campaign.js` / `campaign.css` : choix des missions, déblocages, guidage et interface progressive.

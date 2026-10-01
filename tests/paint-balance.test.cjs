@@ -15,7 +15,7 @@ for (const seed of seeds) {
   const paint = game.paint, playCard = game.playCard;
   game.paint = function (...args) { const result = paint.apply(this, args); if (args[0] === 2 && result.ok) painted++; return result; };
   game.playCard = function (...args) { const result = playCard.apply(this, args); if (args[0] === 2 && result.ok) played++; return result; };
-  for (let frame = 0; frame < 2401 && game.winner === null; frame++) {
+  for (let frame = 0; frame < 2701 && game.winner === null; frame++) {
     game.update(.1); AI.update(game, .1);
     if (firstDamage === null && (!game.getCore(1) || game.getCore(1).hp < initialHp)) firstDamage = game.time;
     peakArmy = Math.max(peakArmy, game.units.filter(unit => unit.team === 2).length);
@@ -25,7 +25,7 @@ for (const seed of seeds) {
     assert.ok(game.units.every(unit => Number.isFinite(unit.x) && Number.isFinite(unit.y) && Number.isFinite(unit.hp)));
   }
   assert.equal(game.winner, 2, `AI must really beat an idle opponent (seed ${seed})`);
-  assert.ok(game.time <= 240.01, `Combat cannot stall (seed ${seed})`);
+  assert.ok(game.time <= 270.01, `Combat cannot stall (seed ${seed})`);
   assert.ok(firstProducer !== null && firstProducer < 8, 'Immediate paid development');
   assert.ok(firstSource !== null && firstSource < 55, 'Develops a real source economy');
   assert.ok(firstDamage === null || firstDamage >= AI.CORE_PUSH, `No idle-player core rush: ${firstDamage}`);
@@ -110,13 +110,13 @@ const styles = [];
 for (const style of ['painter', 'pressure', 'defense']) for (const seed of [7, 29]) {
   const game = new Game({ seed }), player = playerPolicy(style, seed);
   let firstDamage = null;
-  for (let frame = 0; frame < 2401 && game.winner === null; frame++) {
+  for (let frame = 0; frame < 2701 && game.winner === null; frame++) {
     game.update(.1); player(game); AI.update(game, .1);
     if (firstDamage === null && (!game.getCore(1) || game.getCore(1).hp < game.getCore(1).maxHp)) firstDamage = game.time;
     assert.ok(game.pigment.every(value => Number.isFinite(value) && value >= -1e-8 && value <= CONFIG.pigmentCap + 1e-8));
   }
   assert.notEqual(game.winner, null, `${style} must finish`);
-  assert.ok(game.time <= 240.01);
+  assert.ok(game.time <= 270.01);
   styles.push({ style, seed, winner: game.winner, time: +game.time.toFixed(1),
     firstDamage: firstDamage === null ? null : +firstDamage.toFixed(1), reason: game.winReason,
     scores: game.scores.map(score => +score.toFixed(3)) });
@@ -129,12 +129,12 @@ for (const seed of [7, 42]) {
   const results = [];
   for (const first of [1, 2]) {
     const game = new Game({ seed });
-    for (let frame = 0; frame < 2401 && game.winner === null; frame++) {
+    for (let frame = 0; frame < 2701 && game.winner === null; frame++) {
       game.update(.1);
       AI.update(game, .1, first); AI.update(game, .1, 3 - first);
     }
     assert.notEqual(game.winner, null, 'Self-play must also finish');
-    assert.ok(game.time <= 240.01);
+    assert.ok(game.time <= 270.01);
     assert.ok(game.scores.every(Number.isFinite));
     results.push({ first, winner: game.winner, time: +game.time.toFixed(1), scores: game.scores.map(score => +score.toFixed(3)) });
   }
