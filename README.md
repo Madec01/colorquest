@@ -2,9 +2,23 @@
 
 Un RTS minimaliste conçu en priorité pour téléphone en portrait : colorez la toile, développez un réseau de relais et coupez celui de votre adversaire.
 
+## V0.7 — peindre et jouer des cartes
+
+**Combat à cartes** est le nouveau prototype, accessible en tête du menu : un duel de quatre minutes maximum, pensé pour téléphone en portrait. La campagne et le mode libre V0.6 restent accessibles avec leurs sauvegardes.
+
+- **Peindre** : choisir le pinceau, tracer depuis sa couleur sur le terrain neutre visible, puis confirmer. Chaque nouvelle case coûte du pigment ; le pinceau reste toujours disponible, indépendamment des cartes.
+- **Construire** : glisser une des quatre cartes sur son territoire connecté, ou la choisir puis toucher la toile. La carte suivante est annoncée. L’extracteur se pose sur une source ; les pouvoirs peuvent atteindre une cible visible à portée, y compris ennemie.
+- **Commander** : glisser depuis une caserne pour envoyer toutes ses unités et les suivantes. Toucher la caserne suspend sa production ; maintenir le doigt rappelle ses unités. Les unités sont payées à leur sortie, avec la même jauge que les cartes. Les achats automatiques attendent pendant la visée d’un tracé ou d’une carte.
+- **Gagner** : effacer le Cœur adverse, tenir 50 % du terrain connecté avec une avance pendant 15 secondes, ou avoir le plus grand territoire à la fin. La dernière minute accélère la recharge des deux camps. Une égalité finale donne un match nul.
+- **Apprendre et se déplacer** : l’apprentissage accompagne trois actions réelles — peindre, déployer une caserne et envoyer son flux. Le mode navigation et le pincement permettent de déplacer et zoomer la carte.
+
+Le prototype se met en pause et se reprend **tant que cette page reste ouverte**. Fermer ou recharger la page recommence ce combat ; les sauvegardes classiques restent conservées. Le passage en arrière-plan ne fait pas avancer la simulation.
+
+Cet essai valide d’abord le plaisir et la lisibilité du combat. Courses, récompenses, vernis, chevalet, mélanges de cartes, galerie et alliances viennent ensuite ; ils ne sont pas encore disponibles.
+
 ## V0.6 — apprendre en jouant
 
-La **campagne** est le point de départ conseillé : cinq missions, une nouveauté à la fois et uniquement les commandes utiles à l’écran.
+Dans le **mode classique**, la campagne propose cinq missions, une nouveauté à la fois et uniquement les commandes utiles à l’écran.
 
 1. **Première tache** : atteindre une zone avec des relais, sans adversaire.
 2. **La source** : relier une source et y construire un extracteur.
@@ -58,7 +72,7 @@ Ouvrir le jeu en HTTPS, puis utiliser **Installer sur mon téléphone** dans le 
 
 Attendre l’indication de disponibilité hors ligne lors de la première ouverture. Ensuite les fichiers du jeu peuvent être chargés sans réseau. Les mises à jour sont proposées sans rechargement imposé pendant une partie.
 
-Le cache hors ligne conserve les fichiers du jeu ; la sauvegarde locale conserve séparément la progression. L’installation n’est pas disponible depuis un simple fichier local. Les sauvegardes existent depuis la V0.4 ; une partie d’une version antérieure ne peut pas être récupérée rétroactivement.
+Le cache hors ligne conserve les fichiers des deux modes ; la sauvegarde locale conserve séparément les parties et la progression classiques. Le combat prototype reste uniquement dans la page ouverte. L’installation n’est pas disponible depuis un simple fichier local. Les sauvegardes existent depuis la V0.4 ; une partie d’une version antérieure ne peut pas être récupérée rétroactivement.
 
 ## Jouer
 
@@ -79,11 +93,14 @@ node tests/world.test.cjs
 node tests/balance.test.cjs
 node tests/missions.test.cjs
 node tests/barracks.test.cjs
+node tests/paint-engine.test.cjs
+node tests/paint-ai.test.cjs
+node tests/paint-balance.test.cjs
 ```
 
-Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs` et `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs` et `tests/readability.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
+Tests navigateur : installer Playwright et son navigateur Chromium dans votre environnement de développement, puis exécuter les fichiers `tests/camera.browser.cjs`, `tests/tutorial.browser.cjs`, `tests/v03.browser.cjs`, `tests/pwa.browser.cjs`, `tests/session.browser.cjs`, `tests/palette.browser.cjs`, `tests/world.browser.cjs`, `tests/alerts.browser.cjs`, `tests/migration.browser.cjs`, `tests/campaign.browser.cjs`, `tests/campaign-session.browser.cjs`, `tests/campaign-camera.browser.cjs`, `tests/barracks.browser.cjs`, `tests/readability.browser.cjs`, `tests/paint.browser.cjs` et `tests/paint-integration.browser.cjs` avec `node`. La variable `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permet de sélectionner un navigateur déjà installé. Le jeu lui-même ne nécessite aucune dépendance.
 
-## Principe
+## Principe du mode classique
 
 Développez votre territoire avec les relais, exploitez les sources de pigment et recrutez une armée. Seul le terrain relié au Cœur compte pour la domination. Couper une liaison affaiblit toute une branche.
 
@@ -93,6 +110,10 @@ Les contrôles et les prix sont indiqués dans le jeu. Commencez par la campagne
 
 ## Fichiers
 
+- `paint-engine.js` : règles, cartes, pinceau, réseau, production et combat V0.7.
+- `paint-ai.js` : décisions du nouvel adversaire depuis sa perception limitée.
+- `paint-renderer.js` : rendu de la toile, des camps, des flux et des effets.
+- `paint.js` / `paint.css` : interface tactile, caméra, apprentissage et reprise en mémoire du prototype.
 - `engine.js` : simulation, économie, déplacements, combats, IA et conditions de victoire.
 - `missions.js` : cinq scénarios, restrictions, objectifs et opposition de campagne.
 - `campaign.js` / `campaign.css` : choix des missions, déblocages, guidage et interface progressive.

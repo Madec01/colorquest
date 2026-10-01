@@ -26,12 +26,12 @@ Dernière mise à jour : 1er octobre 2026.
 - [x] J8 / V0.5 — Trois cartes, réserves et sources riches, terrains, perception limitée de l’IA et alertes tactiles (périmètre validé le 30/09).
 - [x] J9 / V0.6 — Cinq missions progressives, interface adaptée à chaque niveau, construction avec aperçu/confirmation et caserne avancée livrées. Parcours tactiles vérifiés ; compréhension et plaisir à confirmer avec Martin avant la suite.
 - [x] J10 — Analyse du plaisir de jeu et choix d’une nouvelle direction, validés par Martin le 1er octobre (documentation uniquement).
-- [ ] J11 / V0.7 — Prototype « combat à cartes » : un seul combat jouable avec jauge de pigment, main de cartes, trait d’encre au doigt, envoi par glisser et simplifications validées. Essai de Martin avant la suite.
-- [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de pigments entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
+- [x] J11 / V0.7 — Combat d’essai isolé livré : quatre minutes maximum, pinceau permanent, quatre cartes, production automatique, flux et apprentissage propre. Vérifications moteur, gestes et compatibilité ; essai de Martin attendu avant la suite.
+- [ ] J12 / V0.8 — Course roguelite : carte de chapitre, choix de cartes et de vernis entre les combats, mélange des couleurs, adversaires à caractère, histoire courte, sauvegarde de course.
 - [ ] J13 / V0.9 — Envie de revenir : galerie de tableaux, défi du jour, étoiles, collection, rejeu accéléré, sensations et musique.
 - [ ] J14 — Plusieurs camps et alliances (ancienne V0.8), reportés après la validation de la nouvelle boucle.
 
-V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans calendrier annoncé : rien de la nouvelle direction n’est encore développé.
+V0.6 reste accessible pendant l’essai. Le Go du 1er octobre a lancé la V0.7 livrée ici ; V0.8 et les étapes suivantes restent à réaliser après validation du plaisir et de la lisibilité.
 
 ## Retour après V0.5 — plaisir de jeu à renforcer
 
@@ -42,7 +42,7 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 - Précision suivante le 30/09 : Martin souhaite des niveaux débloquant progressivement les possibilités, les premières missions servant à apprendre les bases. Il signale explicitement que le jeu reste difficile à lire et à comprendre même après le tutoriel.
 - Autre direction demandée : plusieurs IA dans les niveaux élevés, alliances possibles et mélange des couleurs pour les zones de l’alliance. Conserver cette identité visuelle tout en distinguant les armées commandables des armées alliées.
 
-## Nouvelle direction validée — 1er octobre 2026 (rien n’est encore implémenté)
+## Nouvelle direction validée — 1er octobre 2026
 
 ### Constat qui motive le changement
 
@@ -65,25 +65,21 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 - **Toutes les idées C** (rétention et ambiance).
 - **Toutes les simplifications D**.
 
-### Boucle d’un combat (3 à 5 minutes)
+### Boucle du prototype V0.7 (quatre minutes maximum)
 
-1. **Jauge de pigment en temps réel.** Elle se recharge avec le territoire connecté et les sources ; elle remplace l’attente actuelle par des décisions fréquentes. Une seule ressource, comme aujourd’hui.
-2. **Main de 4 cartes** tirée d’un deck d’environ 8 à 12 cartes construit pendant la course. On glisse une carte sur la toile pour la jouer ; une carte jouée est remplacée par la suivante du deck.
-3. **Déploiement sur son territoire connecté uniquement.** Le territoire devient la zone où l’on peut agir ; couper le réseau adverse lui retire des zones de déploiement. La coupure de réseau reste au centre du jeu.
-4. **Types de cartes :**
-   - *Trait d’encre* : tracer au doigt depuis son territoire ; la longueur dépend du pigment dépensé. Étend le territoire ou recolle un réseau coupé ; l’adversaire peut le couper.
-   - *Bâtiments* : relais, extracteur, bastion, caserne, puis les candidats du catalogue (réservoir, mortier, observatoire, portails).
-   - *Producteurs d’unités* : une carte installe un producteur qui génère des unités en continu.
-   - *Pouvoirs* : vague, gomme, éclaboussure ; effets visibles et contre-jeu possible.
-5. **Armée en flux.** Les unités sortent seules des producteurs. Un glisser d’un bâtiment vers une cible envoie le flux ; un toucher sur le bâtiment l’arrête. Plus de sélection d’unités, d’escouades ni de postures.
-6. **Victoire claire et rapide** : effacer le Cœur adverse ou remplir sa « jauge de tableau ». Au-delà de la durée maximale, une mort subite accélère la fin. Les règles exactes restent à régler sur le prototype.
-7. **Le geste « peindre » ne doit jamais se confondre avec le déplacement de la caméra** : une carte tirée sur la toile passe en mode tracé, avec un aperçu et une annulation, comme la confirmation de construction de V0.6.
+1. **Jauge de pigment en temps réel.** Le Cœur garantit une recharge ; le réseau et les extracteurs l’augmentent. La production d’unités partage cette jauge avec les cartes et le pinceau.
+2. **Pinceau permanent, hors de la main.** Choisir Pinceau, tracer depuis son réseau sur des cases neutres visibles et praticables, puis confirmer le coût. Le territoire créé est durable. On peut reconnecter une branche ; on ne repeint pas directement une case ennemie.
+3. **Quatre cartes et la suivante visible**, dans un paquet de huit. Une carte jouée rejoint la fin du paquet ; une action refusée ne dépense rien et ne change pas la main. Le prototype utilise relais, caserne, extracteur, bastion, vague, gomme et éclaboussure.
+4. **Déploiement et ciblage distincts.** Les bâtiments exigent une case libre de son réseau ; l’extracteur exige une source. Les pouvoirs visent une case visible à portée du réseau, y compris chez l’ennemi. Une carte peut être glissée depuis la main ou choisie puis placée au toucher.
+5. **Armée en flux.** La caserne produit automatiquement, chaque unité étant payée à sa sortie. Glisser d’un producteur vers une destination redirige toutes ses unités et les suivantes. Toucher suspend/reprend sa production sans changer les ordres ; l’appui long rappelle son groupe. Les survivants d’une caserne détruite sont rattachés au Cœur.
+6. **Victoire visible.** Effacer le Cœur adverse, tenir au moins 50 % du terrain praticable connecté avec une avance stricte pendant 15 s, ou avoir le plus grand territoire au bout de quatre minutes. Une égalité finale donne un match nul. La recharge des deux camps est multipliée par 1,5 pendant la dernière minute, annoncée à l’écran.
+7. **Gestes séparés.** Navigation et pinceau ont des modes explicites. Pincer ou annuler abandonne l’aperçu sans achat. Les prélèvements automatiques des casernes attendent pendant la visée, puis reprennent à la validation ou à l’annulation ; l’IA et le combat continuent.
 
-### Course roguelite
+### Course roguelite (étape suivante, non livrée dans V0.7)
 
-- Une course = 5 à 7 combats sur une carte de chapitre à embranchements : combat, combat d’élite, atelier, événement, boss. La course peut être interrompue et reprise, sans simuler le temps d’absence.
-- **Après chaque combat**, choisir une récompense parmi 3 : une nouvelle carte, l’amélioration d’une carte ou un **pigment** (effet passif pour la course, par exemple trait plus long, relais qui éclaboussent à leur destruction, unités qui laissent une traînée de couleur).
-- **Atelier** : retirer une carte du deck, améliorer, ou mélanger.
+- Une course = 5 à 7 combats sur une carte de chapitre à embranchements : combat, combat d’élite, chevalet, événement, boss. La course peut être interrompue et reprise, sans simuler le temps d’absence.
+- **Après chaque combat**, choisir une récompense parmi 3 : une nouvelle carte, l’amélioration d’une carte ou un **vernis** (effet passif pour la course, par exemple trait plus long, relais qui éclaboussent à leur destruction, unités qui laissent une traînée de couleur).
+- **Chevalet** : retirer une carte du deck, améliorer, ou mélanger.
 - **Mélange des couleurs comme système.** Chaque carte porte une couleur primaire ; jouer deux couleurs différentes au même endroit en peu de temps crée un mélange avec un effet propre (exemple : bleu + jaune = vert qui régénère ; à équilibrer). Les couleurs de camp choisies dans le menu restent cosmétiques et distinctes des couleurs de cartes.
 - Une défaite termine la course ; les déblocages de collection et la galerie sont conservés. Éviter les bonus permanents de puissance qui rendraient les premières courses triviales.
 
@@ -110,12 +106,14 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 ### Conséquences et questions à trancher
 
 - **Sauvegardes** : ces changements modifient l’état moteur persistant (deck, main, jauge, course, collection). Il faudra un nouveau schéma de snapshot, une migration ou une séparation claire des anciennes parties, et conserver les fixtures V0.4/V0.5 tant que les anciens modes restent jouables.
-- **Campagne V0.6 et mode libre actuels** : à décider avec Martin — les garder comme mode « classique », les convertir en tutoriel du nouveau mode, ou les retirer. Proposition : les garder accessibles tant que le prototype n’est pas validé.
+- **Campagne V0.6 et mode libre actuels** : conservés comme modes classiques pendant l’essai, avec leurs sauvegardes. Leur maintien à long terme reste à décider ; l’apprentissage du prototype utilise ses propres commandes.
 - **IA** : elle doit jouer avec les mêmes cartes, la même jauge et la même vision limitée ; garder les tests d’indépendance vis-à-vis des états cachés.
 - **Plusieurs camps et alliances** : toujours souhaités, reportés après la validation de la nouvelle boucle ; le mélange de couleurs des cartes et celui des alliances devront rester distinguables.
 - **PWA** : tout nouveau module ou asset doit entrer dans le précache, et RELEASE doit changer dans sw.js.
 
-### Précisions de règles proposées (questions relues le 1er octobre, à valider par Martin)
+### Dix précisions de règles (validées pour le prototype par le Go du 1er octobre)
+
+Les réponses de Claude du commit `d3d9176` sont la base du prototype. Les adaptations pratiques précisées après la liste règlent les gestes, l’équité et les égalités.
 
 1. **Trait d’encre = pinceau permanent**, hors de la main de cartes : toujours disponible, payé case par case avec la jauge (longueur maximale bornée). Il part de son territoire connecté, ne traverse que des cases neutres et franchissables, et crée du territoire normal, non temporaire : l’adversaire le reprend avec ses unités ou le coupe. Il ne repeint pas directement le territoire ennemi. Des cartes peuvent modifier le pinceau (trait large, trait rapide).
 2. **Trois notions distinctes pour jouer une carte** : *origine* (où commence le geste : toujours son territoire connecté), *emplacement* (bâtiments et producteurs : uniquement sur son territoire connecté) et *cible* (pouvoirs : toute case visible à portée limitée de son territoire connecté, y compris en territoire ennemi).
@@ -128,15 +126,17 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 9. **Trois usages de la couleur, trois rendus** : l’aplat de territoire et la couleur des unités et bâtiments sont réservés au camp ; les couleurs de cartes et leurs mélanges apparaissent seulement sur la carte jouée et sous forme d’éclaboussures à motif (hachures, points, rayures) et d’icônes de forme, qui s’effacent après quelques secondes ; l’alliance utilise la teinte mélangée pour le sol, tandis que unités et bâtiments gardent la couleur de leur camp avec un signe d’alliance. Rien ne doit reposer sur la seule teinte.
 10. **Mode classique** : conservé tel quel pendant l’essai, gelé (corrections seulement, sauvegardes préservées). Recommandation : ne pas le convertir en tutoriel du nouveau mode, car ses commandes (sélection, ordres, améliorations) contredisent les simplifications ; écrire un tutoriel propre au nouveau mode, puis décider avec Martin du retrait ou de la conservation du classique.
 
-### Avis technique sur les dix précisions — 1er octobre 2026 (à arbitrer)
+### Avis technique du 1er octobre et choix appliqués après le Go
 
 - Martin indique que Claude Code est le directeur du gameplay et de la direction artistique. Codex assure l’implémentation, l’intégration et les tests ; ses réserves de conception sont exposées comme avis, sans remplacer les arbitrages de Claude Code et Martin.
-- Lecture du commit `d3d9176` : avis favorable à cette base de prototype. Le pinceau permanent est hors de la main ; la main conserve donc quatre cartes, et non les trois cartes tournantes proposées précédemment par Codex. Peinture normale sur terrain neutre, noms pigment/vernis/chevalet, distinction visuelle des couleurs et conservation provisoire du classique sont cohérents. Cet avis ne transforme pas les dix propositions « à valider par Martin » en décisions validées.
+- Lecture du commit `d3d9176` : avis favorable à cette base de prototype. Le pinceau permanent est hors de la main ; la main conserve donc quatre cartes, et non les trois cartes tournantes proposées précédemment par Codex. Peinture normale sur terrain neutre, noms pigment/vernis/chevalet, distinction visuelle des couleurs et conservation provisoire du classique sont cohérents. Cet avis précédait le Go de Martin ; les dix précisions sont désormais appliquées au prototype.
 - **Point 2 — origine du geste :** distinguer l’ancrage dans le monde du départ physique du doigt. Une carte glissée depuis la main commence forcément dans l’interface. L’origine connectée doit désigner le point d’ancrage sur la toile ; le pinceau, lui, commence bien sur une case connectée.
 - **Point 3 — production et budget :** le paiement à la sortie est une bonne base à tester. Plusieurs producteurs peuvent cependant absorber automatiquement la jauge et empêcher de peindre/jouer une carte. Montrer les coûts/cadences et proposer, si nécessaire, une protection du budget pendant un geste de placement/tracé ; ne pas ajouter d’office un nouveau système économique.
 - **Point 4 — gestes et affiliation :** le retour d’un glisser sur son propre point de départ doit être distingué du toucher qui suspend la production. Variante proposée à Claude : appui long pour rappeler, si le glisser-retour est ambigu à l’essai. La destruction d’un producteur ne doit pas laisser ses unités survivantes impossibles à commander ; proposition de rattachement au Cœur. Le glisser doit changer la destination du groupe, sans téléporter les unités.
 - **Point 6 — domination :** seuil de 50 % pendant 15 s acceptable comme hypothèse d’équilibrage, non comme durée de partie garantie. Exiger une avance stricte pour éviter deux victoires à 50/50 et fixer le traitement de l’égalité à la fin du temps. L’accélération de recharge finale doit être annoncée et identique pour les deux camps ; c’est une accélération de fin de combat, pas encore une définition complète de mort subite.
-- Documentation uniquement pour cette session. Les dix propositions restent identifiées comme telles, le prototype n’est pas lancé et aucun nouveau test de gameplay n’a été exécuté.
+- **Choix d’implémentation après le Go :** appui long pour rappeler le flux ; survivants rattachés au Cœur ; prélèvements automatiques suspendus pendant la visée ; avance stricte pour la domination et match nul en cas d’égalité finale.
+- **Vision du pinceau :** seules les cases neutres visibles sont peintes. Le réseau révèle ses alentours, permettant d’avancer par tracés successifs ; refuser une zone hors de vue sans dévoiler si elle contient un adversaire. Cette précision s’applique aussi à l’IA.
+- **Périmètre :** un combat isolé et son apprentissage, conservé uniquement en mémoire dans cette page. Aucune nouvelle sauvegarde de course avant l’essai ; sauvegardes classiques inchangées. Les vérifications effectives de la livraison sont consignées en fin de document.
 
 ### Ordre de réalisation proposé
 
@@ -145,7 +145,9 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
 4. Ensuite seulement : plusieurs camps et alliances.
 
-### Relecture critique et idées — 1er octobre 2026 (propositions à discuter)
+### Relecture critique antérieure aux dix réponses — historique du 1er octobre
+
+Cette relecture conserve l’origine des questions et des idées. Les dix réponses validées et les choix du prototype ci-dessus priment sur les variantes historiques ci-dessous.
 
 - Relecture demandée par Martin de l’analyse, des ajouts, des retraits et des conséquences. Source : branche `claude/affectionate-dirac-ckdw8k`, commit `cba35dc`, distincte de `main` qui contient toujours la V0.6. Cette section constitue un avis de conception ; elle ne transforme pas les propositions ci-dessous en décisions validées.
 - Compréhension : le pivot porte sur la boucle entière — peinture directe, cartes, armée en flux, combats courts et choix entre combats — en conservant la toile, la connexion au Cœur, la priorité portrait et l’IA à perception limitée. Les alliances restent souhaitées, mais arrivent après ce pivot.
@@ -268,6 +270,8 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ### Catalogue de nouveautés à débloquer progressivement
 
+Catalogue issu du RTS et de la campagne V0.6 ; les candidats futurs seront adaptés aux cartes, aux flux et à la progression roguelite. Ils ne sont pas tous inclus dans V0.7.
+
 #### Nouveaux bâtiments proposés
 
 | Bâtiment | Rôle distinct | Choix et contre-jeu |
@@ -275,19 +279,18 @@ Demandes implémentées ; vérifications décrites en bas du document :
 | Caserne avancée | Ouvre une file de recrutement supplémentaire près du front ; le Cœur conserve le recrutement de départ. | Investir dans une base avancée ou dans l’armée existante. Prix des unités et plafond total conservés ; coupure du réseau suspend la production. |
 | Réservoir d’encre | Accumule une autonomie limitée quand il est connecté ; maintient brièvement les bâtiments proches en fonctionnement après une coupure. | Protéger un secteur clé, avec une portée et une réserve bornées. Recharge seulement après reconnexion ; aucun revenu créé par le réservoir lui-même. Le territoire isolé ne compte toujours pas pour la domination. |
 | Mortier de peinture | Bombarde lentement une zone désignée à longue portée, avec une éclaboussure visible et un délai permettant l’esquive. | Préparer un siège et protéger l’installation ; portée minimale et vulnérabilité au contact. Le bastion reste la défense automatique de proximité. |
-| Atelier de pigments | Héberge des recherches qui changent les comportements des unités, en lien avec la spécialisation déjà choisie. | Investir dans une évolution ou dans des renforts immédiats. Choix exclusifs ; éviter un deuxième arbre parallèle aux spécialisations existantes. |
 | Portails jumelés | Transfèrent un groupe entre deux points de son réseau, avec une capacité limitée et un temps de recharge. | Investissement dans deux bâtiments ; les deux doivent rester connectés et la coupure d’un seul désactive le transfert. À évaluer sur les petites cartes pour ne pas rendre les déplacements sans intérêt. |
 | Observatoire | Révèle brièvement les mouvements dans une zone choisie grâce à une impulsion de reconnaissance. | Dépenser pour l’information et anticiper un raid ; bâtiment fragile, intervalle entre impulsions et mêmes règles pour l’IA. Pas de suivi permanent hors vision. |
 
-- Bâtiments prioritaires : caserne avancée, réservoir et mortier, introduits séparément dans la campagne. Ils apportent production, résistance aux coupures et siège, avec des synergies progressives. L’atelier, les portails et l’observatoire restent des candidats suivants.
+- Bâtiments prioritaires : caserne avancée, réservoir et mortier, introduits séparément dans la campagne. Ils apportent production, résistance aux coupures et siège, avec des synergies progressives. Les portails et l’observatoire restent des candidats suivants. L’Atelier de pigments est retiré : pas de second arbre de recherches.
 - Exemple de combinaison : établir une caserne près du front, la soutenir avec un réservoir puis protéger un mortier ; l’investissement détourne du pigment des recrutements et expose une base coûteuse. Une attaque rapide ou une coupure prolongée doit permettre de la contrer.
 - Préserver le démarrage progressif : recrutement initial au Cœur, déblocages graduels, coûts à tester et aucun nouveau type de monnaie. Menu de construction lisible au pouce, catégories simples et aperçu de portée/effet avant placement. Les nouvelles fonctions doivent être utilisables par l’IA et incluses dans la sauvegarde.
 
 #### Actions et objectifs complémentaires
 
-1. **Peindre pour agir.** Pouvoir signature « Trait d’encre » : tracer un passage temporaire depuis son réseau pour reconnecter une branche ou préparer une avancée. Longueur bornée, terrain visible et franchissable, expiration clairement annoncée ; l’adversaire peut couper le passage. Mode de pouvoir explicite avec aperçu pour ne pas confondre dessin et déplacement de caméra. Faire évoluer les deux pouvoirs existants progressivement : une vague qui disperse un groupe, une gomme ciblée qui fragilise une liaison. Effets visibles et possibilité de contre-jeu ; pas de destruction instantanée du Cœur.
+1. **Peindre pour agir.** Pinceau permanent hors de la main : tracer du territoire normal depuis son réseau pour reconnecter une branche ou préparer une avancée. Longueur bornée, terrain neutre visible et franchissable ; l’adversaire peut reprendre ou couper le passage. Mode de pinceau explicite avec aperçu pour ne pas confondre dessin et déplacement de caméra. Faire évoluer les deux pouvoirs existants progressivement : une vague qui disperse un groupe, une gomme ciblée qui fragilise une liaison. Effets visibles et possibilité de contre-jeu ; pas de destruction instantanée du Cœur.
 2. **Une occasion à saisir sur la carte.** Fontaine d’encre temporaire, annoncée avant activation, capturée en tenant la zone sans adversaire. Une seule active ; apparition prévue et équitable entre les camps. Récompense tactique consommable, plafonnée, plutôt qu’une rente permanente qui accélère encore le camp dominant. Déplacer son armée vers la fontaine laisse une autre partie de son réseau exposée. L’IA doit pouvoir la contester avec les mêmes règles.
-3. **Des évolutions de comportement.** Enrichir les spécialisations existantes avec des choix qui changent la manière de jouer : éclaireur laissant une piste rapide pour les renforts ; briseur avec éclaboussure de zone mais cadence réduite ; relais pouvant maintenir brièvement une liaison à sa destruction pour permettre un repli. Choix limités et incompatibles entre eux, présentés à des moments comparables pour les deux camps. Exemples de conception à équilibrer, pas capacités promises.
+3. **Des évolutions de comportement.** Adapter ces anciens candidats aux futures cartes et aux vernis, sans réintroduire les spécialisations ou les améliorations de bâtiments retirées du prototype : éclaireur laissant une piste rapide pour les renforts ; briseur avec éclaboussure de zone mais cadence réduite ; relais pouvant maintenir brièvement une liaison à sa destruction pour permettre un repli. Choix limités et incompatibles entre eux, présentés à des moments comparables pour les deux camps. Exemples de conception à équilibrer, pas capacités promises.
 
 - Prototype complémentaire proposé avant les précisions sur la campagne : Trait d’encre + une fontaine disputée + retours visuels/sonores de leurs effets. À insérer dans des missions après les bases et les premiers bâtiments, selon les essais ; ne pas interpréter ce catalogue comme un ensemble à livrer en une fois. Garder les couleurs de camp purement cosmétiques.
 - Validation recherchée : un ordre ou pouvoir produit un effet compréhensible immédiatement ; une partie offre plusieurs décisions entre protéger son réseau et tenter une prise ; une perte locale reste récupérable ; le joueur peut raconter un coup réussi ou raté. Tester le confort au doigt et la réaction de l’IA, pas seulement la durée des simulations.
@@ -295,10 +298,23 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Modifications réalisées
 
+### V0.7 — 1er octobre 2026
+
+- Nouveau mode « Prenez le pinceau » au menu. Moteur, IA, rendu et contrôles séparés du classique ; aucune migration des parties existantes.
+- Application des dix précisions, retrait de l’Atelier de pigments du catalogue, terminologie vernis/chevalet corrigée dans la direction courante.
+- Contrôles tactiles : tracé avec aperçu/confirmation, glisser une carte ou la choisir puis toucher une case, navigation/zoom, flux au glisser, pause de production au toucher, rappel par appui long ou bouton. Apprentissage propre en trois actions réelles ; retour au menu et reprise en pause sans temps d’absence.
+- Modules ajoutés au cache hors ligne ; aide d’installation et mise à jour distinguent les sauvegardes classiques de la reprise en mémoire du prototype.
+- Main fixe de quatre cartes avec prochaine carte visible, paquet cyclique de huit ; relais, caserne, extracteur, bastion et trois pouvoirs. Une seule famille de gouttes. Le relais colore immédiatement les cases neutres proches à la pose, sans extension passive ultérieure ; pinceau et unités pilotent ensuite l’avancée.
+- Coût des unités payé à la sortie, plafond commun, pause hors réseau et protection du budget pendant la visée. Les unités d’une caserne détruite restent commandables depuis le Cœur. Limite des trois extracteurs productifs annoncée dans la description et l’aperçu.
+- Barre de domination, compte à rebours, égalité finale et dernière minute accélérée. Écran de résultat et nouvelle partie ; couleurs des camps reprises du menu, formes distinctes et compteurs des groupes superposés.
+- Corrections pendant les essais : aide et aperçu déplacés pour dégager le Cœur, cartes rendues plus lisibles, pause sur `pagehide`, résultat affiché aussi après un pouvoir décisif, annonce de dernière minute et texte de défaite corrigés. Confirmation tactile fiabilisée après glisser, avec annulation des gestes déplacés et protection contre les doubles achats. Calcul simultané du combat, déplacements et captures symétriques corrigent le biais d’ordre des unités.
+- IA réglée sur un développement, une contestation centrale puis une offensive plus tardive ; réponse aux liaisons ennemies visibles lors d’une menace de domination. Aucun accès aux états ennemis cachés ni bonus de ressources.
+- Dessins Canvas originaux et sons CC0 déjà présents réutilisés ; aucun nouvel asset externe ni dépendance réseau ajouté. Les courses, vernis, chevalet, mélanges, alliances et galerie restent dans les prochains jalons.
+
 ### Discussion du 1er octobre 2026
 
 - Analyse du manque de plaisir, comparaison avec des jeux voisins et propositions d’hybridation.
-- Dix questions de règles relevées par une relecture externe : réponses proposées dans « Précisions de règles proposées », non validées.
+- Dix questions de règles relevées par une relecture externe : réponses proposées par Claude puis validées pour le prototype par le Go de Martin.
 - AGENTS.md aligné sur ces validations (durées, direction, simplifications, alliances reportées).
 - Validations de Martin : roguelite de peinture mêlé à un jeu de cartes en temps réel, toutes les idées de rétention et d’ambiance, toutes les simplifications. Section « Nouvelle direction », vision et jalons réécrits en conséquence ; anciennes propositions V0.7/V0.8 réorientées ou reportées.
 - Documentation uniquement : aucun changement de gameplay ni de fichier précaché.
@@ -386,11 +402,16 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Bugs trouvés non corrigés
 
+- V0.7 : aucun défaut bloquant restant dans les scénarios moteur, IA et navigateur exécutés. Le retour de Martin sur la compréhension et le plaisir reste attendu ; ce n’est pas une garantie d’absence de bugs sur tous les appareils.
 - Aucun défaut bloquant détecté dans les scénarios moteur et navigateur V0.6 exécutés.
 - Ergonomie signalée par Martin après V0.5 : première réponse livrée avec campagne, outils progressifs, aperçu et fiches clarifiées. Le problème ne sera considéré résolu qu’après son essai : les captures et parcours automatisés ne prouvent pas la compréhension sans aide.
 
 ## Limites et risques à suivre
 
+- V0.7 est un combat d’essai séparé : sa pause/reprise reste en mémoire dans la page. Une fermeture, un rechargement ou une mise à jour perd ce combat ; les modes classiques gardent leurs sauvegardes. Une vraie sauvegarde de course appartient à V0.8, après validation.
+- Le prototype utilise une seule arène fixe symétrique, un paquet fixe de huit cartes et une seule famille de gouttes. La graine ne change pas encore la disposition ni le comportement initial : plusieurs graines seules ne constituent pas une mesure de variété ou d’équilibrage.
+- Quatre minutes est une limite maximale, pas une durée garantie : une destruction du Cœur ou une domination tenue peut conclure plus tôt. Une politique automatisée de peinture efficace gagne en environ 80 s ; sa place face au développement militaire et la facilité à couper ce réseau sont à éprouver avec Martin, sans ajouter de règle avant son retour. Les essais automatisés ne remplacent pas des parties humaines.
+- Les détails suivants concernent le mode classique lorsqu’ils citent ses missions, escouades, spécialistes, cartes ou sauvegardes.
 - Retour de Martin après V0.5 : plaisir de jeu encore insuffisant. Les validations techniques ne mesurent pas la qualité des décisions ni la satisfaction des combats ; la campagne V0.6 reste à éprouver en partie humaine.
 - Les missions et les déblocages seuls ne résoudront pas une carte ou des commandes ambiguës : traiter la lisibilité en parallèle. Le mélange des couleurs d’alliance devra préserver l’identification du propriétaire des unités et bâtiments.
 - Le moteur et le format de sauvegarde V0.6 restent limités à deux camps. Plusieurs IA et alliances sont planifiées. Les cinq missions et la caserne sont disponibles ; réservoir, mortier et autres nouveaux bâtiments ne le sont pas.
@@ -414,13 +435,25 @@ Demandes implémentées ; vérifications décrites en bas du document :
 
 ## Idées à évaluer (non promises)
 
-- Variantes supplémentaires de spécialisations après validation des trois branches V0.3.
+- Transformer les anciennes idées de spécialisations en choix de cartes ou de vernis, après validation du prototype ; ne pas ajouter une seconde progression en combat.
 - Autres propriétés du papier et points d’observation, après validation des terrains V0.5.
 - Adversaires à caractère, statistiques de fin de partie et rejeu de la coloration : validés le 1er octobre, intégrés à la nouvelle direction.
 - Mode chronométré à points cumulés et mode domination.
 - Palettes adaptées aux troubles de la vision des couleurs.
 
 ## Vérifications
+
+### V0.7 — 1er octobre 2026
+
+- 29 scénarios moteur : refus atomiques du pinceau/cartes, réseau et vision, coût à la sortie, attente sans prélèvement, plafond d’unités, pause/coupure, suspension du budget pendant la visée, commandes des groupes, rattachement au Cœur, pouvoirs, fin de partie, déterminisme. Combat physique miroir de 240 s et résultat indépendant de l’ordre des listes.
+- Intégration navigateur en 390 × 844 et 360 × 640 : sauvegardes libre/campagne/progression inchangées, couleur réellement dessinée, menu et reprise en pause, absence de rattrapage en arrière-plan, aide d’installation, avertissement de perte avant mise à jour, lancement hors ligne et fichier local autonome.
+- Régressions classiques : moteur, tutoriel, V0.3, snapshots/migrations, monde, missions et casernes ; navigateur session, campagne/session, palette, installation, caméra, tutoriel et cinq missions complètes aux deux formats portrait.
+- Inspection visuelle et gestes tactiles réels en Chromium 360 × 640 : tracer deux cases, confirmer, poser une caserne et diriger son flux ; aucune erreur JavaScript. La toile occupe environ 62 % de l’écran hors panneaux temporaires. Les conseils et aperçus ont été déplacés pour ne plus masquer le Cœur de départ ; cartes agrandies, groupes superposés comptés.
+- Parcours tactiles complets en 360 × 640 et 390 × 844 : peinture/confirmation, cartes au toucher et au glisser, production réelle, pause, flux et rappel, protection du budget, zoom/pincement et annulation sans achat, fin au chronomètre et rejeu. Sortir du bouton ou s’en éloigner puis revenir ne valide pas ; les événements de clic tardifs ne débitent pas deux fois.
+- IA : 6 contrôles comportementaux passent, notamment refus de tout accès au monde brut, indépendance vis-à-vis des états ennemis cachés, gel du temps, fin de partie et réponse ciblée seulement sur des liaisons visibles.
+- 12 simulations : deux essais inactifs déterministes, six politiques adverses avec actions/timings différents et quatre miroirs. Sans agir, défaite à 178,8 s, premiers dégâts au Cœur à 170,5 s. Peinture efficace : victoires du joueur à 78,1–80,8 s ; pression : fins à 159,1–168,7 s ; défense : fins à 157,5–204,2 s. Les miroirs inversent exactement les résultats à 173,4 s quand on inverse le premier acteur ; pas d’avantage intrinsèque nord/sud, mais l’initiative compte dans les zones contestées.
+- Combat navigateur complet avec vraie IA, accéléré pour vérification, jusqu’à la défaite à 178,8 s : texte de résultat correct, rejeu et pause contrôlés visuellement.
+- Aucun essai sur téléphone Android/iPhone physique ni validation du plaisir avec Martin pendant cette livraison.
 
 ### V0.6
 

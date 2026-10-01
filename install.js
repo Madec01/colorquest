@@ -10,7 +10,7 @@
   let promptEvent = null, registration = null, offlineReady = false;
   let installed = standalone.matches || navigator.standalone === true;
   let installPending = false, reloadingForUpdate = false, reloaded = false;
-  let restorePause = false, returnFocus = null;
+  let restorePause = false, restorePaintPause = false, returnFocus = null;
   let statusText = canRegister ? 'Préparation du mode hors ligne…' : 'Ajoutez Colorquest à votre écran d’accueil.';
 
   const card = document.createElement('div');
@@ -28,7 +28,7 @@
   dialog.setAttribute('aria-labelledby', 'installTitle');
   document.body.append(dialog);
 
-  function activeMatch() {
+  function classicMatch() {
     return typeof playing !== 'undefined' && playing && (typeof ended === 'undefined' || !ended);
   }
 
@@ -45,7 +45,9 @@
   function showDialog(contents) {
     if (!dialog.open) {
       returnFocus = document.activeElement;
-      restorePause = activeMatch() && typeof paused !== 'undefined' && !paused;
+      restorePaintPause = !!window.CQPaint?.active && window.CQPaint.game?.winner === null && !window.CQPaint.paused;
+      if (restorePaintPause) window.CQPaint.pause(true);
+      restorePause = classicMatch() && typeof paused !== 'undefined' && !paused;
       if (restorePause && typeof togglePause === 'function') togglePause();
     }
     dialog.innerHTML = '<button type="button" class="install-close" aria-label="Fermer">×</button>' + contents;
@@ -55,8 +57,9 @@
   }
 
   dialog.addEventListener('close', () => {
-    if (restorePause && !reloadingForUpdate && activeMatch() && typeof paused !== 'undefined' && paused && typeof togglePause === 'function') togglePause();
-    restorePause = false;
+    if (restorePause && !reloadingForUpdate && classicMatch() && typeof paused !== 'undefined' && paused && typeof togglePause === 'function') togglePause();
+    if (restorePaintPause && !reloadingForUpdate && window.CQPaint?.active && window.CQPaint.paused) window.CQPaint.pause(false);
+    restorePause = false; restorePaintPause = false;
     returnFocus?.focus?.();
   });
   // Global game shortcuts must not operate behind the install/update dialog.
@@ -75,7 +78,7 @@
       steps = '<ol><li>Ouvrez le <b>menu du navigateur ⋮</b>.</li><li>Choisissez <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>, si cette option est disponible.</li><li>Confirmez, puis lancez Colorquest depuis sa nouvelle icône.</li></ol><p>Sur ordinateur, utilisez aussi l’icône d’installation près de la barre d’adresse. Si votre navigateur ne propose pas l’installation, le jeu reste accessible ici.</p>';
     }
     const pending = installPending ? '<p>La demande a été acceptée. Terminez les étapes proposées par votre navigateur.</p>' : '';
-    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">Le mode hors ligne conserve les fichiers du jeu. La partie se sauvegarde automatiquement sur cet appareil ; retrouvez-la avec « Reprendre la partie ». Le tutoriel se recommence depuis le début.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
+    showDialog('<div class="eyebrow">VOTRE TOILE, À PORTÉE DE MAIN</div><h2 id="installTitle">Colorquest sur votre téléphone.</h2>' + pending + steps + '<p>Après installation, ouvrez l’app une fois avec une connexion et attendez « Prêt à jouer hors ligne ».</p><p id="installOfflineStatus" class="install-offline-note"></p><p class="install-progress-note">Le mode hors ligne conserve les fichiers du jeu. Les parties classiques se sauvegardent sur cet appareil. Le combat prototype se reprend tant que cette page reste ouverte ; un rechargement le recommence. Le tutoriel classique se recommence depuis le début.</p><button id="installHelpDone" type="button" class="primary">Compris</button>');
     dialog.querySelector('#installHelpDone').onclick = closeDialog;
     renderStatus();
   }
@@ -122,16 +125,18 @@
   function offerUpdate() {
     updateButton.hidden = !(registration?.waiting && navigator.serviceWorker.controller);
     if (updateButton.hidden) return;
-    if (activeMatch() && typeof toast === 'function') toast('Une mise à jour est prête. Elle vous attend au menu après la partie.');
+    if (classicMatch() && typeof toast === 'function') toast('Une mise à jour est prête. Elle vous attend au menu après la partie.');
   }
 
   function showUpdate() {
     if (!registration?.waiting) return;
-    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p>Recharger ouvre la nouvelle version. Votre partie sera sauvegardée avant le rechargement ; reprenez-la ensuite depuis le menu. Un tutoriel en cours se recommencera depuis le début.</p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
+    const prototypePending = !!window.CQPaint?.hasMatch;
+    const message = prototypePending ? 'Le combat prototype en cours recommencera après le rechargement : il est conservé seulement tant que cette page reste ouverte. Vos sauvegardes classiques seront préservées. Vous pouvez terminer ce combat avant la mise à jour.' : 'Recharger ouvre la nouvelle version. Votre partie sera sauvegardée avant le rechargement ; reprenez-la ensuite depuis le menu. Un tutoriel en cours se recommencera depuis le début.';
+    showDialog('<div class="eyebrow">NOUVELLE COULEUR, MÊME TOILE</div><h2 id="installTitle">Une mise à jour est prête.</h2><p>' + message + '</p><button id="confirmGameUpdate" type="button" class="primary">Mettre à jour et recharger</button><button id="cancelGameUpdate" type="button" class="install-secondary">Plus tard</button>');
     dialog.querySelector('#cancelGameUpdate').onclick = closeDialog;
     dialog.querySelector('#confirmGameUpdate').onclick = () => {
       if (!registration.waiting) { closeDialog(); updateButton.hidden = true; return; }
-      if (activeMatch() && !window.CQTutorial?.active) {
+      if (classicMatch() && !window.CQTutorial?.active) {
         const saved = window.CQSave?.save();
         if (saved && !saved.ok && !saved.skipped) {
           dialog.querySelector('p').textContent = saved.message + ' La mise à jour attendra votre retour au menu.';

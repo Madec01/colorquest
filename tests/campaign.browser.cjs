@@ -52,7 +52,12 @@ async function waitWin(page,max=100) {
    const page=await browser.newPage({viewport,isMobile:true,hasTouch:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url);await page.waitForFunction(()=>window.CQCampaign&&window.CQMissions);
    await page.screenshot({path:`/tmp/colorquest-v06-menu-${viewport.width}.png`});
-   const menuBox=await page.locator('#campaignOpen').boundingBox();assert.ok(menuBox.y+menuBox.height<=viewport.height,'campaign launch visible without scrolling');
+   // V0.7 gives the prototype the first menu card; the preserved campaign is a
+   // secondary entry and may need scrolling on a small phone.
+   const primaryEntry=page.locator('#paintStart');
+   const primaryBox=await primaryEntry.boundingBox();assert.ok(primaryBox.y>=0&&primaryBox.y+primaryBox.height<=viewport.height,'primary prototype launch visible without scrolling');
+   await page.locator('#campaignOpen').scrollIntoViewIfNeeded();
+   const menuBox=await page.locator('#campaignOpen').boundingBox();assert.ok(menuBox.y>=0&&menuBox.y+menuBox.height<=viewport.height&&menuBox.height>=44,'classic campaign stays reachable with a touch-sized launch button');
    assert.equal(await page.evaluate(()=>CQCampaign.start('source')),false,'locked mission cannot start via UI API');
    await page.locator('#campaignOpen').tap();
    assert.equal(await page.locator('[data-campaign-mission]').count(),5);

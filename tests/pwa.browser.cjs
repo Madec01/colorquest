@@ -106,7 +106,7 @@ const server = http.createServer((request, response) => {
     await iphone.goto(url); await iphone.locator('#installGame').tap();
     assert.match(await iphone.locator('#installDialog').innerText(), /Safari/);
     assert.match(await iphone.locator('#installDialog').innerText(), /écran d’accueil/);
-    assert.match(await iphone.locator('#installDialog').innerText(), /se sauvegarde automatiquement/);
+    assert.match(await iphone.locator('#installDialog').innerText(), /Les parties classiques se sauvegardent/);
     assert.equal(await iphone.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await ios.close();
 

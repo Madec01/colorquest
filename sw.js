@@ -3,7 +3,7 @@
  * is activated only after the player chooses to reload, or closes every tab.
  */
 'use strict';
-const RELEASE = 'COLORQUEST_V06_20260930_1';
+const RELEASE = 'COLORQUEST_V07_20261001_1';
 const CACHE_PREFIX = 'colorquest:' + new URL(self.registration.scope).pathname + ':';
 const CACHE_NAME = CACHE_PREFIX + RELEASE;
 const FILES = [
@@ -13,6 +13,7 @@ const FILES = [
   'install.js', 'install.css', 'manifest.webmanifest',
   'snapshots.js', 'session.js', 'session.css', 'palette.js', 'palette.css',
   'missions.js', 'campaign.js', 'campaign.css',
+  'paint-engine.js', 'paint-ai.js', 'paint-renderer.js', 'paint.js', 'paint.css',
   'maps.js', 'world-ui.js', 'world-ui.css', 'alerts.js', 'alerts.css',
   'assets/icons/icon.svg', 'assets/icons/icon-192.png',
   'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png',
