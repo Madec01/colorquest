@@ -122,6 +122,40 @@ V0.6 est implémentée. Les jalons suivants désignent un ordre proposé, sans c
 3. **V0.9** : galerie, défi du jour, étoiles, collection, sensations et musique.
 4. Ensuite seulement : plusieurs camps et alliances.
 
+### Relecture critique et idées — 1er octobre 2026 (propositions à discuter)
+
+- Relecture demandée par Martin de l’analyse, des ajouts, des retraits et des conséquences. Source : branche `claude/affectionate-dirac-ckdw8k`, commit `cba35dc`, distincte de `main` qui contient toujours la V0.6. Cette section constitue un avis de conception ; elle ne transforme pas les propositions ci-dessous en décisions validées.
+- Compréhension : le pivot porte sur la boucle entière — peinture directe, cartes, armée en flux, combats courts et choix entre combats — en conservant la toile, la connexion au Cœur, la priorité portrait et l’IA à perception limitée. Les alliances restent souhaitées, mais arrivent après ce pivot.
+- Nuances au diagnostic : le moteur V0.6 donne 165 pigments au départ, donc le joueur peut agir immédiatement malgré un revenu de base de 2,6/s ; c’est surtout le rythme des décisions suivantes qui doit être évalué. La campagne fournit déjà des déblocages de missions : ce qui manque est une progression variée d’une course à l’autre. Le résultat après trois minutes sans action décrit un scénario observé, sans mesurer à lui seul le plaisir ou l’équilibrage d’une partie jouée.
+- Les six retraits D concernent le nouveau mode. Garder provisoirement le classique et ses sauvegardes pendant l’essai ne vaut pas décision de le maintenir indéfiniment. Les améliorations de cartes entre combats restent compatibles avec la suppression des niveaux des bâtiments en combat ; le sort des spécialisations et des cinq rôles d’unités n’est pas tranché.
+
+**Points à préciser avant le prototype**
+
+- Déploiement et ciblage : distinguer l’endroit où une carte bâtiment peut être posée, le départ connecté d’un trait, et la zone visible adverse qu’un pouvoir peut atteindre. Une lecture littérale « toutes les cartes uniquement sur notre territoire » empêcherait certains effets offensifs.
+- Trait d’encre : durée temporaire ou possession durable, peinture d’une case ennemie, coût selon la longueur, largeur, obstacles et reconnexion après une coupure. L’ancien catalogue le dit temporaire ; la nouvelle boucle ne fixe pas cette durée.
+- Production et flux : coût initial/seconde/unité, conditions d’arrêt en cas d’isolement, plafond de population, comportement des unités déjà en route, et sens de « toucher pour arrêter » (envoi ou production). Les producteurs automatiques remplacent vraisemblablement la file manuelle, mais leurs règles restent à définir.
+- Main et deck : ordre des tirages, recyclage des cartes, possibilité de refuser une récompense, cartes bâtiment déjà présentes sur la toile et garantie de pouvoir peindre/reconnecter. La malchance ne devrait pas retirer le geste central du jeu.
+- Pigment : le terme désigne actuellement la ressource ET un bonus passif de course. Proposition : garder « encre/pigment » pour la jauge et nommer les passifs « vernis » ou « techniques ».
+- Victoire : jauge de tableau, objectif mesuré, destruction du Cœur et mort subite demandent une règle précise. Renommer le pourcentage actuel ne suffit pas à rendre le but plus lisible.
+- Couleurs : distinguer propriété du territoire, couleur mécanique d’une carte et future couleur d’alliance. Ajouter des formes/motifs aux mélanges pour ne pas rendre la possession ambiguë.
+- Progression : 5–7 combats de 3–5 minutes représentent 15–35 minutes hors récompenses. La sauvegarde de course et la reprise entre combats sont donc essentielles. Un classement local du défi quotidien ne constitue pas un classement mondial.
+- Historique : le catalogue contient encore des descriptions de files, de spécialisations, de Trait temporaire et d’atelier en bâtiment issues du RTS. Ce sont des candidats à réinterpréter, pas des règles automatiquement cumulées avec les nouvelles.
+
+**Propositions de conception, non validées**
+
+1. Tester une petite arène, une IA et un jeu de cartes réduit avec une seule famille d’unités au début. L’apprentissage peut faire découvrir successivement tracer, déployer et orienter le flux, puis laisser jouer librement ; les anciennes scènes pédagogiques fournissent des situations à réutiliser.
+2. Garantir l’accès au pinceau : option à tester d’un emplacement Trait toujours disponible et de trois cartes tournantes (quatre emplacements au total). C’est une variante proposée de la main de quatre cartes tirées, pas une modification déjà acceptée.
+3. Donner une recharge minimale au Cœur, puis un bonus borné aux sources et au réseau. Une coupure doit être grave tout en laissant la possibilité d’économiser pour reconnecter ; éviter que territoire, revenu, déploiement et score amplifient tous sans limite la même avance.
+4. Montrer une ligne d’envoi lisible et un front réactif : redirection du flux par glisser, arrêt expliqué, attaque par défaut des adversaires rencontrés, signal de coupure court et local. Éviter de réintroduire les postures derrière de nouveaux boutons.
+5. Inclure dès V0.7 le minimum de sensations nécessaire à l’essai : trait qui se remplit sous le doigt, éclaboussure locale, son de placement/connexion, unités lisibles et victoire expressive. Garder la production musicale complète et la galerie pour la suite.
+6. Construire ensuite les choix roguelite autour de comportements : unités laissant une traînée, relais offrant un bref effet à leur destruction, réseau plus résistant aux coupures. Montrer le compromis et le contre-jeu, et permettre de passer une récompense pour ne pas diluer un deck cohérent.
+7. Préserver les couleurs de camp pour la propriété ; représenter les mélanges par un effet temporaire, une icône et un motif. Commencer avec un seul mélange réellement utile avant d’ouvrir plusieurs combinaisons.
+8. Donner à la galerie une identité d’œuvre : fin de combat sans interface, bref rejeu de la coloration, titre et statistiques simples. L’image du tableau ne doit pas exposer par défaut un partage externe.
+
+- Critère d’essai proposé : une action compréhensible dès les premières secondes, peinture et déplacement de caméra faciles à distinguer, première pression adverse lisible rapidement, possibilité de récupérer une coupure et envie d’essayer un autre choix après le combat. Ce sont des objectifs de conception, pas des résultats mesurés.
+- Vérification de cette relecture : comparaison des versions de documentation et lecture ciblée du moteur actuel pour les valeurs initiales. Aucun nouveau test de gameplay ni essai physique réalisé pendant cette analyse.
+
+
 ## V0.2 — comprendre et commander (réalisé)
 
 Demandes implémentées ; vérifications décrites en bas du document :
